@@ -1,9 +1,9 @@
 
-  🍽️ Restaurant_App
+  #🍽️ Restaurant_App
   
 Restaurant Management System built with ASP.NET Core Clean Architecture. Manage Customers, Orders, and Products with a scalable architecture and modern UI.
 
-  ✨ Features
+  #✨ Features
 
 ✅ CRUD operations (Customers, Orders, Products)
 
@@ -15,7 +15,7 @@ Restaurant Management System built with ASP.NET Core Clean Architecture. Manage 
 
 ✅ React frontend with Axios integration
 
-  🏗️ Architecture
+  #🏗️ Architecture
   
 📂 Restaurant_App
 
@@ -27,7 +27,7 @@ Restaurant Management System built with ASP.NET Core Clean Architecture. Manage 
 
 ┣ 📂 API → Controllers, Middlewares, Status Codes
 
-⚙️ Technologies
+#⚙️ Technologies
 
 ⚡ ASP.NET Core 8 (Web API / MVC)
 
