@@ -14,12 +14,15 @@ namespace Restaurant_App.Entities.Concrete
         public double AverageRating { get; set; }
         public Product MostValuableProduct { get; set; }
         public Product LeastValuableProduct { get; set; }
+        public List<Comment> Comments { get; set; }
+        public Rating()
+        {
+            Comments = new List<Comment>(); // Rating oluşturulduğunda Comments listesi de başlatılır
+        }
         public double GetNumericValue()
         {
             return (double)Value;
         }
-
-
     }
     public enum Value
     {

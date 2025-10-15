@@ -13,7 +13,6 @@ namespace Restaurant_App.Entities.Concrete
     {
         public string? UserId { get; set; }
         public List<CartItem> CartItems { get; set; }
-
         public Cart()
         {
             CartItems = new List<CartItem>();

@@ -15,5 +15,6 @@ namespace Restaurant_App.Entities.Concrete
         public Product? Product { get; set; }
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
+
     }
 }
