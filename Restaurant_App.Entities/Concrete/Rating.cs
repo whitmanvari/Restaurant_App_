@@ -13,8 +13,13 @@ namespace Restaurant_App.Entities.Concrete
         public string UserId { get; set; }
         public double AverageRating { get; set; }
         public Product MostValuableProduct { get; set; }
+        public int MostValuableProductId { get; set; }
+
         public Product LeastValuableProduct { get; set; }
+        public int LeastValuableProductId { get; set; }
         public List<Comment> Comments { get; set; }
+        public Product Product { get; set; }
+        public int ProductId { get; set; }
         public Rating()
         {
             Comments = new List<Comment>(); // Rating oluşturulduğunda Comments listesi de başlatılır
