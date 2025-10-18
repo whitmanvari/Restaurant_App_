@@ -9,14 +9,14 @@ namespace Restaurant_App.DataAccess.Abstract
 {
     public interface IOrderInRestaurantDal: IRepository<OrderInRestaurant>
     {
-        List<OrderInRestaurant> GetOrdersWithDetails();
-        OrderInRestaurant GetOrderWithDetails(int orderInRestaurantId);
-        List<OrderInRestaurant> GetOrdersByTableId(int tableId);
-        List<OrderInRestaurant> GetOrdersByStatus(OrderStatusInRestaurant status);
-        void UpdateOrderStatus(int orderInRestaurantId, OrderStatusInRestaurant status);
-        void AddOrderItem(int orderInRestaurantId, OrderItemInRestaurant orderItem);
-        void RemoveOrderItem(int orderInRestaurantId, int orderItemId);
-        void ClearOrderItems(int orderInRestaurantId);
+        Task<List<OrderInRestaurant>> GetOrdersWithDetails();
+        Task<OrderInRestaurant?> GetOrderWithDetails(int orderInRestaurantId);
+        Task<List<OrderInRestaurant>> GetOrdersByTableId(int tableId);
+        Task<List<OrderInRestaurant>> GetOrdersByStatus(OrderStatusInRestaurant status);
+        Task UpdateOrderStatus(int orderInRestaurantId, OrderStatusInRestaurant status);
+        Task AddOrderItem(int orderInRestaurantId, OrderItemInRestaurant orderItem);
+        Task RemoveOrderItem(int orderInRestaurantId, int orderItemId);
+        Task ClearOrderItems(int orderInRestaurantId);
 
 
     }

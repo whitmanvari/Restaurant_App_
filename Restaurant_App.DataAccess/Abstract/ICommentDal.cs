@@ -9,9 +9,9 @@ namespace Restaurant_App.DataAccess.Abstract
 {
     public interface ICommentDal: IRepository<Comment>
     {
-        List<Comment> GetCommentsByProductId(int productId);
-        List<Comment> GetCommentsByUserId(string userId);
-        List<Comment> GetCommentsWithRatingsByProductId(int productId);
-        
+        Task<List<Comment>> GetCommentsByProductId(int productId);
+        Task<List<Comment>> GetCommentsByUserId(string userId);
+        Task<List<Comment>> GetCommentsWithRatingsByProductId(int productId);
+
     }
 }

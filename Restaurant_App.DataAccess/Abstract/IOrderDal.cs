@@ -9,7 +9,7 @@ namespace Restaurant_App.DataAccess.Abstract
 {
     public interface IOrderDal: IRepository<Order>
     {
-        List<Order> GetOrdersByUserId(string userId);
-        Order GetOrderDetails(int orderId);
+        Task<List<Order>> GetOrdersByUserId(string userId);
+        Task<Order?> GetOrderDetails(int orderId);
     }
 }

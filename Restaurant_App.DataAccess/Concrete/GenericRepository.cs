@@ -14,16 +14,29 @@ namespace Restaurant_App.DataAccess.Concrete
         public async Task Create(T entity)
         {
             await using var context = new TContext();
-            await context.Set<T>().AddAsync(entity);
-            await context.SaveChangesAsync();
+            if (entity != null)
+            {
+                await context.Set<T>().AddAsync(entity);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(entity)); // Varlık null ise ArgumentNullException fırlat
+            }
         }
 
         public async Task Delete(T entity)
         {
             await using var context = new TContext();
-            context.Set<T>().Remove(entity);
-            await context.SaveChangesAsync();
-
+            if (entity != null)
+            {
+                context.Set<T>().Remove(entity);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
         }
 
         public async Task<List<T>> GetAll(Expression<Func<T, bool>>? filter = null)
@@ -38,22 +51,33 @@ namespace Restaurant_App.DataAccess.Concrete
         public async Task<T> GetById(int id)
         {
             await using var context = new TContext();
-            var result=  await context.Set<T>().FindAsync(id);
-            return result;
+            var result = await context.Set<T>().FindAsync(id);
+            return result ?? throw new Exception("Kayıt bulunamadı!");
         }
 
         public async Task<T> GetOne(Expression<Func<T, bool>>? filter = null)
         {
             await using var context = new TContext();
-            var result = await context.Set<T>().FirstOrDefaultAsync(filter);
-            return result;
+            if (filter != null)
+            {
+                var result = await context.Set<T>().FirstOrDefaultAsync(filter);
+                return result ?? throw new Exception("Kayıt bulunamadı!");
+            }
+            throw new Exception("Filtre belirtilmelidir!");
         }
 
         public async Task Update(T entity)
         {
             await using var context = new TContext();
-            context.Set<T>().Update(entity);
-            await context.SaveChangesAsync();   
+            if (entity != null)
+            {
+                context.Set<T>().Update(entity);
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
         }
     }
 }

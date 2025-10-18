@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Restaurant_App.DataAccess.Abstract;
+using Restaurant_App.DataAccess.Concrete.EfCore;
+using Restaurant_App.Entities.Concrete;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +10,23 @@ using System.Threading.Tasks;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
-    internal class OrderDal
+    public class OrderDal : GenericRepository<Order, RestaurantDbContext>, IOrderDal
     {
+        public async Task<Order?> GetOrderDetails(int orderId)
+        {
+            await using RestaurantDbContext _context = new(); //using var da yazabilirdik ama using var da Dispose senkron çalışır async değil
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId); //null döndürebilir o sebeple order? kullandık
+        }
+
+        public async Task<List<Order>> GetOrdersByUserId(string userId)
+        {
+            await using RestaurantDbContext _context = new();
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .Where(o => o.UserId == userId)
+                .ToListAsync(); //null döndüremez çünkü boş liste döner
+        }
     }
 }
