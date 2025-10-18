@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Restaurant_App.DataAccess.Abstract;
+using Restaurant_App.DataAccess.Concrete.EfCore;
+using Restaurant_App.Entities.Concrete;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +10,32 @@ using System.Threading.Tasks;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
-    internal class RatingDal
+    public class RatingDal : GenericRepository<Rating, RestaurantDbContext>, IRatingDal
     {
+
+        public async Task<double> GetAverageRatingForProduct(int productId)
+        {
+            RestaurantDbContext _context = new RestaurantDbContext();
+            return await _context.Ratings
+                .Where(r => r.ProductId == productId)
+                .Select(r => r.AverageRating)
+                .DefaultIfEmpty(0)
+                .AverageAsync();
+        }
+
+        public async Task<List<Rating>> GetRatingsByUserId(string userId)
+        {
+            return await GetAll(r => r.UserId == userId);
+        }
+
+        public async Task<List<Rating>> GetRatingsWithComments(int commentId)
+        {
+            return await GetAll(r => r.Comments.Any(c => c.Id == commentId));
+        }
+
+        public async Task<List<Rating>> GetRatingsWithProducts(int productId)
+        {
+            return await GetAll(r => r.ProductId == productId);
+        }
     }
 }
