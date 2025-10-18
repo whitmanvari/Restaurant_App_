@@ -28,7 +28,7 @@ namespace Restaurant_App.Entities.Concrete
 
         public Order()
         {
-            OrderItems = new List<OrderItem>();
+            OrderItems = []; //Initilize simplify edildi, new List<OrderItem>();
         }
     }
     public enum OrderState
