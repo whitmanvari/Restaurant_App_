@@ -16,7 +16,7 @@ namespace Restaurant_App.Entities.Concrete
         public List<Reservation> Reservations { get; set; }
         public Table()
         {
-            Reservations = new List<Reservation>();
+            Reservations = []; //simpflified initialization new List<Reservation>();
         }
     }
 }
