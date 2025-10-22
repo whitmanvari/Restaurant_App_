@@ -9,7 +9,7 @@ namespace Restaurant_App.DataAccess.Abstract
 {
     public interface IReservationDal: IRepository<Reservation>
     {
-        List<Reservation> GetReservationsWithTables(int tableId);
+        Task<List<Reservation>> GetReservationsWithTables(int tableId);
 
 
     }

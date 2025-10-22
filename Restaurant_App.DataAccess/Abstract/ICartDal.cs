@@ -9,8 +9,8 @@ namespace Restaurant_App.DataAccess.Abstract
 {
     public interface ICartDal: IRepository<Cart> 
     {
-        void ClearCart(int cartId);
-        void DeleteFromCart(int cartId, int productId);
-        Cart GetCartByUserId(string userId);
+        Task<Cart> ClearCart(int cartId);
+        Task DeleteFromCart(int cartId, int productId);
+        Task<Cart> GetCartByUserId(string userId);
     }
 }
