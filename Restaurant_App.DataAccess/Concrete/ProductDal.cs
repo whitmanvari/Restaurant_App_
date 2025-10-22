@@ -13,12 +13,10 @@ namespace Restaurant_App.DataAccess.Concrete
     {
         public int GetCountByCategory(string category)
         {
-            throw new NotImplementedException();
         }
 
         public List<Product> GetMostPopularProducts(Rating rating, int count)
         {
-            throw new NotImplementedException();
         }
 
         public Product GetProductDetails(int id)

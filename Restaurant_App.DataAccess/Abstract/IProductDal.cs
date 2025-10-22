@@ -9,12 +9,14 @@ namespace Restaurant_App.DataAccess.Abstract
 {
     public interface IProductDal: IRepository<Product>
     {
-        List<Product> GetTopRatedProducts(Rating rating, int count);
-        List<Product> GetMostPopularProducts(Rating rating, int count);
-        List<Product> SearchProducts(string searchTerm);
-        int GetCountByCategory(string category);
-        Product GetProductDetails(int id);
-        List<Product> GetProductsByCategory(string category, int page, int pageSize);
-        void Update(Product entity, int[] categoryIds);
+        
+        Task<List<Product>> GetTopRatedProducts(Rating rating, int count);
+        Task<List<Product>> GetMostPopularProducts(Rating rating, int count);
+        Task<List<Product>> SearchProducts(string searchTerm);
+        Task<int> GetCountByCategory(string category);
+        Task<Product> GetProductDetails(int id);
+        Task<List<Product>> GetProductsByCategory(string category, int page, int pageSize);
+        Task Update(Product entity, int[] categoryIds);
+        
     }
 }
