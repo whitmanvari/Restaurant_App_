@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Restaurant_App.Business\Restaurant_App.Business.csproj" />
     <ProjectReference Include="..\Restaurant_App.Entities\Restaurant_App.Entities.csproj" />
+    <ProjectReference Include="..\Restaurant_App.WebAPI\Restaurant_App.WebAPI.csproj" />
   </ItemGroup>
 
 </Project>
