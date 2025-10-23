@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Restaurant_App.DataAccess.Abstract
+namespace Restaurant_App.Business.Abstract
 {
-    public interface ICategoryDal: IRepository<Category>
+    public interface ICategoryService
     {
-        Task DeleteFromCategory(int categoryId, int productId);
         Task<Category> GetCategoryByIdWithProducts(int id);
         Task<List<Category>> GetAllCategoriesWithProductId(int productId);
+        Task DeleteFromCategory(int categoryId, int productId);
     }
 }
