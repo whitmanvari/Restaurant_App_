@@ -10,7 +10,11 @@ namespace Restaurant_App.Business.Abstract
     public interface ICartService
     {
         Task<Cart> GetCartByUserId(string userId);
-        Task ClearCart(int cartId);
+        Task<Cart> GetCartById(int cartId);
+        Task<Cart> ClearCart(int cartId);
         Task DeleteFromCart(int cartId, int productId);
+        Task InitialCart(string userId);
+        Task AddToCart(string userId, int productId, int quantity);
+
     }
 }
