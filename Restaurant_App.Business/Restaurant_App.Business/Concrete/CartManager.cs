@@ -1,12 +1,7 @@
 ﻿using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.Entities.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Restaurant_App.Business.Concrete
 {
@@ -22,26 +17,35 @@ namespace Restaurant_App.Business.Concrete
         {
             var cart = await _cartDal.GetCartByUserId(userId);
 
-            if (cart is not null)
+            if (cart is null)
             {
-                var cartIndex = cart.CartItems.FindIndex(x => x.ProductId == productId);
+                // Eğer kullanıcıya ait sepet yoksa, yeni bir tane oluştur
+                cart = new Cart
+                {
+                    UserId = userId,
+                    CartItems = new List<CartItem>()
+                };
 
-                if (cartIndex < 0) // Eğer ürün sepette hiç yoksa sepete ürünü ekler
-                {
-                    cart.CartItems.Add(new CartItem
-                    {
-                        ProductId = productId,
-                        Quantity = quantity,
-                        CartId = cart.Id
-                    });
-                }
-                else // Eğer ürün sepette varsa sepetteki ürünün sayısını arttırır.
-                {
-                    cart.CartItems[cartIndex].Quantity += quantity;
-                }
+                await _cartDal.Create(cart);
             }
 
-            await _cartDal.Update(cart); // DataAccess aracılığıyla sepeti günceller
+            var cartIndex = cart.CartItems.FindIndex(x => x.ProductId == productId);
+
+            if (cartIndex < 0)
+            {
+                cart.CartItems.Add(new CartItem
+                {
+                    ProductId = productId,
+                    Quantity = quantity,
+                    CartId = cart.Id
+                });
+            }
+            else
+            {
+                cart.CartItems[cartIndex].Quantity += quantity;
+            }
+
+            await _cartDal.Update(cart);
         }
 
         public async Task<Cart> ClearCart(int cartId)
