@@ -4,12 +4,13 @@ using Restaurant_App.Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Restaurant_App.Business.Concrete
 {
-    public class CategoryManager: ICategoryService
+    public class CategoryManager: ICategoryService, IService<Category>
     {
         private readonly ICategoryDal _categoryDal;
         public CategoryManager(ICategoryDal categoryDal)
@@ -32,14 +33,29 @@ namespace Restaurant_App.Business.Concrete
             await _categoryDal.DeleteFromCategory(categoryId, productId);
         }
 
+        public async Task<List<Category>> GetAll(Expression<Func<Category, bool>>? filter = null)
+        {
+            return await _categoryDal.GetAll(filter);
+        }
+
         public async Task<List<Category>> GetAllCategoriesWithProductId(int productId)
         {
             return await _categoryDal.GetAllCategoriesWithProductId(productId);
         }
 
+        public async Task<Category> GetById(int id)
+        {
+            return await _categoryDal.GetById(id);
+        }
+
         public async Task<Category> GetCategoryByIdWithProducts(int id)
         {
             return await _categoryDal.GetCategoryByIdWithProducts(id);
+        }
+
+        public async Task<Category> GetOne(Expression<Func<Category, bool>>? filter = null)
+        {
+            return await _categoryDal.GetOne(filter);
         }
 
         public async Task Update(Category category)

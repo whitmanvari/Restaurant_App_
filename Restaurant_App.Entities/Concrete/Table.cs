@@ -12,11 +12,14 @@ namespace Restaurant_App.Entities.Concrete
         public string? TableNumber { get; set; }
         public int Capacity { get; set; }
         public bool IsAvailable { get; set; } = true;
-        public List<OrderInRestaurant> Orders { get; set; }
-        public List<Reservation> Reservations { get; set; }
+        public List<OrderInRestaurant>? OrdersInRestaurant { get; set; }
+        public List<Reservation>? Reservations { get; set; }
+        public List<Order>? Orders { get; set; }
         public Table()
         {
-            Reservations = []; //simpflified initialization new List<Reservation>();
+            Reservations = new List<Reservation>();
+            OrdersInRestaurant = new List<OrderInRestaurant>();
+            Orders = new List<Order>();
         }
     }
 }

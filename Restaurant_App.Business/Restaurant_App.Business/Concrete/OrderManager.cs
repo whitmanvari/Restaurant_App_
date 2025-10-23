@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Restaurant_App.Business.Concrete
 {
-    public class OrderManager : IOrderService
+    public class OrderManager : IOrderService, IService<Order>
     {
         private readonly IOrderDal _orderDal;
         public OrderManager(IOrderDal orderDal)

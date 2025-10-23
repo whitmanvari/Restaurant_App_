@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Restaurant_App.DataAccess.Abstract
+namespace Restaurant_App.Business.Abstract
 {
-    public interface ITableDal: IRepository<Table>
+    public interface ITableService
     {
         Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests);
         Task<Table?> GetTableWithReservations(int tableId);
@@ -16,6 +16,5 @@ namespace Restaurant_App.DataAccess.Abstract
         Task UpdateTableAvailability(int tableId, bool isAvailable);
         Task<int> GetAvailableTableCount();
         Task<int> GetTotalTableCount();
-
     }
 }

@@ -12,8 +12,6 @@ namespace Restaurant_App.Business.Abstract
         Task<List<Comment>> GetCommentsByProductId(int productId);
         Task<List<Comment>> GetCommentsByUserId(string userId);
         Task<List<Comment>> GetCommentsWithRatingsByProductId(int productId);
-        Task AddComment(Comment comment);
-        Task DeleteComment(int commentId);
-        Task UpdateComment(Comment comment);
+       
     }
 }

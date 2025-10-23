@@ -14,11 +14,6 @@ namespace Restaurant_App.Business.Abstract
         Task<double> GetAverageRatingForProduct(int productId);
         Task<List<Rating>> GetRatingsWithComments(int commentId);
         Task<List<Rating>> GetRatingsByUserId(string userId);
-        Task<Rating> GetByRatingId(int ratingId);
-        Task<Rating> GetOneRating(Expression<Func<Rating, bool>>? filter = null);
-        Task<List<Rating>> GetAllRatings(Expression<Func<Rating, bool>>? filter = null);
-        Task CreateRating(Rating rating);
-        Task UpdateRating(Rating rating);
-        Task DeleteRating(Rating rating);
+        
     }
 }
