@@ -4,12 +4,13 @@ using Restaurant_App.Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Restaurant_App.Business.Concrete
 {
-    public class CartManager : ICartService
+    public class CartManager : ICartService, IService<Cart>
     {
         private readonly ICartDal _cartDal;
         public CartManager(ICartDal cartDal)
@@ -48,6 +49,16 @@ namespace Restaurant_App.Business.Concrete
             return await _cartDal.ClearCart(cartId);
         }
 
+        public async Task Create(Cart entity)
+        {
+            await _cartDal.Create(entity);
+        }
+
+        public async Task Delete(Cart entity)
+        {
+            await _cartDal.Delete(entity);
+        }
+
         public async Task DeleteFromCart(int cartId, int productId)
         {
             var cart = await _cartDal.GetCartById(cartId);
@@ -57,14 +68,29 @@ namespace Restaurant_App.Business.Concrete
             }
         }
 
-        public Task<Cart> GetCartById(int cartId)
+        public async Task<List<Cart>> GetAll(Expression<Func<Cart, bool>>? filter = null)
         {
-            return _cartDal.GetCartById(cartId);
+            return await _cartDal.GetAll(filter);
+        }
+
+        public async Task<Cart> GetById(int id)
+        {
+            return await _cartDal.GetById(id);
+        }
+
+        public async Task<Cart> GetCartById(int cartId)
+        {
+            return await _cartDal.GetCartById(cartId);
         }
 
         public async Task<Cart> GetCartByUserId(string userId)
         {
             return await _cartDal.GetCartByUserId(userId);
+        }
+
+        public async Task<Cart> GetOne(Expression<Func<Cart, bool>>? filter = null)
+        {
+            return await _cartDal.GetOne(filter);   
         }
 
         public async Task InitialCart(string userId)
@@ -77,9 +103,10 @@ namespace Restaurant_App.Business.Concrete
             await _cartDal.Create(cart);
         }
 
-        public async Task UpdateCart(Cart cart)
+        public async Task Update(Cart entity)
         {
-            await _cartDal.Update(cart);
+            await _cartDal.Update(entity);
         }
+
     }
 }

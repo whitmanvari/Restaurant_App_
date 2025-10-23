@@ -10,24 +10,25 @@ using System.Threading.Tasks;
 
 namespace Restaurant_App.Business.Concrete
 {
-    public class RatingManager : IRatingService
+    public class RatingManager : IRatingService, IService<Rating>
     {
         private readonly IRatingDal _ratingDal;
         public RatingManager(IRatingDal ratingDal)
         {
             _ratingDal = ratingDal;
         }
-        public async Task CreateRating(Rating rating)
+
+        public async Task Create(Rating entity)
         {
-            await _ratingDal.Create(rating);
+            await _ratingDal.Create(entity);
         }
 
-        public async Task DeleteRating(Rating rating)
+        public async Task Delete(Rating entity)
         {
-            await _ratingDal.Delete(rating);
+            await _ratingDal.Delete(entity);
         }
 
-        public async Task<List<Rating>> GetAllRatings(Expression<Func<Rating, bool>>? filter = null)
+        public async Task<List<Rating>> GetAll(Expression<Func<Rating, bool>>? filter = null)
         {
             return await _ratingDal.GetAll(filter);
         }
@@ -37,16 +38,15 @@ namespace Restaurant_App.Business.Concrete
             return await _ratingDal.GetAverageRatingForProduct(productId);
         }
 
-        public async Task<Rating> GetByRatingId(int ratingId)
+        public async Task<Rating> GetById(int id)
         {
-            return await _ratingDal.GetById(ratingId);
+            return await _ratingDal.GetById(id);
         }
 
-        public async Task<Rating> GetOneRating(Expression<Func<Rating, bool>>? filter = null)
+        public async Task<Rating> GetOne(Expression<Func<Rating, bool>>? filter = null)
         {
             return await _ratingDal.GetOne(filter);
         }
-
         public async Task<List<Rating>> GetRatingsByUserId(string userId)
         {
             return await _ratingDal.GetRatingsByUserId(userId);
@@ -62,9 +62,9 @@ namespace Restaurant_App.Business.Concrete
             return await _ratingDal.GetRatingsWithProducts(productId);
         }
 
-        public async Task UpdateRating(Rating rating)
+        public async Task Update(Rating entity)
         {
-            await _ratingDal.Update(rating);
+            await _ratingDal.Update(entity);
         }
     }
 }

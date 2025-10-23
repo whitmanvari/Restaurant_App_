@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using Microsoft.EntityFrameworkCore;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete.EfCore;
+using Restaurant_App.Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,39 +13,66 @@ namespace Restaurant_App.DataAccess.Concrete
 {
     public class TableDal : GenericRepository<Table, RestaurantDbContext>, ITableDal
     {
-        public List<Table> GetAllTablesWithDetails()
+        public async Task<List<Table>> GetAllTablesWithDetails()
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+
+            return await _context.Tables
+                .Include(t => t.Reservations)
+                .Include(t => t.OrdersInRestaurant)
+                .Include(t => t.Orders)
+                .ToListAsync();
         }
 
-        public int GetAvailableTableCount()
+        public async Task<int> GetAvailableTableCount()
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+            return await _context.Tables.CountAsync(t => t.IsAvailable);
         }
 
-        public List<Table> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
+        public async Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+            return await _context.Tables
+                .Where(t => t.IsAvailable && t.Capacity >= numberOfGuests)
+                .ToListAsync();
         }
 
-        public Table GetTableWithOrders(int tableId)
+        public async Task<Table?> GetTableWithOrders(int tableId)
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+            var table = await _context.Tables
+                .Include(t => t.OrdersInRestaurant)
+                .FirstOrDefaultAsync(t => t.Id == tableId);
+
+            return table ?? throw new ArgumentNullException(nameof(table), "Masa bulunamadı!");
         }
 
-        public Table GetTableWithReservations(int tableId)
+        public async Task<Table?> GetTableWithReservations(int tableId)
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+            var table = await _context.Tables
+                .Include(t => t.Reservations)
+                .FirstOrDefaultAsync(t => t.Id == tableId);
+
+            return table ?? throw new ArgumentNullException(nameof(table), "Masa bulunamadı!");
         }
 
-        public int GetTotalTableCount()
+        public async Task<int> GetTotalTableCount()
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+            return await _context.Tables.CountAsync();
         }
 
-        public void UpdateTableAvailability(int tableId, bool isAvailable)
+        public async Task UpdateTableAvailability(int tableId, bool isAvailable)
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+            var table = await _context.Tables.FindAsync(tableId);
+            if (table is not null)
+            {
+                table.IsAvailable = isAvailable;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

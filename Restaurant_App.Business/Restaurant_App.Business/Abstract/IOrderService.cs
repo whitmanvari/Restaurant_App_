@@ -12,11 +12,6 @@ namespace Restaurant_App.Business.Abstract
     {
         Task<List<Order>> GetOrdersByUserId(string userId);
         Task<Order?> GetOrderDetails(int orderId);
-        Task<Order> GetById(int id);
-        Task<Order> GetOne(Expression<Func<Order, bool>>? filter = null);
-        Task<List<Order>> GetAll(Expression<Func<Order, bool>>? filter = null);
-        Task Create(Order order);
-        Task Update(Order order);
-        Task Delete(Order order);
+        
     }
 }
