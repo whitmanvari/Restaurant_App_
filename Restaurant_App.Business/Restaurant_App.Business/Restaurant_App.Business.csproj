@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Concrete\4kfzc1nf.ngy~" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Restaurant_App.DataAccess\Restaurant_App.DataAccess.csproj" />
     <ProjectReference Include="..\..\Restaurant_App.Entities\Restaurant_App.Entities.csproj" />
     <ProjectReference Include="..\..\Restaurant_App.WebAPI\Restaurant_App.WebAPI.csproj" />

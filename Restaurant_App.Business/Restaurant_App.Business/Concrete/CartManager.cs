@@ -69,7 +69,7 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task InitialCart(string userId)
         {
-            Cart cart = new Cart()
+            Cart cart = new()
             {
                 UserId = userId
             };

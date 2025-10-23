@@ -41,5 +41,14 @@ namespace Restaurant_App.DataAccess.Concrete
             return category ?? throw new ArgumentNullException("Böyle bir kategori yok!");
 
         }
+        public async Task<List<Category>> GetAllCategoryByIdWithProductId(int productId)
+        {
+            await using var _context = new RestaurantDbContext();
+            var categories = await _context.Categories
+                .Include(c => c.Products.Where(p => p.Id == productId))
+                    .ThenInclude(p => p.Images)
+                .ToListAsync();
+            return categories;
+        }
     }
 }
