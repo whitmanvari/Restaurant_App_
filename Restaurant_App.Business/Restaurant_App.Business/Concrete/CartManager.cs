@@ -76,5 +76,10 @@ namespace Restaurant_App.Business.Concrete
 
             await _cartDal.Create(cart);
         }
+
+        public async Task UpdateCart(Cart cart)
+        {
+            await _cartDal.Update(cart);
+        }
     }
 }

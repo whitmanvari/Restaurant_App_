@@ -17,6 +17,16 @@ namespace Restaurant_App.Business.Concrete
             _categoryDal = categoryDal;
         }
 
+        public async Task Create(Category category)
+        {
+            await _categoryDal.Create(category);
+        }
+
+        public async Task Delete(Category category)
+        {
+            await _categoryDal.Delete(category);
+        }
+
         public async Task DeleteFromCategory(int categoryId, int productId)
         {
             await _categoryDal.DeleteFromCategory(categoryId, productId);
@@ -30,6 +40,11 @@ namespace Restaurant_App.Business.Concrete
         public async Task<Category> GetCategoryByIdWithProducts(int id)
         {
             return await _categoryDal.GetCategoryByIdWithProducts(id);
+        }
+
+        public async Task Update(Category category)
+        {
+            await _categoryDal.Update(category);
         }
     }
 }
