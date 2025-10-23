@@ -107,7 +107,7 @@ namespace Restaurant_App.DataAccess.Concrete
             }
         }
         //Sipariş durumunu güncelleme
-        public async Task<OrderInRestaurant> UpdateOrderStatus(int orderInRestaurantId, OrderStatusInRestaurant status)
+        public async Task UpdateOrderStatus(int orderInRestaurantId, OrderStatusInRestaurant status)
         {
             await using var context = new RestaurantDbContext();
             var order = await context.OrdersInRestaurant.FindAsync(orderInRestaurantId);
@@ -115,12 +115,13 @@ namespace Restaurant_App.DataAccess.Concrete
             {
                 order.Status = status;
                 await context.SaveChangesAsync();
-                return order;
             }
             else
             {
                 throw new Exception("Siparişiniz bulunamadı!");
             }
         }
+
+
     }
 }
