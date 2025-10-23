@@ -5,18 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Restaurant_App.DataAccess.Abstract
+namespace Restaurant_App.Business.Abstract
 {
-    public interface IProductDal: IRepository<Product>
+    public interface IProductService
     {
-        
         Task<List<Product>> GetTopRatedProducts(Value minRatingValue, int count);
         Task<List<Product>> GetMostPopularProducts(int count);
+        Task<Product> GetProductDetails(int id);
         Task<List<Product>> SearchProducts(string searchTerm);
         Task<int> GetCountByCategory(string category);
-        Task<Product> GetProductDetails(int id);
-        Task<List<Product>> GetProductsByCategory(string category, int page, int pageSize);
-        Task Update(Product entity, int[] categoryIds);
-        
+        Task UpdateProduct(Product product, int[] categoryIds);
     }
 }

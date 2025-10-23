@@ -12,5 +12,6 @@ namespace Restaurant_App.DataAccess.Abstract
         Task<Cart> ClearCart(int cartId);
         Task DeleteFromCart(int cartId, int productId);
         Task<Cart> GetCartByUserId(string userId);
+        Task<Cart> GetCartById(int cartId);
     }
 }

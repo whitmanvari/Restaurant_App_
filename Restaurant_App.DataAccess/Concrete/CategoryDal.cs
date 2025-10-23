@@ -1,4 +1,5 @@
-﻿using Restaurant_App.DataAccess.Abstract;
+﻿using Microsoft.EntityFrameworkCore;
+using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
 using System;
@@ -11,14 +12,34 @@ namespace Restaurant_App.DataAccess.Concrete
 {
     public class CategoryDal : GenericRepository<Category, RestaurantDbContext>, ICategoryDal
     {
-        public void DeleteFromCategory(int categoryId, int productId)
+        public async Task DeleteFromCategory(int categoryId, int productId)
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+
+            var categoryProduct = await _context.ProductCategories
+                .FirstOrDefaultAsync(pc => pc.CategoryId == categoryId && pc.ProductId == productId);
+
+            if (categoryProduct != null)
+            {
+                _context.ProductCategories.Remove(categoryProduct);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new ArgumentNullException("Bu kategori ve ürün ilişkisi bulunamadı!");
+            }
         }
 
-        public Category GetCategoryByIdWithProducts(int id)
+        public async Task<Category> GetCategoryByIdWithProducts(int id)
         {
-            throw new NotImplementedException();
+            await using var _context = new RestaurantDbContext();
+            var category = await _context.Categories
+                .Include(c => c.Products)
+                    .ThenInclude(p=>p.Images)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            return category ?? throw new ArgumentNullException("Böyle bir kategori yok!");
+
         }
     }
 }

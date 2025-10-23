@@ -38,6 +38,17 @@ namespace Restaurant_App.DataAccess.Concrete
             await _context.SaveChangesAsync();
         }
 
+        public async Task<Cart> GetCartById(int cartId)
+        {
+            await using var _context = new RestaurantDbContext();
+            var cart = await _context.Carts
+                .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(c => c.Id == cartId);
+            if(cart==null) { throw new ArgumentNullException("Böyle bir sepet yok!"); }
+            return cart;
+        }
+
         public async Task<Cart> GetCartByUserId(string userId)
         {
             await using var _context = new RestaurantDbContext();

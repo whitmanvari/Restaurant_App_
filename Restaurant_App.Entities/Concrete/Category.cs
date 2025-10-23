@@ -15,8 +15,8 @@ namespace Restaurant_App.Entities.Concrete
         public List<ProductCategory> ProductCategory { get; set; }
         public Category()
         {
-            Products = []; //Simplify edildi , new List<Product>();
-            ProductCategory = []; //new List<ProductCategory>() 
+            Products = new List<Product>();
+            ProductCategory = new List<ProductCategory>();
         }
     }
 }
