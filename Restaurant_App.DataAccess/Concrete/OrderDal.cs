@@ -17,6 +17,7 @@ namespace Restaurant_App.DataAccess.Concrete
             await using RestaurantDbContext _context = new(); //using var da yazabilirdik ama using var da Dispose senkron çalışır async değil
             return await _context.Orders
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o => o.Id == orderId); //null döndürebilir o sebeple order? kullandık
         }
 
@@ -25,6 +26,7 @@ namespace Restaurant_App.DataAccess.Concrete
             await using RestaurantDbContext _context = new();
             return await _context.Orders
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
                 .Where(o => o.UserId == userId)
                 .ToListAsync(); //null döndüremez çünkü boş liste döner
         }
