@@ -1,7 +1,6 @@
 ﻿namespace Restaurant_App.WebAPI.Models.DTO_s
 {
-    public class CartDTO: BaseDTO
+    public class UserRegisterDTO
     {
-       
     }
 }

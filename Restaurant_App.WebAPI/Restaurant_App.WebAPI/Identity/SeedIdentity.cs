@@ -6,28 +6,45 @@ namespace Restaurant_App.WebAPI.Identity
     {
         public static async Task Seed(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
         {
-            var username = configuration["DataAccess:AdminUser:username"];
-            var password = configuration["DataAccess:AdminUser:password"];
-            var email = configuration["DataAccess:AdminUser:email"];
-            var role = configuration["DataAccess:AdminUser:role"];
-            if (await userManager.FindByEmailAsync(email) == null)
-            {
-                await roleManager.CreateAsync(new IdentityRole(role));
+            // --- Admin ---
+            var adminUsername = configuration["DataAccess:AdminUser:username"];
+            var adminPassword = configuration["DataAccess:AdminUser:password"];
+            var adminEmail = configuration["DataAccess:AdminUser:email"];
+            var adminRole = configuration["DataAccess:AdminUser:role"];
 
-                var user = new ApplicationUser()
+            if (!await roleManager.RoleExistsAsync(adminRole))
+                await roleManager.CreateAsync(new IdentityRole(adminRole));
+
+            if (await userManager.FindByEmailAsync(adminEmail) == null)
+            {
+                var adminUser = new ApplicationUser()
                 {
-                    UserName = username,
-                    Email = email,
-                    FullName = "Hazal Ilık",
+                    UserName = adminUsername,
+                    Email = adminEmail,
+                    FullName = "Admin User",
                     EmailConfirmed = true
                 };
+                await userManager.CreateAsync(adminUser, adminPassword);
+                await userManager.AddToRoleAsync(adminUser, adminRole);
+            }
 
-                var result = await userManager.CreateAsync(user, password);
+            // --- Normal User ---
+            var userRole = "User";
+            if (!await roleManager.RoleExistsAsync(userRole))
+                await roleManager.CreateAsync(new IdentityRole(userRole));
 
-                if (result.Succeeded)
+            var normalUserEmail = "user@example.com";
+            if (await userManager.FindByEmailAsync(normalUserEmail) == null)
+            {
+                var normalUser = new ApplicationUser()
                 {
-                    await userManager.AddToRoleAsync(user, role);
-                }
+                    UserName = "user",
+                    Email = normalUserEmail,
+                    FullName = "Normal User",
+                    EmailConfirmed = true
+                };
+                await userManager.CreateAsync(normalUser, "User123");
+                await userManager.AddToRoleAsync(normalUser, userRole);
             }
         }
     }
