@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Business.Concrete;
@@ -37,7 +37,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
     .AddDefaultTokenProviders();
 
-//Cookie Ayarlar?
+//Cookie Ayarları
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/account/login";
@@ -83,11 +83,9 @@ builder.Services.AddScoped<IReservationDal, ReservationDal>();
 builder.Services.AddScoped<ICartDal, CartDal>();
 builder.Services.AddScoped<ICartService, CartManager>();
 
-
-
-
+//Controllers
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -100,11 +98,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Middleware
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 app.UseAuthentication();
-
+app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+    await SeedIdentity.Seed(userManager, roleManager, configuration); // Hem admin hem user burada oluşturulacak
+}
 
 app.Run();

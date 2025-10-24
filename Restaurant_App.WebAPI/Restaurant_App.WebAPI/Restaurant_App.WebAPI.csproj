@@ -26,8 +26,4 @@
     <ProjectReference Include="..\..\Restaurant_App.DataAccess\Restaurant_App.DataAccess.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Models\" />
-  </ItemGroup>
-
 </Project>
