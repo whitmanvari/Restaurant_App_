@@ -6,6 +6,11 @@ using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.WebAPI.Identity;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Restaurant_App.DataAccess.Concrete.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +41,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
     .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
     .AddDefaultTokenProviders();
+
+//Fluent Validations
+builder.Services.AddControllers()
+    .AddFluentValidation(fv =>
+    {
+        fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>();
+    });
 
 //Cookie Ayarları
 builder.Services.ConfigureApplicationCookie(options =>
@@ -90,6 +102,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+SeedDatabase.Seed();
+builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
+    options.UseSqlServer(connectionString, b =>
+        b.MigrationsAssembly("Restaurant_App.WebAPI")));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
