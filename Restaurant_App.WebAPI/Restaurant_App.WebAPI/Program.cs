@@ -42,12 +42,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
     .AddDefaultTokenProviders();
 
-//Fluent Validations
-builder.Services.AddControllers()
-    .AddFluentValidation(fv =>
-    {
-        fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>();
-    });
+////Fluent Validations
+//builder.Services.AddControllers()
+//    .AddFluentValidation(fv =>
+//    {
+//        fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>();
+//    });
 
 //Cookie Ayarları
 builder.Services.ConfigureApplicationCookie(options =>
