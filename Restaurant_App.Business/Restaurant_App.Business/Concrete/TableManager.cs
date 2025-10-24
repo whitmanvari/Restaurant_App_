@@ -63,5 +63,20 @@ namespace Restaurant_App.Business.Concrete
         {
             return await _tableDal.GetTotalTableCount();
         }
+
+        public async Task<Table> GetById(int id)
+        {
+            return await _tableDal.GetById(id);
+        }
+
+        public async Task<Table> GetOne(Expression<Func<Table, bool>>? filter = null)
+        {
+            return await _tableDal.GetOne(filter);
+        }
+
+        public async Task Update(Table entity)
+        {
+            await _tableDal.Update(entity);
+        }
     }
 }

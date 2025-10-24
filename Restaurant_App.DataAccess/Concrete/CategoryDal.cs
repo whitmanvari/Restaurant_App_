@@ -50,5 +50,16 @@ namespace Restaurant_App.DataAccess.Concrete
                 .ToListAsync();
             return categories;
         }
+
+        public async Task<List<Category>> GetAllCategoriesWithProductId(int productId)
+        {
+            await using var _context = new RestaurantDbContext();
+            var categories = await _context.Categories
+                .Where(c => c.Products.Any(p => p.Id == productId))
+                .Include(c => c.Products)
+                    .ThenInclude(p => p.Images)
+                .ToListAsync();
+            return categories;
+        }
     }
 }

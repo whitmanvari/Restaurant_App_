@@ -6,6 +6,14 @@ namespace Restaurant_App.DataAccess.Concrete.EfCore
 {
     public class RestaurantDbContext : DbContext
     {
+        public RestaurantDbContext(DbContextOptions<RestaurantDbContext> options)
+            : base(options)
+        {
+        }
+        public RestaurantDbContext()
+        {
+            
+        }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=RestaurantDb;uid=sa;pwd=1;TrustServerCertificate=True");
