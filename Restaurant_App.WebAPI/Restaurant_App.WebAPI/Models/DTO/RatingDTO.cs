@@ -1,6 +1,6 @@
 ﻿namespace Restaurant_App.WebAPI.Models.DTO_s
 {
-    public class ProductCategoryDTO
+    public class RatingDTO
     {
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Restaurant_App.WebAPI.Models.ViewModels
 {
-    public class OrderDetailViewModel
+    public class GenericViewModel
     {
     }
 }
