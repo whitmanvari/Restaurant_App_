@@ -19,7 +19,8 @@ namespace Restaurant_App.WebAPI.Validators.Concrete
             });
 
             RuleFor(x => x.Data)
-                .NotNull().WithMessage("Kategori bilgisi boş olamaz!");
+                .NotNull()
+                    .WithMessage("Kategori bilgisi boş olamaz!");
         }
     }
 }
