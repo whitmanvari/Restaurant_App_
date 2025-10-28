@@ -10,31 +10,33 @@ namespace Restaurant_App.DataAccess.Extensions
 {
     public static class SeedExtensions
     {
+        /// Veritabanını başlangıç verileri ile dolduruyoruz.
         public static void SeedData(this IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<RestaurantDbContext>();
 
-            // Apply pending migrations
+            // Bekleyen migration'ları uyguluyoruz
             context.Database.Migrate();
 
-            // Seed categories and products
+            // Kategori ve ürün verilerini ekliyoruz
             SeedCategories(context);
             SeedProducts(context);
         }
 
         private static void SeedCategories(RestaurantDbContext context)
         {
+            // Eğer hiç kategori yoksa
             if (!context.Categories.Any())
             {
                 var categories = new List<Category>
                 {
-                    new() { Name = "Main Courses" },
-                    new() { Name = "Soups" },
-                    new() { Name = "Desserts" },
-                    new() { Name = "Drinks" },
-                    new() { Name = "Salads" },
-                    new() { Name = "Appetizers" }
+                    new() { Name = "Ana Yemekler" },
+                    new() { Name = "Çorbalar" },
+                    new() { Name = "Tatlılar" },
+                    new() { Name = "İçecekler" },
+                    new() { Name = "Salatalar" },
+                    new() { Name = "Başlangıçlar" }
                 };
 
                 context.Categories.AddRange(categories);
@@ -42,66 +44,68 @@ namespace Restaurant_App.DataAccess.Extensions
             }
         }
 
+        
         private static void SeedProducts(RestaurantDbContext context)
         {
+            // Eğer hiç ürün yoksa
             if (!context.Products.Any())
             {
                 var categories = context.Categories.ToList();
 
-                var mainCourses = categories.First(c => c.Name == "Main Courses");
-                var soups = categories.First(c => c.Name == "Soups");
-                var desserts = categories.First(c => c.Name == "Desserts");
-                var drinks = categories.First(c => c.Name == "Drinks");
-                var salads = categories.First(c => c.Name == "Salads");
-                var appetizers = categories.First(c => c.Name == "Appetizers");
+                var mainCourses = categories.First(c => c.Name == "Ana Yemekler");
+                var soups = categories.First(c => c.Name == "Çorbalar");
+                var desserts = categories.First(c => c.Name == "Tatlılar");
+                var drinks = categories.First(c => c.Name == "İçecekler");
+                var salads = categories.First(c => c.Name == "Salatalar");
+                var appetizers = categories.First(c => c.Name == "Başlangıçlar");
 
                 var products = new List<Product>
                 {
                     new() {
-                        Name = "Grilled Chicken",
-                        Price = 180,
-                        Description = "Spicy grilled chicken breast.",
+                        Name = "Izgara Tavuk",
+                        Price = 200,
+                        Description = "Baharatlı ızgara tavuk göğsü, yanında sebzeler ile servis edilir.",
                         CategoryId = mainCourses.Id,
                         Images =
                         [
-                            new() { ImageUrl = "grilled_chicken_1.jpg" },
-                            new() { ImageUrl = "grilled_chicken_2.jpg" }
+                            new() { ImageUrl = "izgara_tavuk_1.jpg" },
+                            new() { ImageUrl = "izgara_tavuk_2.jpg" }
                         ]
                     },
                     new() {
-                        Name = "Meatballs",
-                        Price = 160,
-                        Description = "Homemade meatballs.",
+                        Name = "Köfte",
+                        Price = 210,
+                        Description = "Ev yapımı köfteler, pilav ve mevsim salata ile birlikte.",
                         CategoryId = mainCourses.Id,
                         Images =
                         [
-                            new() { ImageUrl = "meatballs_1.jpg" }
+                            new() { ImageUrl = "kofte_1.jpg" }
                         ]
                     },
                     new() {
-                        Name = "Lentil Soup",
-                        Price = 70,
-                        Description = "Classic Turkish lentil soup.",
+                        Name = "Mercimek Çorbası",
+                        Price = 95,
+                        Description = "Klasik Türk mercimek çorbası, limon eşliğinde.",
                         CategoryId = soups.Id,
                         Images =
                         [
-                            new() { ImageUrl = "lentil_soup.jpg" }
+                            new() { ImageUrl = "mercimek_corbasi.jpg" }
                         ]
                     },
                     new() {
-                        Name = "Ezogelin Soup",
-                        Price = 75,
-                        Description = "Traditional ezogelin soup.",
+                        Name = "Ezogelin Çorbası",
+                        Price = 95,
+                        Description = "Geleneksel ezogelin çorbası, naneli ve limonlu.",
                         CategoryId = soups.Id,
                         Images =
                         [
-                            new() { ImageUrl = "ezogelin_soup.jpg" }
+                            new() { ImageUrl = "ezogelin_corbasi.jpg" }
                         ]
                     },
                     new() {
                         Name = "Baklava",
-                        Price = 120,
-                        Description = "Walnut traditional dessert.",
+                        Price = 180,
+                        Description = "Cevizli geleneksel tatlı, kaymak ile servis edilir.",
                         CategoryId = desserts.Id,
                         Images =
                         [
@@ -109,9 +113,9 @@ namespace Restaurant_App.DataAccess.Extensions
                         ]
                     },
                     new() {
-                        Name = "Kunefe",
-                        Price = 150,
-                        Description = "Kunefe with pistachio.",
+                        Name = "Künefe",
+                        Price = 200,
+                        Description = "Antep fıstıklı sıcak künefe, dondurma ile birlikte.",
                         CategoryId = desserts.Id,
                         Images =
                         [
@@ -120,8 +124,8 @@ namespace Restaurant_App.DataAccess.Extensions
                     },
                     new() {
                         Name = "Ayran",
-                        Price = 30,
-                        Description = "Cold yogurt drink.",
+                        Price = 40,
+                        Description = "Soğuk yoğurt içeceği, taze naneli.",
                         CategoryId = drinks.Id,
                         Images =
                         [
@@ -129,13 +133,33 @@ namespace Restaurant_App.DataAccess.Extensions
                         ]
                     },
                     new() {
-                        Name = "Cola",
-                        Price = 25,
-                        Description = "Cold cola.",
+                        Name = "Kola",
+                        Price = 45,
+                        Description = "Soğuk kola, buzlu.",
                         CategoryId = drinks.Id,
                         Images =
                         [
-                            new() { ImageUrl = "cola.jpg" }
+                            new() { ImageUrl = "kola.jpg" }
+                        ]
+                    },
+                    new() {
+                        Name = "Çoban Salata",
+                        Price = 90,
+                        Description = "Taze sebzelerle hazırlanan geleneksel salata.",
+                        CategoryId = salads.Id,
+                        Images =
+                        [
+                            new() { ImageUrl = "coban_salata.jpg" }
+                        ]
+                    },
+                    new() {
+                        Name = "Humus",
+                        Price = 75,
+                        Description = "Nohut püresi, zeytinyağı ve kimyon ile.",
+                        CategoryId = appetizers.Id,
+                        Images =
+                        [
+                            new() { ImageUrl = "humus.jpg" }
                         ]
                     }
                 };
