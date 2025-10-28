@@ -5,28 +5,26 @@ using Restaurant_App.WebAPI.ViewModels.Concrete;
 
 namespace Restaurant_App.WebAPI.Validators.Concrete
 {
-    public class OrderItemValidator: BaseValidator<OrderItemViewModel, OrderItemDTO>
+    public class CartItemValidator : BaseValidator<CartItemViewModel, CartItemDTO>
     {
-        public OrderItemValidator()
+        public CartItemValidator()
         {
             ValidateWhenDataExists(() =>
             {
                 RuleFor(x => x.Data!.ProductId)
-                    .GreaterThan(0)
-                        .WithMessage("Ürün seçimi zorunludur!");
+                .GreaterThan(0)
+                    .WithMessage("Ürün seçimi zorunludur!");
 
                 RuleFor(x => x.Data!.Quantity)
                     .GreaterThan(0)
-                        .WithMessage("Miktar 0'dan büyük olmalıdır!");
+                        .WithMessage("Miktar 0'dan büyük olmalıdır!")
+                    .LessThanOrEqualTo(20)
+                        .WithMessage("Miktar 20'den fazla olamaz!");
 
                 RuleFor(x => x.Data!.Price)
                     .GreaterThan(0)
                         .WithMessage("Fiyat 0'dan büyük olmalıdır!");
             });
-
-            RuleFor(x => x.Data)
-                .NotNull()
-                    .WithMessage("Sipariş ürünü bilgisi boş olamaz!");
         }
     }
 }

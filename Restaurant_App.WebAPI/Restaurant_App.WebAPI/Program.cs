@@ -11,6 +11,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Restaurant_App.DataAccess.Concrete.Seed;
+using Restaurant_App.DataAccess.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,7 +103,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-SeedDatabase.Seed();
 builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
     options.UseSqlServer(connectionString, b =>
         b.MigrationsAssembly("Restaurant_App.WebAPI")));
@@ -112,6 +112,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.Services.SeedData();
 }
 
 // Middleware

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Restaurant_App.DataAccess.Extensions
 {
-    public static class SeedExtensions
+    public static class SeedDatabase
     {
         /// Veritabanını başlangıç verileri ile dolduruyoruz.
         public static void SeedData(this IServiceProvider serviceProvider)
@@ -44,7 +44,7 @@ namespace Restaurant_App.DataAccess.Extensions
             }
         }
 
-        
+
         private static void SeedProducts(RestaurantDbContext context)
         {
             // Eğer hiç ürün yoksa
@@ -61,6 +61,37 @@ namespace Restaurant_App.DataAccess.Extensions
 
                 var products = new List<Product>
                 {
+                    new() {
+                        Name = "Kuzu Tandır",
+                        Price = 280.00,
+                        Description = "24 saat marine edilmiş kuzu tandır, fırında özel pişirim",
+                        CategoryId = mainCourses.Id,
+                        Images = 
+                        [
+                            new() { ImageUrl = "kuzu_tandir.jpg" }
+                        ]
+                     },
+                    new() {
+                        Name = "Dana Şiş",
+                        Price = 220.00,
+                        Description = "Közde pişmiş dana şiş, közlenmiş biber ve domates ile",
+                        CategoryId = mainCourses.Id,
+                        Images = 
+                        [
+                            new() { ImageUrl = "dana_sis.jpg" }
+                        ]
+                        
+                    },
+                     new() {
+                        Name = "Levrek Buğulama",
+                        Price = 180.00,
+                        Description = "Taze levrek, sebzeler ve baharatlarla buğulama",
+                        CategoryId = mainCourses.Id,
+                        Images = 
+                        [
+                            new() { ImageUrl = "levrek_bugulama.jpg" }
+                        ]
+                    },
                     new() {
                         Name = "Izgara Tavuk",
                         Price = 200,
