@@ -31,8 +31,7 @@ namespace Restaurant_App.Entities.Concrete
         Waiting = 0,
         Completed = 1,
         Canceled = 2,
-        Preparing = 3,
-        Shipped = 4
+        Preparing = 3
     }
     public enum PaymentTypes
     {
