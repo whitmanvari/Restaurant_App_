@@ -6,11 +6,6 @@ using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.WebAPI.Identity;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using Restaurant_App.DataAccess.Concrete.Seed;
 using Restaurant_App.DataAccess.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +37,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
     .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
     .AddDefaultTokenProviders();
+
+//Automapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 ////Fluent Validations
 //builder.Services.AddControllers()
