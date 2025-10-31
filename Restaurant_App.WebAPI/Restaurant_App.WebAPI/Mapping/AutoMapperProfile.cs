@@ -28,6 +28,21 @@ namespace Restaurant_App.WebAPI.Mapping
 
             CreateMap<Product, ProductDTO>().ReverseMap();
 
+            //Cart ve CartItem mappingleri şöyle 
+            //ReverseMap ile iki yönlü dönüşüm sağladık
+            //CartItem
+            CreateMap<CartItem, CartItemDTO>()
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
+                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
+                .ReverseMap();
+
+            //Cart
+            CreateMap<Cart, CartDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.CartItems)) // CartItems → Items
+                .ReverseMap()
+                .ForMember(dest => dest.CartItems, opt => opt.MapFrom(src => src.Items)); // Items → CartItems
 
 
         }
