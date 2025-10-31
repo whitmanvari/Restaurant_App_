@@ -1,6 +1,6 @@
 ﻿namespace Restaurant_App.WebAPI.Dto
 {
-    public class UserRegisterDTO: BaseDTO
+    public class UserRegisterDTO
     {
         public string FullName { get; set; } = null!;
         public string Email { get; set; } = null!;
