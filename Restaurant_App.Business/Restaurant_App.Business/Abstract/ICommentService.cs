@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface ICommentService
+    public interface ICommentService: IService<Comment>
     {
         Task<List<Comment>> GetCommentsByProductId(int productId);
         Task<List<Comment>> GetCommentsByUserId(string userId);

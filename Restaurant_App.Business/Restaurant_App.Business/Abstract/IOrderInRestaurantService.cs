@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface IOrderInRestaurantService
+    public interface IOrderInRestaurantService: IService<OrderInRestaurant>
     {
         Task<List<OrderInRestaurant>> GetOrdersWithDetails();
         Task<OrderInRestaurant?> GetOrderWithDetails(int orderInRestaurantId);

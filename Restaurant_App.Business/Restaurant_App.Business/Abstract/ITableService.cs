@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface ITableService
+    public interface ITableService: IService<Table>
     {
         Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests);
         Task<Table?> GetTableWithReservations(int tableId);

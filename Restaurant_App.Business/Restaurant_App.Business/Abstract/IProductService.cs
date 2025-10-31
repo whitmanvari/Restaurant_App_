@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface IProductService
+    public interface IProductService: IService<Product>
     {
         Task<List<Product>> GetTopRatedProducts(Value minRatingValue, int count);
         Task<List<Product>> GetMostPopularProducts(int count);

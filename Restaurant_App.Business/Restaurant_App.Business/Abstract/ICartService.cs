@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface ICartService
+    public interface ICartService: IService<Cart>
     {
         Task<Cart> GetCartByUserId(string userId);
         Task<Cart> GetCartById(int cartId);
