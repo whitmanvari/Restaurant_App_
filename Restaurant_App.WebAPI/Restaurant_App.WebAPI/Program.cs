@@ -5,9 +5,10 @@ using Restaurant_App.Business.Concrete;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete;
 using Restaurant_App.DataAccess.Concrete.EfCore;
-using Restaurant_App.WebAPI.Identity;
 using Restaurant_App.DataAccess.Extensions;
 using Restaurant_App.WebAPI.Mapping;
+using Restaurant_App.Business.Identity;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,15 +40,17 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
     .AddDefaultTokenProviders();
 
+//AuthManager
+builder.Services.AddScoped<IAuthService, AuthManager>();
 //Automapper
 builder.Services.AddAutoMapper(typeof(Program));
 
-////Fluent Validations
-//builder.Services.AddControllers()
-//    .AddFluentValidation(fv =>
-//    {
-//        fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>();
-//    });
+//Fluent Validations
+builder.Services.AddControllers()
+    .AddFluentValidation(fv =>
+    {
+        fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>();
+    });
 
 //Cookie Ayarları
 builder.Services.ConfigureApplicationCookie(options =>

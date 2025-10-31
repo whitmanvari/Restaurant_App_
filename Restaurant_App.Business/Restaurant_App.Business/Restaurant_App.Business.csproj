@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Restaurant_App.DataAccess\Restaurant_App.DataAccess.csproj" />
     <ProjectReference Include="..\..\Restaurant_App.Entities\Restaurant_App.Entities.csproj" />
   </ItemGroup>
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Restaurant_App.WebAPI.Identity
+namespace Restaurant_App.Business.Identity
 {
     public class ApplicationUser: IdentityUser
     {

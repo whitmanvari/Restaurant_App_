@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Restaurant_App.WebAPI.Identity
+namespace Restaurant_App.Business.Identity
 {
     public class ApplicationIdentityDbContext: IdentityDbContext<ApplicationUser>
     {
