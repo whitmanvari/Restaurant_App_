@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface ICategoryService
+    public interface ICategoryService: IService<Category>
     {
         Task<Category> GetCategoryByIdWithProducts(int id);
         Task<List<Category>> GetAllCategoriesWithProductId(int productId);

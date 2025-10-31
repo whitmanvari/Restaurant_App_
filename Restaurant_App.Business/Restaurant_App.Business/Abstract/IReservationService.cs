@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface IReservationService
+    public interface IReservationService: IService<Reservation>
     {
         Task<List<Reservation>> GetReservationsWithTables(int tableId);
     }

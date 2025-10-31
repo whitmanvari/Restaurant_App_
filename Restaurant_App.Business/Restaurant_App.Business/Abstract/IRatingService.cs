@@ -2,7 +2,7 @@
 
 namespace Restaurant_App.Business.Abstract
 {
-    public interface IRatingService
+    public interface IRatingService: IService<Rating>
     {
         Task<List<Rating>> GetRatingsWithProducts(int productId);
         Task<double> GetAverageRatingForProduct(int productId);
