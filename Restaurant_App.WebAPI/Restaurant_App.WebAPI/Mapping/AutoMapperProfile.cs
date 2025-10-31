@@ -1,7 +1,7 @@
 ﻿using Restaurant_App.Entities.Concrete;
-using Restaurant_App.WebAPI.Dto;
+using Restaurant_App.Entities.Dto;
 using AutoMapper;
-using Restaurant_App.WebAPI.Identity;
+using Restaurant_App.Business.Identity;
 
 namespace Restaurant_App.WebAPI.Mapping
 {
