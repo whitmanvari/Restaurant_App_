@@ -1,4 +1,4 @@
-﻿using Restaurant_App.WebAPI.Dto;
+﻿using Restaurant_App.Entities.Dto;
 using Restaurant_App.WebAPI.Validators.Abstract;
 using Restaurant_App.WebAPI.ViewModels.Concrete;
 

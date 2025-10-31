@@ -1,5 +1,4 @@
-﻿using Restaurant_App.WebAPI.Dto;
-
+﻿
 namespace Restaurant_App.Business.Abstract
 {
     public interface IAuthService

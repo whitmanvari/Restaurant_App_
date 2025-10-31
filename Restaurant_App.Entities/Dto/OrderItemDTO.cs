@@ -1,4 +1,4 @@
-﻿namespace Restaurant_App.WebAPI.Dto
+﻿namespace Restaurant_App.Entities.Dto
 {
     public class OrderItemDTO : BaseDTO
     {
