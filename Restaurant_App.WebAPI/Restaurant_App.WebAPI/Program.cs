@@ -7,6 +7,7 @@ using Restaurant_App.DataAccess.Concrete;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.WebAPI.Identity;
 using Restaurant_App.DataAccess.Extensions;
+using Restaurant_App.WebAPI.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -112,6 +113,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.Services.SeedData();
 }
+
+//AutoMapper
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 // Middleware
 app.UseHttpsRedirection();

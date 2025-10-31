@@ -8,11 +8,9 @@
 
   <ItemGroup>
     
-    <PackageReference Include="FluentValidation" Version="8.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.0.0" />
     
-    <PackageReference Include="FluentValidation.AspNetCore" Version="8.0.0" />
-    
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.0.0" />
     
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     
@@ -24,7 +22,9 @@
     </PackageReference>
     
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.14" />
+    
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.14" />
+    
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.14">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
