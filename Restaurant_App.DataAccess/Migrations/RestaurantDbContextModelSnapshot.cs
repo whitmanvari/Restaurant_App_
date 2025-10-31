@@ -67,7 +67,7 @@ namespace Restaurant_App.DataAccess.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Quantity")
+                    b.Property<int?>("Quantity")
                         .HasColumnType("int");
 
                     b.Property<double>("TotalPrice")
@@ -121,14 +121,13 @@ namespace Restaurant_App.DataAccess.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("RatingId")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedDate")
@@ -244,6 +243,9 @@ namespace Restaurant_App.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TableId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
 
@@ -252,6 +254,8 @@ namespace Restaurant_App.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TableId");
 
                     b.ToTable("Orders");
                 });
@@ -487,6 +491,9 @@ namespace Restaurant_App.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -575,15 +582,19 @@ namespace Restaurant_App.DataAccess.Migrations
 
             modelBuilder.Entity("Restaurant_App.Entities.Concrete.Comment", b =>
                 {
-                    b.HasOne("Restaurant_App.Entities.Concrete.Product", null)
+                    b.HasOne("Restaurant_App.Entities.Concrete.Product", "Product")
                         .WithMany("Comments")
-                        .HasForeignKey("ProductId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Restaurant_App.Entities.Concrete.Rating", "Rating")
                         .WithMany("Comments")
                         .HasForeignKey("RatingId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Product");
 
                     b.Navigation("Rating");
                 });
@@ -599,10 +610,17 @@ namespace Restaurant_App.DataAccess.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Restaurant_App.Entities.Concrete.Order", b =>
+                {
+                    b.HasOne("Restaurant_App.Entities.Concrete.Table", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("TableId");
+                });
+
             modelBuilder.Entity("Restaurant_App.Entities.Concrete.OrderInRestaurant", b =>
                 {
                     b.HasOne("Restaurant_App.Entities.Concrete.Table", "Table")
-                        .WithMany("Orders")
+                        .WithMany("OrdersInRestaurant")
                         .HasForeignKey("TableId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -763,6 +781,8 @@ namespace Restaurant_App.DataAccess.Migrations
             modelBuilder.Entity("Restaurant_App.Entities.Concrete.Table", b =>
                 {
                     b.Navigation("Orders");
+
+                    b.Navigation("OrdersInRestaurant");
 
                     b.Navigation("Reservations");
                 });

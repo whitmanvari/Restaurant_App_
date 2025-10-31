@@ -44,6 +44,15 @@ namespace Restaurant_App.WebAPI.Mapping
                 .ReverseMap()
                 .ForMember(dest => dest.CartItems, opt => opt.MapFrom(src => src.Items)); // Items → CartItems
 
+            //Reservation mapping
+            CreateMap<Reservation, ReservationDTO>()
+                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.CustomerName))
+                 .ForMember(dest => dest.CustomerPhone, opt => opt.MapFrom(src => src.CustomerPhone))
+                 .ForMember(dest => dest.ReservationDate, opt => opt.MapFrom(src => src.ReservationDate))
+                 .ForMember(dest => dest.NumberOfGuests, opt => opt.MapFrom(src => src.NumberOfGuests))
+                 .ForMember(dest => dest.TableId, opt => opt.MapFrom(src => src.TableId))
+                 .ForMember(dest => dest.SpecialRequests, opt => opt.MapFrom(src => src.SpecialRequests))
+                 .ReverseMap();
 
         }
     }

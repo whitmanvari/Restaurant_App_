@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Restaurant_App.WebAPI.Migrations
+namespace Restaurant_App.Business.Migrations
 {
     /// <inheritdoc />
     public partial class IdentityInitial : Migration

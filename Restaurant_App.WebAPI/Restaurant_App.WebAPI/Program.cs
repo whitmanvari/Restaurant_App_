@@ -12,6 +12,7 @@ using Restaurant_App.WebAPI.Mapping;
 using Restaurant_App.Business.Identity;
 using FluentValidation.AspNetCore;
 using System.Text;
+using Restaurant_App.WebAPI.Validators.Concrete;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -78,7 +79,7 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 // FluentValidation
 builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>());
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CartItemValidator>());
 
 // Dependency Injection: Service ve Manager
 builder.Services.AddScoped<ITableService, TableManager>();

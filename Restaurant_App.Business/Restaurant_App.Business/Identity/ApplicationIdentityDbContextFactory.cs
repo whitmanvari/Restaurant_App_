@@ -8,7 +8,7 @@ namespace Restaurant_App.Business.Identity
         public ApplicationIdentityDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationIdentityDbContext>();
-            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=RestaurantDb;uid=sa;pwd=1;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=RestaurantAppDb;uid=sa;pwd=1;TrustServerCertificate=True");
 
             return new ApplicationIdentityDbContext(optionsBuilder.Options);
 
