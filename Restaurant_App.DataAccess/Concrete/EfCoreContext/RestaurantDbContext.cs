@@ -16,7 +16,7 @@ namespace Restaurant_App.DataAccess.Concrete.EfCore
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=RestaurantDb;uid=sa;pwd=1;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=RestaurantAppDb;uid=sa;pwd=1;TrustServerCertificate=True");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -89,7 +89,8 @@ namespace Restaurant_App.DataAccess.Concrete.EfCore
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.Rating)
                 .WithMany(r => r.Comments)
-                .HasForeignKey(c => c.RatingId);
+                .HasForeignKey(c => c.RatingId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Reservation>()
                 .HasOne(r => r.Table)
