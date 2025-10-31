@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Business.Concrete;
 using Restaurant_App.DataAccess.Abstract;
@@ -9,19 +11,21 @@ using Restaurant_App.DataAccess.Extensions;
 using Restaurant_App.WebAPI.Mapping;
 using Restaurant_App.Business.Identity;
 using FluentValidation.AspNetCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-//ConnectionString
+// Connection string
 var connectionString = builder.Configuration.GetConnectionString("IdentityConnection");
 
-//DBContext
+// DbContexts
 builder.Services.AddDbContext<RestaurantDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-//Identity
+builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -37,102 +41,92 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = true;
 })
-    .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
-    .AddDefaultTokenProviders();
+.AddEntityFrameworkStores<ApplicationIdentityDbContext>()
+.AddDefaultTokenProviders();
 
-//AuthManager
+// AuthManager
 builder.Services.AddScoped<IAuthService, AuthManager>();
-//Automapper
-builder.Services.AddAutoMapper(typeof(Program));
 
-//Fluent Validations
-builder.Services.AddControllers()
-    .AddFluentValidation(fv =>
-    {
-        fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>();
-    });
+// JWT ayarları/ jwt bearer 
+var key = builder.Configuration["Jwt:Key"];
+var issuer = builder.Configuration["Jwt:Issuer"];
+var audience = builder.Configuration["Jwt:Audience"];
 
-//Cookie Ayarları
-builder.Services.ConfigureApplicationCookie(options =>
+builder.Services.AddAuthentication(options =>
 {
-    options.LoginPath = "/account/login";
-    options.LogoutPath = "/account/logout";
-    options.AccessDeniedPath = "/account/accessdenied";
-    options.SlidingExpiration = true;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(50);
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+    };
 });
 
-//Dependency Injection Table
+builder.Services.AddAuthorization();
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+
+// FluentValidation
+builder.Services.AddControllers()
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<GenericViewModelValidator>());
+
+// Dependency Injection: Service ve Manager
 builder.Services.AddScoped<ITableService, TableManager>();
 builder.Services.AddScoped<ITableDal, TableDal>();
-
-//Product
 builder.Services.AddScoped<IProductService, ProductManager>();
 builder.Services.AddScoped<IProductDal, ProductDal>();
-
-//Category
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
 builder.Services.AddScoped<ICategoryDal, CategoryDal>();
-
-//Order
 builder.Services.AddScoped<IOrderService, OrderManager>();
 builder.Services.AddScoped<IOrderDal, OrderDal>();
-
-//OrderInRestaurant
 builder.Services.AddScoped<IOrderInRestaurantService, OrderInRestaurantManager>();
 builder.Services.AddScoped<IOrderInRestaurantDal, OrderInRestaurantDal>();
-
-//Rating
 builder.Services.AddScoped<IRatingService, RatingManager>();
 builder.Services.AddScoped<IRatingDal, RatingDal>();
-
-//Comment
 builder.Services.AddScoped<ICommentService, CommentManager>();
 builder.Services.AddScoped<ICommentDal, CommentDal>();
-
-//Reservation
 builder.Services.AddScoped<IReservationService, ReservationManager>();
 builder.Services.AddScoped<IReservationDal, ReservationDal>();
-
-//Cart
 builder.Services.AddScoped<ICartDal, CartDal>();
 builder.Services.AddScoped<ICartService, CartManager>();
 
-//Controllers
-builder.Services.AddControllers();
-
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-builder.Services.AddDbContext<ApplicationIdentityDbContext>(options =>
-    options.UseSqlServer(connectionString, b =>
-        b.MigrationsAssembly("Restaurant_App.WebAPI")));
 
-// Configure the HTTP request pipeline.
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.Services.SeedData();
+    app.Services.SeedData(); // Database seed
 }
 
-//AutoMapper
-builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
-
-// Middleware
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Seed Identity (Admin ve Default User)
 using (var scope = app.Services.CreateScope())
 {
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-    await SeedIdentity.Seed(userManager, roleManager, configuration); // Hem admin hem user burada oluşturulacak
+    await SeedIdentity.Seed(userManager, roleManager, configuration);
 }
 
 app.Run();

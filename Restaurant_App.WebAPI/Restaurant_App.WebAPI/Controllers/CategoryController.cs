@@ -5,7 +5,7 @@ namespace Restaurant_App.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoriesController : ControllerBase
+    public class CategoryController : ControllerBase
     {
     }
 }
