@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Restaurant_App.Application.Dto;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 using Restaurant_App.Entities.Identity;
 
 namespace Restaurant_App.Application.Mapping
@@ -9,17 +10,23 @@ namespace Restaurant_App.Application.Mapping
     {
         public AutoMapperProfile()
         {
-            // Category
+            // Category Mapping
             CreateMap<Category, CategoryDTO>()
-                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products))
-                .ReverseMap();
+                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products));
+            CreateMap<CategoryDTO, Category>()
+                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products));
 
-            // Product
+            // Product Mapping
             CreateMap<Product, ProductDTO>()
                 .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Select(i => i.ImageUrl)))
-                .ReverseMap();
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
 
-            // User (Identity)
+            
+            CreateMap<ProductDTO, Product>()
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.ImageUrls.Select(url => new Image { ImageUrl = url })))
+                .ForMember(dest => dest.Name, opt => opt.Ignore());
+
+            // User Mapping
             CreateMap<ApplicationUser, UserRegisterDTO>()
                 .ReverseMap()
                 .AfterMap((dto, user) =>
@@ -29,37 +36,61 @@ namespace Restaurant_App.Application.Mapping
                     user.FullName = dto.FullName;
                 });
 
-            // Cart
+            // Cart Mapping
             CreateMap<Cart, CartDTO>()
-                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.CartItems))
-                .ReverseMap()
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.CartItems));
+            CreateMap<CartDTO, Cart>()
                 .ForMember(dest => dest.CartItems, opt => opt.MapFrom(src => src.Items));
 
-            // Cart Item
-            CreateMap<CartItem, CartItemDTO>().ReverseMap();
+            CreateMap<CartItem, CartItemDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+            CreateMap<CartItemDTO, CartItem>()
+                .ForMember(dest => dest.ProductName, opt => opt.Ignore())
+                .ForMember(dest => dest.Product, opt => opt.Ignore());
 
-            // Reservation
-            CreateMap<Reservation, ReservationDTO>().ReverseMap();
+            // Reservation Mapping
+            CreateMap<Reservation, ReservationDTO>();
+            CreateMap<ReservationDTO, Reservation>();
 
-            // Rating & Comments
-            CreateMap<Rating, RatingDTO>().ReverseMap();
-            CreateMap<Comment, CommentDTO>().ReverseMap();
+            CreateMap<Rating, RatingDTO>();
+            CreateMap<RatingDTO, Rating>();
 
-            // Table
-            CreateMap<Table, TableDTO>().ReverseMap();
+            // Comment Mapping
+            CreateMap<Comment, CommentDTO>();
+            CreateMap<CommentDTO, Comment>();
 
-            // Orders (Online)
+            // Table Mapping
+            CreateMap<Table, TableDTO>();
+            CreateMap<TableDTO, Table>();
+
+            // Order Mapping
             CreateMap<Order, OrderDTO>()
-                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems))
-                .ReverseMap()
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems));
+            CreateMap<OrderDTO, Order>()
                 .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.Items));
 
-            // Orders (Restaurant tables)
+            // OrderInRestaurant Mapping
             CreateMap<OrderInRestaurant, OrderInRestaurantDTO>()
-                .ReverseMap();
+                .ForMember(dest => dest.TableNumber, opt => opt.MapFrom(src => src.Table.TableNumber))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            CreateMap<OrderInRestaurantDTO, OrderInRestaurant>()
+                .ForMember(dest => dest.Table, opt => opt.Ignore())
+                .ForMember(dest => dest.TableId, opt => opt.MapFrom(src => src.TableId))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<OrderStatusInRestaurant>(src.Status, true)));
 
-            // Order Items
-            CreateMap<OrderItem, OrderItemDTO>().ReverseMap();
+            // OrderItem Mapping
+            CreateMap<OrderItem, OrderItemDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+            CreateMap<OrderItemDTO, OrderItem>()
+                .ForMember(dest => dest.ProductName, opt => opt.Ignore())
+                .ForMember(dest => dest.Product, opt => opt.Ignore());
+
+            // OrderItemInRestaurant Mapping
+            CreateMap<OrderItemInRestaurant, OrderItemInRestaurantDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => (src.Product != null) ? src.Product.Name : string.Empty));
+            CreateMap<OrderItemInRestaurantDTO, OrderItemInRestaurant>()
+                .ForMember(dest => dest.ProductName, opt => opt.Ignore())
+                .ForMember(dest => dest.Product, opt => opt.Ignore());
         }
     }
 }

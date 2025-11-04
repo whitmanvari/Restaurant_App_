@@ -1,5 +1,6 @@
-﻿using Restaurant_App.Application.Validators.Abstract;
+﻿using FluentValidation;
 using Restaurant_App.Application.Dto;
+using Restaurant_App.Application.Validators.Abstract;
 
 namespace Restaurant_App.Application.Validators.Concrete
 {
@@ -11,7 +12,9 @@ namespace Restaurant_App.Application.Validators.Concrete
             ListMustNotBeEmpty(x => x.ImageUrls, "Resimler boş geçilemez!");
             NotEmptyString(x => x.Name, "Ürün adı boş geçilemez!");
             NotEmptyString(x => x.Description, "Ürün açıklaması boş geçilemez!", 500);
-            NotEmptyString(x => x.CategoryName, "Kategori ismi boş geçilemez!", 20);
+            RuleFor(x => x.CategoryId)
+                .GreaterThan(0)
+                .WithMessage("Geçerli bir kategori seçilmelidir!");
         }
     }
 }
