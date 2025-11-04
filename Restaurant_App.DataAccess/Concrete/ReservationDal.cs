@@ -7,6 +7,10 @@ namespace Restaurant_App.DataAccess.Concrete
 {
     public class ReservationDal : GenericRepository<Reservation, RestaurantDbContext>, IReservationDal
     {
+        public ReservationDal(RestaurantDbContext context) : base(context)
+        {
+        }
+
         public async Task<List<Reservation>> GetReservationsWithTables(int tableId)
         {
             await using var context = new RestaurantDbContext();

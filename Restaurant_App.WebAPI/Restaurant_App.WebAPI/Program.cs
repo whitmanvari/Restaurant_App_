@@ -1,18 +1,19 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Business.Concrete;
+using Restaurant_App.Business.Identity;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.DataAccess.Extensions;
+using Restaurant_App.WebAPI.Extensions;
 using Restaurant_App.WebAPI.Mapping;
-using Restaurant_App.Business.Identity;
-using FluentValidation.AspNetCore;
-using System.Text;
 using Restaurant_App.WebAPI.Validators.Concrete;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,7 +115,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.Services.SeedData(); // Database seed
 }
-
+await app.SeedIdentity(); // Identity seed
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

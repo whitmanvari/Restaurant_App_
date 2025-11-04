@@ -5,75 +5,63 @@ using System.Linq.Expressions;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
-    public class GenericRepository<T, TContext> : IRepository<T> where T : class where TContext : DbContext, new()
+    public class GenericRepository<T, TContext> : IRepository<T>
+        where T : class
+        where TContext : DbContext
     {
+        protected readonly TContext _context;
+
+        public GenericRepository(TContext context)
+        {
+            _context = context;
+        }
+
         public async Task Create(T entity)
         {
-            await using var context = new TContext();
-            if (entity != null)
-            {
-                await context.Set<T>().AddAsync(entity);
-                await context.SaveChangesAsync();
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(entity)); // Varlık null ise ArgumentNullException fırlat
-            }
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            await _context.Set<T>().AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Delete(T entity)
         {
-            await using var context = new TContext();
-            if (entity != null)
-            {
-                context.Set<T>().Remove(entity);
-                await context.SaveChangesAsync();
-            }
-            else
-            {
+            if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
-            }
+
+            _context.Set<T>().Remove(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<T>> GetAll(Expression<Func<T, bool>>? filter = null)
         {
-            await using var context = new TContext();
             return filter == null
-                ? await context.Set<T>().ToListAsync()
-                : await context.Set<T>().Where(filter).ToListAsync();
-
+                ? await _context.Set<T>().ToListAsync()
+                : await _context.Set<T>().Where(filter).ToListAsync();
         }
 
         public async Task<T> GetById(int id)
         {
-            await using var context = new TContext();
-            var result = await context.Set<T>().FindAsync(id);
-            return result ?? throw new Exception("Kayıt bulunamadı!");
+            return await _context.Set<T>().FindAsync(id);
         }
 
         public async Task<T> GetOne(Expression<Func<T, bool>>? filter = null)
         {
-            await using var context = new TContext();
-            if (filter != null)
-            {
-                var result = await context.Set<T>().FirstOrDefaultAsync(filter);
-                return result ?? throw new Exception("Kayıt bulunamadı!");
-            }
-            throw new Exception("Filtre belirtilmelidir!");
+            if (filter == null)
+                throw new Exception("Filtre belirtilmelidir!");
+
+            var result = await _context.Set<T>().FirstOrDefaultAsync(filter);
+            return result ?? throw new Exception("Kayıt bulunamadı!");
         }
 
         public async Task Update(T entity)
         {
-            await using var context = new TContext();
-            if (entity != null)
-            {
-                context.Set<T>().Update(entity);
-                await context.SaveChangesAsync();
-            }
-            else
-            {
+            if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
-            }
+
+            _context.Set<T>().Update(entity);
+            await _context.SaveChangesAsync();
         }
     }
 }

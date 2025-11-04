@@ -10,6 +10,5 @@ namespace Restaurant_App.Business.Abstract
         Task DeleteFromCart(int cartId, int productId);
         Task InitialCart(string userId);
         Task AddToCart(string userId, int productId, int quantity);
-
     }
 }

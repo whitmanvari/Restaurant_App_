@@ -1,42 +1,31 @@
 ﻿using Restaurant_App.Entities.Abstract;
+using Restaurant_App.Entities.Enum;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete
 {
+    [Table("Orders")]
     public class Order : BaseEntity
     {
         public string OrderNum { get; set; }
         public DateTime OrderDate { get; set; }
         public string UserId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Address { get; set; }
-        public string City { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public string OrderNote { get; set; }
-        public string PaymentId { get; set; }
-        public string PaymentToken { get; set; }
-        public string ConversionId { get; set; }
-        public OrderState OrderState { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string OrderNote { get; set; } = string.Empty;
+        public string PaymentId { get; set; } = string.Empty;
+        public string PaymentToken { get; set; } = string.Empty;
+        public string ConversionId { get; set; } = string.Empty;
+        public OrderState OrderState { get; set; } = OrderState.Waiting;
         public PaymentTypes PaymentTypes { get; set; }
         public List<OrderItem> OrderItems { get; set; }
-
         public Order()
         {
-            OrderItems = []; //Initilize simplify edildi, new List<OrderItem>();
+            OrderItems = new List<OrderItem>();
         }
-    }
-    public enum OrderState
-    {
-        Waiting = 0,
-        Completed = 1,
-        Canceled = 2,
-        Preparing = 3
-    }
-    public enum PaymentTypes
-    {
-        CreditCard = 0,
-        Eft = 1,
-        CashOnDelivery = 2
     }
 }

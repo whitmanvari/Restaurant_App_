@@ -1,5 +1,4 @@
-﻿
-using Restaurant_App.Entities.Dto;
+﻿using Restaurant_App.Application.Dto;
 
 namespace Restaurant_App.Business.Abstract
 {

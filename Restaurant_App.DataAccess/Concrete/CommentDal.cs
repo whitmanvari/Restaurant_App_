@@ -7,6 +7,10 @@ namespace Restaurant_App.DataAccess.Concrete
 {
     public class CommentDal : GenericRepository<Comment, RestaurantDbContext>, ICommentDal
     {
+        public CommentDal(RestaurantDbContext context) : base(context)
+        {
+        }
+
         public async Task<List<Comment>> GetCommentsByProductId(int productId)
         {
             await using var context = new RestaurantDbContext();

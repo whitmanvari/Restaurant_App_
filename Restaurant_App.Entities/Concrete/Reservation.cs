@@ -1,7 +1,9 @@
 ﻿using Restaurant_App.Entities.Abstract;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete
 {
+    [Table("Reservations")]
     public class Reservation: BaseEntity
     {
         public string CustomerName { get; set; }
@@ -16,6 +18,5 @@ namespace Restaurant_App.Entities.Concrete
         {
             ReservationDate = DateTime.Now;
         }
-
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 using System.Linq.Expressions;
 
 namespace Restaurant_App.Business.Concrete

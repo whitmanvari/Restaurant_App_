@@ -1,7 +1,9 @@
 ﻿using Restaurant_App.Entities.Abstract;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete
 {
+    [Table("Tables")]
     public class Table: BaseEntity
     {
         public string? TableNumber { get; set; }

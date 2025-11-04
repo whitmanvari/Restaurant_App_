@@ -7,6 +7,9 @@ namespace Restaurant_App.DataAccess.Concrete
 {
     public class RatingDal : GenericRepository<Rating, RestaurantDbContext>, IRatingDal
     {
+        public RatingDal(RestaurantDbContext context) : base(context)
+        {
+        }
 
         public async Task<double> GetAverageRatingForProduct(int productId)
         {

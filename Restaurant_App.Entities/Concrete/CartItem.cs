@@ -1,10 +1,9 @@
 ﻿using Restaurant_App.Entities.Abstract;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace Restaurant_App.Entities.Concrete
 {
-    [Table("Cart Item")]
+    [Table("CartItems")]
     public class CartItem: BaseEntity
     {
         public int ProductId { get; set; }
@@ -12,7 +11,6 @@ namespace Restaurant_App.Entities.Concrete
         public int? Quantity { get; set; }
         public required int CartId { get; set; }
         public Cart? Cart { get; set; }
-        public double TotalPrice { get; set; } = 0.0;
-
+        public decimal TotalPrice { get; set; } = 0.0m;
     }
 }

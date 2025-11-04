@@ -7,6 +7,10 @@ namespace Restaurant_App.DataAccess.Concrete
 {
     public class OrderDal : GenericRepository<Order, RestaurantDbContext>, IOrderDal
     {
+        public OrderDal(RestaurantDbContext context) : base(context)
+        {
+        }
+
         public async Task<Order?> GetOrderDetails(int orderId)
         {
             await using RestaurantDbContext _context = new(); //using var da yazabilirdik ama using var da Dispose senkron çalışır async değil

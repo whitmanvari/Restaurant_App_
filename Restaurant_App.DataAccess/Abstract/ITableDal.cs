@@ -11,6 +11,5 @@ namespace Restaurant_App.DataAccess.Abstract
         Task UpdateTableAvailability(int tableId, bool isAvailable);
         Task<int> GetAvailableTableCount();
         Task<int> GetTotalTableCount();
-
     }
 }

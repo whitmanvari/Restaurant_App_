@@ -2,11 +2,16 @@
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
     public class OrderInRestaurantDal : GenericRepository<OrderInRestaurant, RestaurantDbContext>, IOrderInRestaurantDal
     {
+        public OrderInRestaurantDal(RestaurantDbContext context) : base(context)
+        {
+        }
+
         //Siparişe yeni ürün ekleme restorant içerisindeyken
         public async Task AddOrderItem(int orderInRestaurantId, OrderItemInRestaurant orderItem)
         {

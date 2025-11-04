@@ -1,6 +1,7 @@
 ﻿using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 using System.Linq.Expressions;
 
 namespace Restaurant_App.Business.Concrete
@@ -54,7 +55,7 @@ namespace Restaurant_App.Business.Concrete
             return await _productDal.GetProductDetails(id);
         }
 
-        public async Task<List<Product>> GetTopRatedProducts(Value minRatingValue, int count)
+        public async Task<List<Product>> GetTopRatedProducts(RatingValue minRatingValue, int count)
         {
             return await _productDal.GetTopRatedProducts(minRatingValue, count);
         }
