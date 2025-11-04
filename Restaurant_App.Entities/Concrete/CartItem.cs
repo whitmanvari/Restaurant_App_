@@ -11,6 +11,5 @@ namespace Restaurant_App.Entities.Concrete
         public int? Quantity { get; set; }
         public required int CartId { get; set; }
         public Cart? Cart { get; set; }
-        public decimal TotalPrice { get; set; } = 0.0m;
     }
 }

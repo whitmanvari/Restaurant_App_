@@ -1,4 +1,4 @@
-﻿using Restaurant_App.Entities.Enum;
+﻿using Restaurant_App.Entities.Enums;
 
 namespace Restaurant_App.Application.Dto
 {
