@@ -7,7 +7,6 @@ namespace Restaurant_App.Business.Abstract
         Task<List<Rating>> GetRatingsWithProducts(int productId);
         Task<double> GetAverageRatingForProduct(int productId);
         Task<List<Rating>> GetRatingsWithComments(int commentId);
-        Task<List<Rating>> GetRatingsByUserId(string userId);
-        
+        Task<List<Rating>> GetRatingsByUserId(string userId);   
     }
 }

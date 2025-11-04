@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Restaurant_App.Application.Dto;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Entities.Dto;
-using Restaurant_App.WebAPI.ViewModels.Concrete;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -22,7 +20,7 @@ namespace Restaurant_App.WebAPI.Controllers
             _mapper = mapper;
         }
 
-        //get api/category/getall
+        // GET: api/category/getall
         [HttpGet("getall")]
         public async Task<IActionResult> GetAll()
         {
@@ -31,87 +29,85 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok(dto);
         }
 
-        //get api/category/getbyid/{id}
-        //Kategoriye ait ürünleri de dahil et
-        [HttpGet("{id}")]
+        // GET: api/category/5
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var category = await _categoryService.GetCategoryByIdWithProducts(id);
-            var dto = _mapper.Map<CategoryDTO>(category);
-            return Ok(dto);
+            try
+            {
+                var category = await _categoryService.GetCategoryByIdWithProducts(id);
+                if (category == null) return NotFound();
+                var dto = _mapper.Map<CategoryDTO>(category);
+                return Ok(dto);
+            }
+            catch
+            {
+                return NotFound();
+            }
         }
 
-        //post api/category/create
-        //Yalnızca admin yetkisi olan kullanıcılar kategori oluşturabilir
+        // POST: api/category/create
         [HttpPost("create")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([FromBody] CategoryViewModel model)
+        public async Task<IActionResult> Create([FromBody] CategoryDTO dto)
         {
-            if (model.Data == null) 
-                return BadRequest("Kategori bilgisi eksik.");
+            if (dto == null) return BadRequest("Kategori bilgisi eksik.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var category = _mapper.Map<Category>(model.Data);
+            var category = _mapper.Map<Category>(dto);
             await _categoryService.Create(category);
 
-            return Ok(new
-            {
-                Success = true,
-                Message = "Kategori başarılı şekilde oluşturuldu"
-            });
+            return Ok(new { Success = true, Message = "Kategori oluşturuldu." });
         }
 
-        //put api/category/update
-        [HttpPut("update")]
-        [Authorize]
-        public async Task<IActionResult> Update(int id, [FromBody] CategoryViewModel model)
+        // PUT: api/category/update/5
+        [HttpPut("update/{id:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(int id, [FromBody] CategoryDTO dto)
         {
-            if (model.Data == null) 
-                return BadRequest("Kategori bilgisi eksik.");
+            if (dto == null) return BadRequest("Kategori bilgisi eksik.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var existing = await _categoryService.GetById(id);
-            if (existing == null) 
-                return NotFound();
+            if (existing == null) return NotFound();
 
-            _mapper.Map(model.Data, existing);
+            // Map DTO -> existing entity (preserve Id)
+            _mapper.Map(dto, existing);
             await _categoryService.Update(existing);
 
-            return Ok(new 
-            { 
-                Success = true, 
-                Message = "Kategori güncellendi." 
-            });
+            return Ok(new { Success = true, Message = "Kategori güncellendi." });
         }
 
-        //delete api/category/delete/{id}
-        [HttpDelete("delete/{id}")]
-        [Authorize]
+        // DELETE: api/category/delete/5
+        [HttpDelete("delete/{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _categoryService.GetById(id);
-            if (category == null) 
-                return NotFound("Kategori bulunamadı!");
+            if (category == null) return NotFound("Kategori bulunamadı.");
 
             await _categoryService.Delete(category);
-
-            return Ok(new 
-            { 
-                Success = true, 
-                Message = "Kategori silindi." 
-            });
+            return Ok(new { Success = true, Message = "Kategori silindi." });
         }
 
-        //delete api/category/products/{categoryId}
-        //Kategroideki ürünleri sil
-        [HttpDelete("{categoryId}/product/{productId}")]
-        [Authorize]
+        // DELETE: api/category/{categoryId}/product/{productId}
+        [HttpDelete("{categoryId:int}/product/{productId:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProductFromCategory(int categoryId, int productId)
         {
-            await _categoryService.DeleteFromCategory(categoryId, productId);
-            return Ok(new 
+            try
             {
-                Success = true, 
-                Message = "Ürün kategoriden kaldırıldı." 
-            });
+                await _categoryService.DeleteFromCategory(categoryId, productId);
+                return Ok(new { Success = true, Message = "Ürün kategoriden kaldırıldı." });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch
+            {
+                return BadRequest("İşlem sırasında hata oluştu.");
+            }
         }
     }
 }

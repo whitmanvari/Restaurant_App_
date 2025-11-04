@@ -1,4 +1,5 @@
 ﻿using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 
 namespace Restaurant_App.DataAccess.Abstract
 {
@@ -12,7 +13,5 @@ namespace Restaurant_App.DataAccess.Abstract
         Task AddOrderItem(int orderInRestaurantId, OrderItemInRestaurant orderItem);
         Task RemoveOrderItem(int orderInRestaurantId, int orderItemId);
         Task ClearOrderItems(int orderInRestaurantId);
-
-
     }
 }

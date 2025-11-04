@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 using Restaurant_App.WebAPI.ViewModels.Concrete;
 
 namespace Restaurant_App.WebAPI.Controllers
@@ -109,7 +110,7 @@ namespace Restaurant_App.WebAPI.Controllers
 
         //get top rated products
         [HttpGet("TopRated")]
-        public async Task<IActionResult> GetTopRated(Value minRating, int count)
+        public async Task<IActionResult> GetTopRated(RatingValue minRating, int count)
         {
             var result = await _productService.GetTopRatedProducts(minRating, count);
             return Ok(result);

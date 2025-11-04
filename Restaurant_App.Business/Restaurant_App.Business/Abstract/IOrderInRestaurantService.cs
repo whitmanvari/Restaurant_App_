@@ -1,4 +1,5 @@
 ﻿using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 
 namespace Restaurant_App.Business.Abstract
 {

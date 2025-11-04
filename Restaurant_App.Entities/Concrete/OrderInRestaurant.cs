@@ -1,7 +1,10 @@
 ﻿using Restaurant_App.Entities.Abstract;
+using Restaurant_App.Entities.Enum;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete
 {
+    [Table("OrdersInRestaurant")]
     public class OrderInRestaurant: BaseEntity
     {
         public int TableId { get; set; }
@@ -16,14 +19,5 @@ namespace Restaurant_App.Entities.Concrete
             OrderDate = DateTime.Now;
             Status = OrderStatusInRestaurant.Pending;
         }
-
-    }
-    public enum OrderStatusInRestaurant
-    {
-        Pending = 0,
-        InProgress = 1,
-        Served = 2,
-        Completed = 3,
-        Canceled = 4
-    }
+    }   
 }

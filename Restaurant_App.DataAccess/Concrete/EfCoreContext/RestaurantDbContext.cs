@@ -45,18 +45,6 @@ namespace Restaurant_App.DataAccess.Concrete.EfCore
                 .WithMany(p => p.Ratings)
                 .HasForeignKey(r => r.ProductId);
 
-            modelBuilder.Entity<Rating>()
-                .HasOne(r => r.MostValuableProduct)
-                .WithMany()
-                .HasForeignKey(r => r.MostValuableProductId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Rating>()
-                .HasOne(r => r.LeastValuableProduct)
-                .WithMany()
-                .HasForeignKey(r => r.LeastValuableProductId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<ProductCategory>()
                 .HasKey(pc => new { pc.ProductId, pc.CategoryId });
            

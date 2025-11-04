@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="11.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.0.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.14" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.1" />
@@ -18,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Restaurant_App.Application\Restaurant_App.Application.csproj" />
     <ProjectReference Include="..\..\Restaurant_App.DataAccess\Restaurant_App.DataAccess.csproj" />
     <ProjectReference Include="..\..\Restaurant_App.Entities\Restaurant_App.Entities.csproj" />
   </ItemGroup>

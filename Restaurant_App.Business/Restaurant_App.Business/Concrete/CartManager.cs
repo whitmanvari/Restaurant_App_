@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Restaurant_App.Business.Concrete
 {
-    public class CartManager : ICartService, IService<Cart>
+    public class CartManager : ICartService
     {
         private readonly ICartDal _cartDal;
         public CartManager(ICartDal cartDal)

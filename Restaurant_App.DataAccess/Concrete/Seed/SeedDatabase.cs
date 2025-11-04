@@ -2,9 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Restaurant_App.DataAccess.Extensions
 {

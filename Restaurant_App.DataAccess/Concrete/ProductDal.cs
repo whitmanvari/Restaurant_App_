@@ -2,11 +2,16 @@
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
     public class ProductDal : GenericRepository<Product, RestaurantDbContext>, IProductDal
     {
+        public ProductDal(RestaurantDbContext context) : base(context)
+        {
+        }
+
         //Category'e göre toplam ürün sayısını döner.
         public async Task<int> GetCountByCategory(string category)
         {
@@ -52,7 +57,7 @@ namespace Restaurant_App.DataAccess.Concrete
                 .ToListAsync();
         }
 
-        public async Task<List<Product>> GetTopRatedProducts(Value minRatingValue, int count)
+        public async Task<List<Product>> GetTopRatedProducts(RatingValue minRatingValue, int count)
         {
             await using var _context = new RestaurantDbContext();
 

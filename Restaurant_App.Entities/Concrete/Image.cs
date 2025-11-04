@@ -1,10 +1,9 @@
 ﻿using Restaurant_App.Entities.Abstract;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace Restaurant_App.Entities.Concrete
 {
-    [Table("Image")]
+    [Table("Images")]
     public class Image : BaseEntity
     {
         public string? ImageUrl { get; set; }
