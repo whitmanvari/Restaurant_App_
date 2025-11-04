@@ -6,7 +6,5 @@ namespace Restaurant_App.Business.Abstract
     {
         Task<Category> GetCategoryByIdWithProducts(int id);
         Task<List<Category>> GetAllCategoriesWithProductId(int productId);
-        Task DeleteFromCategory(int categoryId, int productId);
-       
     }
 }
