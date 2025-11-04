@@ -10,7 +10,5 @@ namespace Restaurant_App.Entities.Concrete
         public Rating? Rating { get; set; }
         public int RatingId { get; set; } 
         public string UserId { get; set; } = string.Empty;
-        public Product? Product { get; set; }
-        public int ProductId { get; set; }
     }
 }

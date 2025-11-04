@@ -1,5 +1,5 @@
 ﻿using Restaurant_App.Entities.Abstract;
-using Restaurant_App.Entities.Enum;
+using Restaurant_App.Entities.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete
@@ -13,7 +13,6 @@ namespace Restaurant_App.Entities.Concrete
         public double Price { get; set; }
         public List<Image> Images { get; set; }
         public List<CartItem> CartItems { get; set; }
-        public List<ProductCategory> ProductCategory { get; set; }
         public List<Comment> Comments { get; set; }
         public List<Rating> Ratings { get; set; }
         public Category Category { get; set; }
@@ -23,7 +22,6 @@ namespace Restaurant_App.Entities.Concrete
         public Product()
         {
             CartItems = new List<CartItem>();
-            ProductCategory = new List<ProductCategory>();
             Comments = new List<Comment>();
             Ratings = new List<Rating>();
         }      

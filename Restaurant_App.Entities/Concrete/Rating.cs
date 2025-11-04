@@ -9,9 +9,6 @@ namespace Restaurant_App.Entities.Concrete
     {
         public RatingValue Value { get; set; }
         public string UserId { get; set; }
-        public double AverageRating { get; set; }
-        public string MostValuableProduct { get; set; }
-        public string LeastValuableProduct { get; set; }
         public List<Comment> Comments { get; set; }
         public Product Product { get; set; }
         public int ProductId { get; set; }
