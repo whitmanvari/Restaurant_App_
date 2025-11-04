@@ -7,7 +7,6 @@ using System.Linq.Expressions;
 namespace Restaurant_App.Business.Concrete
 {
     public class ProductManager : IProductService, IService<Product>
-
     {
         private readonly IProductDal _productDal;
         public ProductManager(IProductDal productDal)
@@ -68,11 +67,6 @@ namespace Restaurant_App.Business.Concrete
         public async Task Update(Product entity)
         {
             await _productDal.Update(entity);
-        }
-
-        public Task UpdateProduct(Product product, int[] categoryIds)
-        {
-            return _productDal.Update(product, categoryIds);
         }
     }
 }

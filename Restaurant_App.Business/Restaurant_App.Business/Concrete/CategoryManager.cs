@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Restaurant_App.Business.Concrete
 {
-    public class CategoryManager: ICategoryService, IService<Category>
+    public class CategoryManager : ICategoryService, IService<Category>
     {
         private readonly ICategoryDal _categoryDal;
         public CategoryManager(ICategoryDal categoryDal)
@@ -23,11 +23,6 @@ namespace Restaurant_App.Business.Concrete
             await _categoryDal.Delete(category);
         }
 
-        public async Task DeleteFromCategory(int categoryId, int productId)
-        {
-            await _categoryDal.DeleteFromCategory(categoryId, productId);
-        }
-
         public async Task<List<Category>> GetAll(Expression<Func<Category, bool>>? filter = null)
         {
             return await _categoryDal.GetAll(filter);
@@ -35,7 +30,7 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task<List<Category>> GetAllCategoriesWithProductId(int productId)
         {
-            return await _categoryDal.GetAllCategoriesWithProductId(productId);
+            return await _categoryDal.GetAll(c => c.Products.Any(p => p.Id == productId));
         }
 
         public async Task<Category> GetById(int id)
