@@ -10,11 +10,9 @@ namespace Restaurant_App.DataAccess.Concrete
         public ReservationDal(RestaurantDbContext context) : base(context)
         {
         }
-
         public async Task<List<Reservation>> GetReservationsWithTables(int tableId)
         {
-            await using var context = new RestaurantDbContext();
-            return await context.Reservations
+            return await _context.Reservations
                     .Include(r => r.Table)
                     .Where(r => r.TableId == tableId)
                     .ToListAsync();

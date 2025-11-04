@@ -13,24 +13,19 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<List<Table>> GetAllTablesWithDetails()
         {
-            await using var _context = new RestaurantDbContext();
-
             return await _context.Tables
                 .Include(t => t.Reservations)
                 .Include(t => t.OrdersInRestaurant)
-                .Include(t => t.Orders)
                 .ToListAsync();
         }
 
         public async Task<int> GetAvailableTableCount()
         {
-            await using var _context = new RestaurantDbContext();
             return await _context.Tables.CountAsync(t => t.IsAvailable);
         }
 
         public async Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
         {
-            await using var _context = new RestaurantDbContext();
             return await _context.Tables
                 .Where(t => t.IsAvailable && t.Capacity >= numberOfGuests)
                 .ToListAsync();
@@ -38,7 +33,6 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<Table?> GetTableWithOrders(int tableId)
         {
-            await using var _context = new RestaurantDbContext();
             var table = await _context.Tables
                 .Include(t => t.OrdersInRestaurant)
                 .FirstOrDefaultAsync(t => t.Id == tableId);
@@ -48,7 +42,6 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<Table?> GetTableWithReservations(int tableId)
         {
-            await using var _context = new RestaurantDbContext();
             var table = await _context.Tables
                 .Include(t => t.Reservations)
                 .FirstOrDefaultAsync(t => t.Id == tableId);
@@ -58,13 +51,11 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<int> GetTotalTableCount()
         {
-            await using var _context = new RestaurantDbContext();
             return await _context.Tables.CountAsync();
         }
 
         public async Task UpdateTableAvailability(int tableId, bool isAvailable)
         {
-            await using var _context = new RestaurantDbContext();
             var table = await _context.Tables.FindAsync(tableId);
             if (table is not null)
             {

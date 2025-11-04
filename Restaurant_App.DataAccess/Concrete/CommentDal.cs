@@ -13,26 +13,23 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<List<Comment>> GetCommentsByProductId(int productId)
         {
-            await using var context = new RestaurantDbContext();
-            return await context.Comments
-                    .Where(c => c.ProductId == productId)
+            return await _context.Comments
+                    .Where(c => c.Rating.ProductId == productId)
                     .ToListAsync();
         }
 
         public async Task<List<Comment>> GetCommentsByUserId(string userId)
         {
-            await using var context = new RestaurantDbContext();
-            return await context.Comments
+            return await _context.Comments
                     .Where(c => c.UserId == userId)
                     .ToListAsync();
         }
 
         public async Task<List<Comment>> GetCommentsWithRatingsByProductId(int productId)
         {
-            await using var context = new RestaurantDbContext();
-            return await context.Comments
+            return await _context.Comments
                     .Include(c => c.Rating)
-                    .Where(c => c.ProductId == productId)
+                    .Where(c => c.Rating.ProductId == productId)
                     .ToListAsync();
         }
     }
