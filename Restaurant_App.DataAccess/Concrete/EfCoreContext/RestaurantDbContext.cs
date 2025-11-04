@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Restaurant_App.Entities.Concrete;
 
-
 namespace Restaurant_App.DataAccess.Concrete.EfCore
 {
     public class RestaurantDbContext : DbContext
@@ -12,7 +11,6 @@ namespace Restaurant_App.DataAccess.Concrete.EfCore
         }
         public RestaurantDbContext()
         {
-            
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -30,49 +28,15 @@ namespace Restaurant_App.DataAccess.Concrete.EfCore
                 .WithOne(i => i.Product)
                 .HasForeignKey(i => i.ProductId);
 
-            modelBuilder.Entity<Product>()
-                .HasMany(p => p.OrderItems)
-                .WithOne(oi => oi.Product)
-                .HasForeignKey(oi => oi.ProductId);
-
-            modelBuilder.Entity<Product>()
-                .HasMany(p => p.OrderItemsInRestaurant)
-                .WithOne(oi => oi.Product)
-                .HasForeignKey(oi => oi.ProductId);
-
             modelBuilder.Entity<Rating>()
                 .HasOne(r => r.Product)
                 .WithMany(p => p.Ratings)
                 .HasForeignKey(r => r.ProductId);
 
-            modelBuilder.Entity<ProductCategory>()
-                .HasKey(pc => new { pc.ProductId, pc.CategoryId });
-           
-            modelBuilder.Entity<ProductCategory>()
-               .HasOne(pc => pc.Product)
-               .WithMany(p => p.ProductCategory)
-               .HasForeignKey(pc => pc.ProductId)
-               .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<ProductCategory>()
-               .HasOne(pc => pc.Category)
-               .WithMany(c => c.ProductCategory)
-               .HasForeignKey(pc => pc.CategoryId)
-               .OnDelete(DeleteBehavior.Restrict);
-
             modelBuilder.Entity<Cart>()
                 .HasMany(c => c.CartItems)
                 .WithOne(ci => ci.Cart)
                 .HasForeignKey(ci => ci.CartId);
-
-
-            modelBuilder.Entity<Category>()
-                .HasMany(c => c.Products)
-                .WithOne(p => p.Category)
-                .HasForeignKey(p => p.CategoryId);
-            //Her product birden fazla image içerebilir.
-            //Her image bir producta bağlıdır.
-
 
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.Rating)
@@ -107,7 +71,6 @@ namespace Restaurant_App.DataAccess.Concrete.EfCore
         }
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }

@@ -13,10 +13,9 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<double> GetAverageRatingForProduct(int productId)
         {
-            RestaurantDbContext _context = new RestaurantDbContext();
             return await _context.Ratings
                 .Where(r => r.ProductId == productId)
-                .Select(r => r.AverageRating)
+                .Select(r => (int)r.Value)
                 .DefaultIfEmpty(0)
                 .AverageAsync();
         }
