@@ -2,12 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Restaurant_App.Business.Abstract;
-using Restaurant_App.Business.Identity;
-using Restaurant_App.Entities.Dto;
+using Restaurant_App.Application.Dto; 
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-
+using Restaurant_App.Entities.Identity; 
 
 namespace Restaurant_App.Business.Concrete
 {
@@ -32,7 +31,6 @@ namespace Restaurant_App.Business.Concrete
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
             if (!result.Succeeded) return null;
 
-            //JWT üret
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),

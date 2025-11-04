@@ -3,7 +3,6 @@ using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.Entities.Concrete;
 using System.Linq.Expressions;
 
-
 namespace Restaurant_App.Business.Concrete
 {
     public class ReservationManager : IReservationService, IService<Reservation>
@@ -41,13 +40,12 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task<List<Reservation>> GetReservationsWithTables(int tableId)
         {
-            return await _reservationDal.GetAll(r => r.TableId == tableId);
+            return await _reservationDal.GetReservationsWithTables(tableId);
         }
 
         public async Task Update(Reservation entity)
         {
             await _reservationDal.Update(entity);
         }
-
     }
 }
