@@ -10,6 +10,5 @@ namespace Restaurant_App.Business.Abstract
         Task<Product> GetProductDetails(int id);
         Task<List<Product>> SearchProducts(string searchTerm);
         Task<int> GetCountByCategory(string category);
-        Task UpdateProduct(Product product, int[] categoryIds);
     }
 }
