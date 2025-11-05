@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Identity;
 
 namespace Restaurant_App.WebAPI.Extensions
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Business.Abstract;
-using Restaurant_App.Entities.Dto;
+using Restaurant_App.Application.Dto; 
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -14,7 +14,6 @@ namespace Restaurant_App.WebAPI.Controllers
             _authService = authService;
         }
 
-        //post api/auth/register
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDTO model)
         {
@@ -28,7 +27,6 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok("Kullanıcı başarıyla oluşturuldu.");
         }
 
-        //post api/auth/login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO model)
         {

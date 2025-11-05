@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Entities.Dto;
-using Restaurant_App.WebAPI.ViewModels.Concrete;
+using Restaurant_App.Application.Dto; 
 using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
@@ -24,8 +22,8 @@ namespace Restaurant_App.WebAPI.Controllers
             _mapper = mapper;
         }
 
-        //Get all reservations
         [HttpGet]
+        [Authorize(Roles = "Admin")] // Sadece Adminler tüm rezervasyonları görmeli
         public async Task<IActionResult> GetAll()
         {
             var reservations = await _reservationService.GetAll();
@@ -33,7 +31,6 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok(dto);
         }
 
-        //Get reservation by id
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -45,8 +42,8 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok(dto);
         }
 
-        //Get reservations by TableId
         [HttpGet("table/{tableId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetByTable(int tableId)
         {
             var reservations = await _reservationService.GetReservationsWithTables(tableId);
@@ -54,37 +51,41 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok(dto);
         }
 
-        //Create reservation
-        [Authorize] // Rezervasyon için login zorunlu
         [HttpPost]
-        public async Task<IActionResult> Create(ReservationViewModel model)
+        public async Task<IActionResult> Create([FromBody] ReservationDTO dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(model.Errors);
+                return BadRequest(ModelState);
 
-            var entity = _mapper.Map<Reservation>(model.Data);
+            var entity = _mapper.Map<Reservation>(dto);
+            entity.CreatedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Oluşturanı ekle
+
             await _reservationService.Create(entity);
 
-            return Ok(new { Message = "Rezervasyon oluşturuldu" });
+            var responseDto = _mapper.Map<ReservationDTO>(entity);
+            return CreatedAtAction(nameof(Get), new { id = responseDto.Id }, responseDto);
         }
 
-        //Update reservation
-        [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, ReservationViewModel model)
+        public async Task<IActionResult> Update(int id, [FromBody] ReservationDTO dto)
         {
+            if (id != dto.Id) return BadRequest("ID uyuşmazlığı.");
+
             var reservation = await _reservationService.GetById(id);
             if (reservation == null)
                 return NotFound("Rezervasyon bulunamadı");
 
-            _mapper.Map(model.Data, reservation);
+            // Sadece admin veya oluşturan kişi güncelleyebilir
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (reservation.CreatedBy != userId && !User.IsInRole("Admin"))
+                return Unauthorized("Bu rezervasyonu güncelleme yetkiniz yok.");
+
+            _mapper.Map(dto, reservation);
             await _reservationService.Update(reservation);
 
-            return Ok(new { Message = "Rezervasyon güncellendi" });
+            return Ok(_mapper.Map<ReservationDTO>(reservation));
         }
 
-        //Delete reservation
-        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -92,8 +93,12 @@ namespace Restaurant_App.WebAPI.Controllers
             if (reservation == null)
                 return NotFound("Rezervasyon bulunamadı");
 
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (reservation.CreatedBy != userId && !User.IsInRole("Admin"))
+                return Unauthorized("Bu rezervasyonu silme yetkiniz yok.");
+
             await _reservationService.Delete(reservation);
-            return Ok(new { Message = "Rezervasyon silindi" });
+            return NoContent();
         }
     }
 }

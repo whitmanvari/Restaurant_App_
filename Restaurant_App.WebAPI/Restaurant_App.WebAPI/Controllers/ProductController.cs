@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Restaurant_App.Application.Dto;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enum;
-using Restaurant_App.WebAPI.ViewModels.Concrete;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -12,76 +13,66 @@ namespace Restaurant_App.WebAPI.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-        public ProductController(IProductService productService)
+        private readonly IMapper _mapper;
+
+        public ProductController(IProductService productService, IMapper mapper)
         {
             _productService = productService;
+            _mapper = mapper;
         }
 
-        //get api/product/getall
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
             var products = await _productService.GetAll();
-            return Ok(products);
+            var dto = _mapper.Map<List<ProductDTO>>(products);
+            return Ok(dto);
         }
 
-        //get api/product/getbyid/{id}
-        //id ile ürünü getir
         [HttpGet("GetById/{id}")]
         public async Task<IActionResult> Get(int id)
         {
             var product = await _productService.GetProductDetails(id);
-            return Ok(product);
+            if (product == null) return NotFound();
+
+            var dto = _mapper.Map<ProductDTO>(product);
+            return Ok(dto);
         }
 
-        //post api/product/create
-        //yeni ürün ekle
         [HttpPost("Create")]
-        public async Task<IActionResult> Create(ProductViewModel model)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create([FromBody] ProductDTO dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(model);
+                return BadRequest(ModelState);
 
-            var product = new Product
-            {
-                Name = model.Data.Name,
-                Description = model.Data.Description,
-                Price = model.Data.Price,
-                CategoryId = model.Data.CategoryId
-            };
-
+            var product = _mapper.Map<Product>(dto);
             await _productService.Create(product);
 
-            model.IsSuccess = true;
-            model.Message = "Ürün başarıyla oluşturuldu!";
-            return Ok(model);
+            var responseDto = _mapper.Map<ProductDTO>(product);
+            return CreatedAtAction(nameof(Get), new { id = responseDto.Id }, responseDto);
         }
 
-        //put api/product/update
         [HttpPut("Update/{id}")]
-        public async Task<IActionResult> Update(int id, ProductViewModel model, [FromQuery] int[] categoryIds)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Update(int id, [FromBody] ProductDTO dto)
         {
+            if (id != dto.Id) return BadRequest("ID uyuşmazlığı.");
             if (!ModelState.IsValid)
-                return BadRequest(model);
+                return BadRequest(ModelState);
 
             var existingProduct = await _productService.GetById(id);
             if (existingProduct == null)
                 return NotFound("Ürün bulunamadı!");
 
-            existingProduct.Name = model.Data.Name;
-            existingProduct.Description = model.Data.Description;
-            existingProduct.Price = model.Data.Price;
-            existingProduct.CategoryId = model.Data.CategoryId;
+            _mapper.Map(dto, existingProduct); // DTO -> mevcut Entity
+            await _productService.Update(existingProduct);
 
-            await _productService.UpdateProduct(existingProduct, categoryIds);
-
-            model.IsSuccess = true;
-            model.Message = "Ürün başarıyla güncellendi!";
-            return Ok(model);
+            return Ok(_mapper.Map<ProductDTO>(existingProduct));
         }
 
-        //delete api/product/delete/{id}
         [HttpDelete("Delete/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var product = await _productService.GetById(id);
@@ -89,34 +80,30 @@ namespace Restaurant_App.WebAPI.Controllers
                 return NotFound("Ürün bulunamadı!");
 
             await _productService.Delete(product);
-            return Ok("Ürün başarıyla silindi!");
+            return NoContent();
         }
 
-        //get api/product/search
         [HttpGet("Search")]
         public async Task<IActionResult> Search(string term)
         {
             var result = await _productService.SearchProducts(term);
-            return Ok(result);
+            return Ok(_mapper.Map<List<ProductDTO>>(result));
         }
 
-        //get most popular products
         [HttpGet("MostPopular")]
         public async Task<IActionResult> GetMostPopular(int count)
         {
             var result = await _productService.GetMostPopularProducts(count);
-            return Ok(result);
+            return Ok(_mapper.Map<List<ProductDTO>>(result));
         }
 
-        //get top rated products
         [HttpGet("TopRated")]
         public async Task<IActionResult> GetTopRated(RatingValue minRating, int count)
         {
             var result = await _productService.GetTopRatedProducts(minRating, count);
-            return Ok(result);
+            return Ok(_mapper.Map<List<ProductDTO>>(result));
         }
 
-        //get count by category
         [HttpGet("CountByCategory")]
         public async Task<IActionResult> CountByCategory(string category)
         {
