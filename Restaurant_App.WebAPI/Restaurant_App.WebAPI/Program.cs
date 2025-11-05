@@ -6,9 +6,11 @@ using Restaurant_App.DataAccess.Concrete.Seed; // Validator için
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Servisleri ve Kimlik Doğrulamayı Extension metotları ile ekle
-builder.Services.AddIdentityServices(builder.Configuration); // Identity, DbContexts ve JWT
-builder.Services.AddApplicationServices(); // DALs & Managers
+// Services
+builder.Services.AddEndpointsApiExplorer(); // Swagger
+builder.Services.AddSwaggerGenWithAuth(); // Swagger auth
+builder.Services.AddApplicationServices(); // DAL + Manager
+builder.Services.AddIdentityServices(builder.Configuration); // Identity + JWT
 
 // AutoMapper 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
@@ -17,28 +19,32 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddControllers()
     .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CartItemValidator>());
 
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGenWithAuth();
-
 var app = builder.Build();
+
+//  Seed işlemleri
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    // EF Core Seed
+    services.SeedData();
+
+    // Identity Seed
+    await app.SeedIdentity();
+}
 
 // Middleware Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    // DataAccess katmanındaki Seed'i çalıştır
-    using var scope = app.Services.CreateScope();
-    scope.ServiceProvider.SeedData();
 }
 
 app.UseHttpsRedirection();
-app.UseAuthentication(); 
-app.UseAuthorization();
-app.MapControllers();
 
-// WebAPI katmanındaki Identity Seed'i çalıştır
-await app.SeedIdentity();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

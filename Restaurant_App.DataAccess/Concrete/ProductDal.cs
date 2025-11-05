@@ -2,7 +2,7 @@
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Entities.Enum;
+using Restaurant_App.Entities.Enums;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
@@ -25,8 +25,8 @@ namespace Restaurant_App.DataAccess.Concrete
                 .Include(p => p.Ratings)
                 .Include(p => p.Comments)
                 .OrderByDescending(p =>
-                    (p.Ratings.Any() ? p.Ratings.Average(r => (int)r.Value) : 0) * 0.7 +
-                    (p.Comments.Count > 0 ? p.Comments.Count : 0) * 0.3)
+                    (p.Ratings.Count > 0 ? p.Ratings.Average(r => (double)r.Value) : 0) * 0.7 +
+                    (p.Comments.Count) * 0.3)
                 .Take(count)
                 .ToListAsync();
         }
@@ -54,11 +54,13 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<List<Product>> GetTopRatedProducts(RatingValue minRatingValue, int count)
         {
+            int minValue = (int)minRatingValue;
+
             return await _context.Products
                 .Include(p => p.Ratings)
-                .Where(p => p.Ratings.Any(r => r.Value >= minRatingValue))
-                .OrderByDescending(p => p.Ratings.Any()
-                    ? p.Ratings.Average(r => (int)r.Value)
+                .Where(p => p.Ratings.Any(r => (int)r.Value >= minValue))
+                .OrderByDescending(p => p.Ratings.Count > 0
+                    ? p.Ratings.Average(r => (double)r.Value)
                     : 0)
                 .Take(count)
                 .ToListAsync();

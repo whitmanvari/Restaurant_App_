@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Application.Dto;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Entities.Enum;
+using Restaurant_App.Entities.Enums;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
