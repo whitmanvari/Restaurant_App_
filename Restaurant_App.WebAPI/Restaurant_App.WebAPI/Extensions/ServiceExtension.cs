@@ -9,6 +9,7 @@ using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.DataAccess.Concrete.Identity; // ApplicationIdentityDbContext için
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace Restaurant_App.WebAPI.Extensions
@@ -65,9 +66,9 @@ namespace Restaurant_App.WebAPI.Extensions
             .AddDefaultTokenProviders();
 
             // JWT ayarları 
-            var key = config["DataAccess:Jwt:Key"]; 
-            var issuer = config["DataAccess:Jwt:Issuer"]; 
-            var audience = config["DataAccess:Jwt:Audience"]; 
+            var key = config["DataAccess:Jwt:Key"];
+            var issuer = config["DataAccess:Jwt:Issuer"];
+            var audience = config["DataAccess:Jwt:Audience"];
 
             services.AddAuthentication(options =>
             {
@@ -89,6 +90,40 @@ namespace Restaurant_App.WebAPI.Extensions
             });
 
             services.AddAuthorization();
+        }
+        // Swagger'a "Authorize" butonu ekler
+        public static void AddSwaggerGenWithAuth(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(options =>
+            {
+                // Güvenlik Tanımını (Security Definition) 
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Description = "JWT Authorization header. (Örnek: \"Bearer {token}\")",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http, // 'ApiKey' yerine 'Http' kullanmak Bearer için daha doğrudur
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
+                });
+
+                // Güvenlik Gereksinimini (Security Requirement)
+                // Bu, Swagger'ın her endpoint'e token'ı otomatik eklemesini sağlar
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer" // Yukarıdaki "Bearer" tanımına referans ver
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+            });
         }
     }
 }
