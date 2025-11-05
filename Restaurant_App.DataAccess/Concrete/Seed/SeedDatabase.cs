@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
 
-namespace Restaurant_App.DataAccess.Extensions
+namespace Restaurant_App.DataAccess.Concrete.Seed
 {
     public static class SeedDatabase
     {

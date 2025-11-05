@@ -64,7 +64,7 @@ namespace Restaurant_App.Application.Mapping
             // OrderInRestaurant mapping
             CreateMap<OrderInRestaurant, OrderInRestaurantDTO>()
                 .ForMember(dest => dest.TableNumber, opt => opt.MapFrom(src => (src.Table != null) ? src.Table.TableNumber : string.Empty))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString())); 
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
             CreateMap<OrderInRestaurantDTO, OrderInRestaurant>()
                 .ForMember(dest => dest.Table, opt => opt.Ignore());
@@ -82,3 +82,4 @@ namespace Restaurant_App.Application.Mapping
                 .ForMember(dest => dest.Product, opt => opt.Ignore());
         }
     }
+}
