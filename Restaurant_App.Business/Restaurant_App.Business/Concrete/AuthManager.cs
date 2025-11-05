@@ -38,12 +38,21 @@ namespace Restaurant_App.Business.Concrete
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var jwtKey = _configuration["DataAccess:Jwt:Key"];
+            var jwtIssuer = _configuration["DataAccess:Jwt:Issuer"];
+            var jwtAudience = _configuration["DataAccess:Jwt:Audience"];
+
+            if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience))
+            {
+                throw new ArgumentNullException("JWT ayarları appsettings.json dosyasında eksik veya hatalı.");
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: claims,
                 expires: DateTime.Now.AddHours(3),
                 signingCredentials: creds
@@ -51,7 +60,6 @@ namespace Restaurant_App.Business.Concrete
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
         public async Task<bool> Register(UserRegisterDTO model)
         {
             var user = new ApplicationUser
