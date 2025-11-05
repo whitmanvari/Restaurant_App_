@@ -1,8 +1,8 @@
 ﻿using FluentValidation.AspNetCore;
-using Restaurant_App.DataAccess.Extensions;
 using Restaurant_App.WebAPI.Extensions;
 using Restaurant_App.Application.Mapping; // AutoMapperProfile için
-using Restaurant_App.Application.Validators.Concrete; // Validator için
+using Restaurant_App.Application.Validators.Concrete;
+using Restaurant_App.DataAccess.Concrete.Seed; // Validator için
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Restaurant_App.Application.Dto;
 using Restaurant_App.Business.Abstract;
-using Restaurant_App.Entities.Dto;
+using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -20,43 +20,45 @@ namespace Restaurant_App.WebAPI.Controllers
             _cartService = cartService;
             _mapper = mapper;
         }
-        //sepeti getirme get methodu
-        //Get api/cart
+
+        // Kullanıcının sepetini getir
         [HttpGet]
         public async Task<IActionResult> GetMyCart()
         {
-            var userId = User?.FindFirst("sub")?.Value; //jwt token içindeki sub claim genellikle userıd içerir.
-
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("Kullanıcı bilgisi bulunamadı!");
 
             var cart = await _cartService.GetCartByUserId(userId);
             var cartDto = _mapper.Map<CartDTO>(cart);
 
-            return Ok(cartDto); //sepet dto dönüyor.
+            return Ok(cartDto);
         }
 
-        //sepete ürün ekleme post methodu
-        [HttpPost]
+        // Sepete ürün ekle
+        [HttpPost("add")]
         public async Task<IActionResult> AddToCart([FromBody] CartItemDTO itemDto)
         {
-            var userId = User?.FindFirst("sub")?.Value;
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            // Validasyon
+            // Validasyon 
             if (itemDto.ProductId <= 0 || itemDto.Quantity <= 0)
                 return BadRequest("Geçersiz ürün veya miktar.");
 
+            // Business katmanındaki 'AddToCart' mantığı (Mevcutsa artır, yoksa ekle)
             await _cartService.AddToCart(userId, itemDto.ProductId, itemDto.Quantity);
-            return Ok("Ürün sepete eklendi.");
+
+            // Güncel sepeti dön
+            return await GetMyCart();
         }
 
-        //sepetten ürün silme delete methodu
+        // Sepetten ürün sil
         [HttpDelete("remove/{productId}")]
         public async Task<IActionResult> RemoveFromCart(int productId)
         {
-            var userId = User?.FindFirst("sub")?.Value;
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -65,14 +67,16 @@ namespace Restaurant_App.WebAPI.Controllers
                 return NotFound("Sepet bulunamadı.");
 
             await _cartService.DeleteFromCart(cart.Id, productId);
-            return Ok("Ürün sepetten silindi.");
+
+            // Güncel sepeti dön
+            return await GetMyCart();
         }
 
-        //Sepeti temizleme delete methodu
+        // Sepeti temizle
         [HttpDelete("clear")]
         public async Task<IActionResult> ClearCart()
         {
-            var userId = User?.FindFirst("sub")?.Value;
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
@@ -81,11 +85,11 @@ namespace Restaurant_App.WebAPI.Controllers
                 return NotFound("Sepet bulunamadı.");
 
             await _cartService.ClearCart(cart.Id);
-            return Ok("Sepet temizlendi.");
+
+            // Güncel sepeti dön
+            return await GetMyCart();
         }
-
-
-
-
     }
 }
+
+
