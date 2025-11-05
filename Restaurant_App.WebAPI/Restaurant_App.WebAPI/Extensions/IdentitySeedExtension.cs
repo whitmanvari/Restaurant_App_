@@ -12,27 +12,32 @@ namespace Restaurant_App.WebAPI.Extensions
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-            var adminEmail = config["AdminUser:Email"];
-            var adminPassword = config["AdminUser:Password"];
+            var adminEmail = config["DataAccess:AdminUser:email"];
+            var adminPassword = config["DataAccess:AdminUser:password"];
 
             if (!await roleManager.RoleExistsAsync("Admin"))
                 await roleManager.CreateAsync(new IdentityRole("Admin"));
 
-            var admin = await userManager.FindByEmailAsync(adminEmail);
-            if (admin == null)
+            if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPassword))
             {
-                admin = new ApplicationUser
+                var admin = await userManager.FindByEmailAsync(adminEmail);
+                if (admin == null)
                 {
-                    Email = adminEmail,
-                    UserName = adminEmail,
-                    FullName = "Admin",
-                    EmailConfirmed = true
-                };
+                    admin = new ApplicationUser
+                    {
+                        Email = adminEmail,
+                        UserName = adminEmail,
+                        FullName = "Admin",
+                        EmailConfirmed = true 
+                    };
 
-                var result = await userManager.CreateAsync(admin, adminPassword);
-                await userManager.AddToRoleAsync(admin, "Admin");
+                    var result = await userManager.CreateAsync(admin, adminPassword);
+                    if (result.Succeeded)
+                    {
+                        await userManager.AddToRoleAsync(admin, "Admin");
+                    }
+                }
             }
-
             if (!await roleManager.RoleExistsAsync("User"))
                 await roleManager.CreateAsync(new IdentityRole("User"));
         }
