@@ -31,12 +31,22 @@ namespace Restaurant_App.Business.Concrete
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
             if (!result.Succeeded) return null;
 
-            var claims = new[]
+            // 1. Kullanıcının rollerini veritabanından çek
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            // 2. Temel claim'leri oluştur
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+
+            // 3. Çektiğimiz rolleri claim listesine 'ClaimTypes.Role' olarak ekle
+            foreach (var role in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var jwtKey = _configuration["DataAccess:Jwt:Key"];
             var jwtIssuer = _configuration["DataAccess:Jwt:Issuer"];
@@ -69,6 +79,10 @@ namespace Restaurant_App.Business.Concrete
                 Email = model.Email
             };
             var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "User"); //yeni kullanıcıya varsayılan olarak user ata
+            }
             return result.Succeeded;
         }
     }

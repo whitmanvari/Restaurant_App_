@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Restaurant_App.Application.Dto;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enum;
 using Restaurant_App.Entities.Identity;
 
 namespace Restaurant_App.Application.Mapping
@@ -67,7 +68,8 @@ namespace Restaurant_App.Application.Mapping
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
             CreateMap<OrderInRestaurantDTO, OrderInRestaurant>()
-                .ForMember(dest => dest.Table, opt => opt.Ignore());
+                .ForMember(dest => dest.Table, opt => opt.Ignore())
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<OrderStatusInRestaurant>(src.Status, true)));
 
             // OrderItem mapping
             CreateMap<OrderItem, OrderItemDTO>()
