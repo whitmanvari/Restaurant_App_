@@ -20,7 +20,6 @@ namespace Restaurant_App.WebAPI.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/category/getall
         [HttpGet("getall")]
         public async Task<IActionResult> GetAll()
         {
@@ -29,24 +28,15 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok(dto);
         }
 
-        // GET: api/category/5
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            try
-            {
-                var category = await _categoryService.GetCategoryByIdWithProducts(id);
-                if (category == null) return NotFound();
-                var dto = _mapper.Map<CategoryDTO>(category);
-                return Ok(dto);
-            }
-            catch
-            {
-                return NotFound();
-            }
+            var category = await _categoryService.GetCategoryByIdWithProducts(id);
+            if (category == null) return NotFound();
+            var dto = _mapper.Map<CategoryDTO>(category);
+            return Ok(dto);
         }
 
-        // POST: api/category/create
         [HttpPost("create")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CategoryDTO dto)
@@ -57,28 +47,27 @@ namespace Restaurant_App.WebAPI.Controllers
             var category = _mapper.Map<Category>(dto);
             await _categoryService.Create(category);
 
-            return Ok(new { Success = true, Message = "Kategori oluşturuldu." });
+            var responseDto = _mapper.Map<CategoryDTO>(category);
+            return CreatedAtAction(nameof(GetById), new { id = responseDto.Id }, responseDto);
         }
 
-        // PUT: api/category/update/5
         [HttpPut("update/{id:int}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] CategoryDTO dto)
         {
             if (dto == null) return BadRequest("Kategori bilgisi eksik.");
+            if (id != dto.Id) return BadRequest("ID uyuşmazlığı.");
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var existing = await _categoryService.GetById(id);
             if (existing == null) return NotFound();
 
-            // Map DTO -> existing entity (preserve Id)
-            _mapper.Map(dto, existing);
+            _mapper.Map(dto, existing); // DTO'dan -> mevcut Entity'ye map'le
             await _categoryService.Update(existing);
 
-            return Ok(new { Success = true, Message = "Kategori güncellendi." });
+            return Ok(_mapper.Map<CategoryDTO>(existing));
         }
 
-        // DELETE: api/category/delete/5
         [HttpDelete("delete/{id:int}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
@@ -87,27 +76,7 @@ namespace Restaurant_App.WebAPI.Controllers
             if (category == null) return NotFound("Kategori bulunamadı.");
 
             await _categoryService.Delete(category);
-            return Ok(new { Success = true, Message = "Kategori silindi." });
-        }
-
-        // DELETE: api/category/{categoryId}/product/{productId}
-        [HttpDelete("{categoryId:int}/product/{productId:int}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteProductFromCategory(int categoryId, int productId)
-        {
-            try
-            {
-                await _categoryService.DeleteFromCategory(categoryId, productId);
-                return Ok(new { Success = true, Message = "Ürün kategoriden kaldırıldı." });
-            }
-            catch (ArgumentNullException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch
-            {
-                return BadRequest("İşlem sırasında hata oluştu.");
-            }
+            return NoContent(); // 204 No Content
         }
     }
 }

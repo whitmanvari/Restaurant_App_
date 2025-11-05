@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Entities.Dto;
-using Restaurant_App.WebAPI.ViewModels.Concrete;
+using Restaurant_App.Application.Dto; 
+using Restaurant_App.Entities.Enum; 
 using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
@@ -23,12 +22,11 @@ namespace Restaurant_App.WebAPI.Controllers
             _mapper = mapper;
         }
 
-        // post create comment
         [HttpPost("create")]
-        public async Task<IActionResult> Create(CommentViewModel model)
+        public async Task<IActionResult> Create([FromBody] CommentDTO dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(model);
+                return BadRequest(ModelState);
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
@@ -36,54 +34,40 @@ namespace Restaurant_App.WebAPI.Controllers
 
             var comment = new Comment
             {
-                Text = model.Data!.Text,
-                ProductId = model.Data.ProductId,
+                Text = dto.Text,
                 UserId = userId,
+                // RatingId = 0 (Yeni oluşacak)
                 Rating = new Rating
                 {
-                    Value = (Value)model.Data.RatingValue,  //cast enum (dto'da int)
+                    Value = (RatingValue)dto.RatingValue,
                     UserId = userId,
-                    ProductId = model.Data.ProductId
+                    ProductId = dto.ProductId
                 }
             };
 
             await _commentService.Create(comment);
 
-            model.IsSuccess = true;
-            model.Message = "Yorum eklendi.";
-            return Ok(model);
+            var responseDto = _mapper.Map<CommentDTO>(comment);
+            return Ok(responseDto);
         }
 
-        //product id ye göre yorumları getir
         [HttpGet("ByProduct/{productId}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetByProduct(int productId)
         {
             var comments = await _commentService.GetCommentsWithRatingsByProductId(productId);
-            var dto = comments.Select(c => new CommentDTO
-            {
-                Id = c.Id,
-                Text = c.Text,
-                ProductId = c.ProductId,
-                UserId = c.UserId,
-                RatingValue = (int)c.Rating!.Value //Rating Value'yu int'e çevir (dto int)
-            }).ToList();
-
+            var dto = _mapper.Map<List<CommentDTO>>(comments); 
             return Ok(dto);
         }
 
-        //kullanıcıya göre yorumları getir
         [HttpGet("ByUser")]
         public async Task<IActionResult> GetByUser()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             var comments = await _commentService.GetCommentsByUserId(userId);
-
-            return Ok(comments);
+            return Ok(_mapper.Map<List<CommentDTO>>(comments));
         }
 
-        //Yorumu sil (id ye göre)
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -92,12 +76,11 @@ namespace Restaurant_App.WebAPI.Controllers
                 return NotFound("Yorum bulunamadı.");
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (comment.UserId != userId)
+            if (comment.UserId != userId && !User.IsInRole("Admin")) // Adminler silebilir
                 return Unauthorized("Bu yorumu silme yetkiniz yok.");
 
             await _commentService.Delete(comment);
-            return Ok("Yorum silindi.");
+            return NoContent();
         }
     }
 }
