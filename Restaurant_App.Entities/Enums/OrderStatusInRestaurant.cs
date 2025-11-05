@@ -1,4 +1,4 @@
-﻿namespace Restaurant_App.Entities.Enum
+﻿namespace Restaurant_App.Entities.Enums
 {
     public enum OrderStatusInRestaurant
     {

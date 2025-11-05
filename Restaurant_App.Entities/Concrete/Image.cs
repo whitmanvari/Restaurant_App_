@@ -6,7 +6,7 @@ namespace Restaurant_App.Entities.Concrete
     [Table("Images")]
     public class Image : BaseEntity
     {
-        public string? ImageUrl { get; set; }
+        public string? Images { get; set; }
         public int ProductId { get; set; }
         public Product? Product { get; set; }
     }

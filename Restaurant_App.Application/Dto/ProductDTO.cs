@@ -1,12 +1,10 @@
-﻿using Restaurant_App.Entities.Enums;
-
-namespace Restaurant_App.Application.Dto
+﻿namespace Restaurant_App.Application.Dto
 {
     public class ProductDTO: BaseDTO
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public Allergic Allergic { get; set; } = Allergic.None;
+        public int Allergic { get; set; } = 0; //Allergic.none => 0
         public double AverageRating { get; set; }
         public int TotalRatings { get; set; }
         public decimal Price { get; set; }

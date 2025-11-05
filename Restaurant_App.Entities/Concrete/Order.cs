@@ -1,5 +1,5 @@
 ﻿using Restaurant_App.Entities.Abstract;
-using Restaurant_App.Entities.Enum;
+using Restaurant_App.Entities.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete

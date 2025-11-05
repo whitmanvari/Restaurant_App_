@@ -60,33 +60,33 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                 {
                     new() {
                         Name = "Kuzu Tandır",
-                        Price = 280.00,
+                        Price = 280,
                         Description = "24 saat marine edilmiş kuzu tandır, fırında özel pişirim",
                         CategoryId = mainCourses.Id,
                         Images = 
                         [
-                            new() { ImageUrl = "kuzu_tandir.jpg" }
+                            new() { Images = "kuzu_tandir.jpg" }
                         ]
                      },
                     new() {
                         Name = "Dana Şiş",
-                        Price = 220.00,
+                        Price = 220,
                         Description = "Közde pişmiş dana şiş, közlenmiş biber ve domates ile",
                         CategoryId = mainCourses.Id,
                         Images = 
                         [
-                            new() { ImageUrl = "dana_sis.jpg" }
+                            new() { Images = "dana_sis.jpg" }
                         ]
                         
                     },
                      new() {
                         Name = "Levrek Buğulama",
-                        Price = 180.00,
+                        Price = 180,
                         Description = "Taze levrek, sebzeler ve baharatlarla buğulama",
                         CategoryId = mainCourses.Id,
                         Images = 
                         [
-                            new() { ImageUrl = "levrek_bugulama.jpg" }
+                            new() { Images = "levrek_bugulama.jpg" }
                         ]
                     },
                     new() {
@@ -96,8 +96,8 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = mainCourses.Id,
                         Images =
                         [
-                            new() { ImageUrl = "izgara_tavuk_1.jpg" },
-                            new() { ImageUrl = "izgara_tavuk_2.jpg" }
+                            new() { Images = "izgara_tavuk_1.jpg" },
+                            new() { Images = "izgara_tavuk_2.jpg" }
                         ]
                     },
                     new() {
@@ -107,7 +107,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = mainCourses.Id,
                         Images =
                         [
-                            new() { ImageUrl = "kofte_1.jpg" }
+                            new() { Images = "kofte_1.jpg" }
                         ]
                     },
                     new() {
@@ -117,7 +117,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = soups.Id,
                         Images =
                         [
-                            new() { ImageUrl = "mercimek_corbasi.jpg" }
+                            new() { Images = "mercimek_corbasi.jpg" }
                         ]
                     },
                     new() {
@@ -127,7 +127,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = soups.Id,
                         Images =
                         [
-                            new() { ImageUrl = "ezogelin_corbasi.jpg" }
+                            new() { Images = "ezogelin_corbasi.jpg" }
                         ]
                     },
                     new() {
@@ -137,7 +137,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = desserts.Id,
                         Images =
                         [
-                            new() { ImageUrl = "baklava.jpg" }
+                            new() { Images = "baklava.jpg" }
                         ]
                     },
                     new() {
@@ -147,7 +147,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = desserts.Id,
                         Images =
                         [
-                            new() { ImageUrl = "kunefe.jpg" }
+                            new() { Images = "kunefe.jpg" }
                         ]
                     },
                     new() {
@@ -157,7 +157,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = drinks.Id,
                         Images =
                         [
-                            new() { ImageUrl = "ayran.jpg" }
+                            new() { Images = "ayran.jpg" }
                         ]
                     },
                     new() {
@@ -167,7 +167,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = drinks.Id,
                         Images =
                         [
-                            new() { ImageUrl = "kola.jpg" }
+                            new() { Images = "kola.jpg" }
                         ]
                     },
                     new() {
@@ -177,7 +177,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = salads.Id,
                         Images =
                         [
-                            new() { ImageUrl = "coban_salata.jpg" }
+                            new() { Images = "coban_salata.jpg" }
                         ]
                     },
                     new() {
@@ -187,7 +187,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = appetizers.Id,
                         Images =
                         [
-                            new() { ImageUrl = "humus.jpg" }
+                            new() { Images = "humus.jpg" }
                         ]
                     }
                 };

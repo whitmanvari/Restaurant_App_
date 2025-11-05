@@ -2,7 +2,7 @@
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Entities.Enum;
+using Restaurant_App.Entities.Enums;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
