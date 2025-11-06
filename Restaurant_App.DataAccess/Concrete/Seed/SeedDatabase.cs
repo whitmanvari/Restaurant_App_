@@ -65,7 +65,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = mainCourses.Id,
                         Images = 
                         [
-                            new() { Images = "kuzu_tandir.jpg" }
+                            new() { Url = "kuzu_tandir.jpg" }
                         ]
                      },
                     new() {
@@ -75,7 +75,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = mainCourses.Id,
                         Images = 
                         [
-                            new() { Images = "dana_sis.jpg" }
+                            new() { Url = "dana_sis.jpg" }
                         ]
                         
                     },
@@ -86,7 +86,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = mainCourses.Id,
                         Images = 
                         [
-                            new() { Images = "levrek_bugulama.jpg" }
+                            new() { Url = "levrek_bugulama.jpg" }
                         ]
                     },
                     new() {
@@ -96,8 +96,8 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = mainCourses.Id,
                         Images =
                         [
-                            new() { Images = "izgara_tavuk_1.jpg" },
-                            new() { Images = "izgara_tavuk_2.jpg" }
+                            new() { Url = "izgara_tavuk_1.jpg" },
+                            new() { Url = "izgara_tavuk_2.jpg" }
                         ]
                     },
                     new() {
@@ -107,7 +107,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = mainCourses.Id,
                         Images =
                         [
-                            new() { Images = "kofte_1.jpg" }
+                            new() { Url = "kofte_1.jpg" }
                         ]
                     },
                     new() {
@@ -117,7 +117,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = soups.Id,
                         Images =
                         [
-                            new() { Images = "mercimek_corbasi.jpg" }
+                            new() { Url = "mercimek_corbasi.jpg" }
                         ]
                     },
                     new() {
@@ -127,7 +127,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = soups.Id,
                         Images =
                         [
-                            new() { Images = "ezogelin_corbasi.jpg" }
+                            new() { Url = "ezogelin_corbasi.jpg" }
                         ]
                     },
                     new() {
@@ -137,7 +137,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = desserts.Id,
                         Images =
                         [
-                            new() { Images = "baklava.jpg" }
+                            new() { Url = "baklava.jpg" }
                         ]
                     },
                     new() {
@@ -147,7 +147,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = desserts.Id,
                         Images =
                         [
-                            new() { Images = "kunefe.jpg" }
+                            new() { Url = "kunefe.jpg" }
                         ]
                     },
                     new() {
@@ -157,7 +157,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = drinks.Id,
                         Images =
                         [
-                            new() { Images = "ayran.jpg" }
+                            new() { Url = "ayran.jpg" }
                         ]
                     },
                     new() {
@@ -167,7 +167,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = drinks.Id,
                         Images =
                         [
-                            new() { Images = "kola.jpg" }
+                            new() { Url = "kola.jpg" }
                         ]
                     },
                     new() {
@@ -177,7 +177,7 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = salads.Id,
                         Images =
                         [
-                            new() { Images = "coban_salata.jpg" }
+                            new() { Url = "coban_salata.jpg" }
                         ]
                     },
                     new() {
@@ -187,13 +187,20 @@ namespace Restaurant_App.DataAccess.Concrete.Seed
                         CategoryId = appetizers.Id,
                         Images =
                         [
-                            new() { Images = "humus.jpg" }
+                            new() { Url = "humus.jpg" }
                         ]
                     }
                 };
-
-                context.Products.AddRange(products);
-                context.SaveChanges();
+                try
+                {
+                    context.Products.AddRange(products);
+                    context.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Seed Error: " + ex.Message);
+                    throw;
+                }
             }
         }
     }

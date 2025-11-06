@@ -19,14 +19,14 @@ namespace Restaurant_App.Application.Mapping
 
             // Product -> DTO
             CreateMap<Product, ProductDTO>()
-                .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Select(i => i.Images)))
+                .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Select(i => i.Url)))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
                 .ForMember(dest => dest.Allergic, opt => opt.MapFrom(src => (int)src.Allergic))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => (decimal)src.Price)); // FIX
 
             CreateMap<ProductDTO, Product>()
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
-                    src.ImageUrls != null ? src.ImageUrls.Select(url => new Image { Images = url }).ToList() : new List<Image>()
+                    src.ImageUrls != null ? src.ImageUrls.Select(url => new Image { Url = url }).ToList() : new List<Image>()
                 ))
                 .ForMember(dest => dest.Category, opt => opt.Ignore())
                 .ForMember(dest => dest.Allergic, opt => opt.MapFrom(src => (Allergic)src.Allergic))

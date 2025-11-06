@@ -8,7 +8,7 @@ using Restaurant_App.DataAccess.Concrete.EfCore;
 
 #nullable disable
 
-namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
+namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
 {
     [DbContext(typeof(RestaurantDbContext))]
     partial class RestaurantDbContextModelSnapshot : ModelSnapshot
@@ -163,9 +163,6 @@ namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -174,6 +171,9 @@ namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -401,8 +401,8 @@ namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
