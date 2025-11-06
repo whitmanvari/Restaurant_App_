@@ -17,10 +17,11 @@ Manage **Customers**, **Orders**, and **Products** with a scalable backend and m
 
 ## 🏗️ Architecture Overview
 - **📂 Restaurant_App**
-- **📂 Entities**      → Core domain models (Customer, Order, Product) 
+- **📂 Entities**      → Core domain models (Customer, Order, Product), Enums
 - **📂 DataAccess**    → EF Core, DbContext, Repository implementations 
-- **📂 Services**      → Business logic, DTOs, FluentValidation 
-- **📂 API**           → Controllers, Middlewares, Status Code handling
+- **📂 Services**      → Business logic
+- **📂 Application**   → DTO's, Mapping, Validation
+- **📂 API**           → Controllers, Middlewares, Status Code handling, Extensions
 
 ---
 
