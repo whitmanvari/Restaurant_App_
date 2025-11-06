@@ -9,11 +9,11 @@ using Restaurant_App.DataAccess.Concrete.EfCore;
 
 #nullable disable
 
-namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
+namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
 {
     [DbContext(typeof(RestaurantDbContext))]
-    [Migration("20251105105516_InitialRestaurant")]
-    partial class InitialRestaurant
+    [Migration("20251105210753_RestaurantMigo")]
+    partial class RestaurantMigo
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -166,9 +166,6 @@ namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -177,6 +174,9 @@ namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -404,8 +404,8 @@ namespace Restaurant_App.DataAccess.DataAccess.Migrations.Restaurant
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");

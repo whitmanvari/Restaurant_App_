@@ -21,9 +21,12 @@ namespace Restaurant_App.Entities.Concrete
         public List<OrderItem> OrderItems { get; set; }
         public Product()
         {
+            Images = new List<Image>();
             CartItems = new List<CartItem>();
             Comments = new List<Comment>();
             Ratings = new List<Rating>();
-        }      
+            OrderItemsInRestaurant = new List<OrderItemInRestaurant>();
+            OrderItems = new List<OrderItem>();
+        }
     }
 }
