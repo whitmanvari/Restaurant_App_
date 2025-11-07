@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {loginUser} from '../store/slices/authSlice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 function LoginPage() {
     const dispatch = useDispatch();
+    const navigate = useNavigate(); //use navigate hooku çağırılır
+
+    const {status, isAuthenticated, error} = useSelector((state) => state.auth);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const handleSubmit = (e) => {
         e.preventDefault(); //formun sayfayı yeniden yüklemesini engelle
         dispatch(loginUser({email, password})); //authslice'daki loginUser eylemini tetikle dispatch et
     }
+    useEffect(()=> {
+        if(status ==='failed') {
+            toast.error(error || 'Email veya şifre hatalı!')
+        }
+        if(status ==='succeeded' || isAuthenticated) {
+            toast.success('Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...');
+            navigate('/');
+        }
+    },[status, isAuthenticated, error, navigate]);
     return (
-        <div className="container mt-5">
+    <div className="container mt-5">
       <div className="row justify-content-center">
         <div className="col-md-6">
           <div className="card">
