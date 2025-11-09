@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {loginUser} from '../store/slices/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -16,14 +16,14 @@ function LoginPage() {
         dispatch(loginUser({email, password})); //authslice'daki loginUser eylemini tetikle dispatch et
     }
     useEffect(()=> {
-        if(status ==='failed') {
+        if(status === 'failed') {
             toast.error(error || 'Email veya şifre hatalı!')
         }
-        if(status ==='succeeded' || isAuthenticated) {
-            toast.success('Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...');
+        if(status === 'succeeded' || isAuthenticated) {
+            toast.success('Giriş başarılı! Ana sayfaya yönlendiriliyorsunuz...')
             navigate('/');
         }
-    },[status, isAuthenticated, error, navigate]);
+    }, [status, isAuthenticated, error, navigate]);
     return (
     <div className="container mt-5">
       <div className="row justify-content-center">
@@ -45,6 +45,7 @@ function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={status=='loading'} 
                   />
                 </div>
                 
@@ -58,6 +59,7 @@ function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled = {status === 'loading'} //yüklenirken butonu kilitle
                   />
                 </div>
                 
