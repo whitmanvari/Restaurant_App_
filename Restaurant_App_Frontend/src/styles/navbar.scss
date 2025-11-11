@@ -1,0 +1,26 @@
+.brandLogo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #d63384; // Bootstrap pink rengi
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-right: 10px;
+}
+
+// Navbar'daki kullanıcı avatarı için stil
+.userAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.dropdownMenu.show {
+  display: block;
+}
