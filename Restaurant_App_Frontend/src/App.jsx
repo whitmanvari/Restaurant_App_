@@ -3,12 +3,14 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import NotificationManager from './components/NotificationManager';
+import Layout from './components/Layout';
 
 function App() {
   return (
     <div>
       <NotificationManager/>
       <Routes>
+        <Route path="/" element={<Layout/>}>
           {/* Ana dizin (/) HomePage'i göstersin */}
           <Route path="/" element={<HomePage />} /> 
 
@@ -17,7 +19,8 @@ function App() {
 
           {/* Eşleşmeyen diğer tüm yollar Ana Sayfaya gitsin */}
           <Route path="*" element={<HomePage />} /> 
-        </Routes>
+         </Route>
+      </Routes>
     </div>
   );
 }

@@ -64,8 +64,16 @@ function LoginPage() {
                 </div>
                 
                 {/* Submit Butonu */}
-                <button type="submit" className="btn btn-primary w-100">
-                  Giriş Yap
+                <button 
+                type="submit" 
+                className="btn btn-primary w-100" 
+                disabled={status === 'loading'}>
+                  <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Giriş Yapılıyor...
+                    </> : (
+                    'Giriş Yap' //
+                  )
                 </button>
                 
               </form>
