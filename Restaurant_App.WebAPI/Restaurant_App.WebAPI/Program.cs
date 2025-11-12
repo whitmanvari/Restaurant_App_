@@ -6,6 +6,19 @@ using Restaurant_App.DataAccess.Concrete.Seed; // Validator için
 
 var builder = WebApplication.CreateBuilder(args);
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:5173") // React uygulası adresi
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+                      });
+});
+
 // Services
 builder.Services.AddEndpointsApiExplorer(); // Swagger
 builder.Services.AddSwaggerGenWithAuth(); // Swagger auth
