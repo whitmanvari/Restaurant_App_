@@ -11,7 +11,7 @@ const login = async(loginData) => {
         //tokenı çöz ve user objesine döndür.
         const decoded = jtwDecode(token);
         const user = {
-            email: decoded.email;
+            email: decoded.email,
             role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
         };
         return {token, user};

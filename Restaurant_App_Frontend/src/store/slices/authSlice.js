@@ -1,52 +1,43 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import api from '../../api/axiosInstance';
 import { jwtDecode } from 'jwt-decode'; // Token'ı çözmek için
+import {authService} from '../../services/authService';
 
-// Token'ı ve kullanıcıyı localStorage'dan okuyarak başla
+
 const token = localStorage.getItem('token');
-let decodedUser = null;
+let user = null;
 if (token) {
   try {
-    decodedUser = jwtDecode(token);
-    if (decodedUser.exp * 1000 < Date.now()) { // Token süresi geçmiş mi?
+    const decoded = jwtDecode(token);
+    if (decoded.exp * 1000 < Date.now()) {
       localStorage.removeItem('token');
-      decodedUser = null;
+    } else {
+      user = {
+        email: decoded.email,
+        role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+      };
     }
-  } catch (e) {
-    localStorage.removeItem('token');
-    decodedUser = null;
-  }
+  } catch (e) { localStorage.removeItem('token'); }
 }
-// Initial state'i 'user' objesini içerecek şekilde güncelle
+
 const initialState = {
-  user: decodedUser ? { 
-    email: decodedUser.email, 
-    role: decodedUser['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] 
-  } : null,
-  token: token || null,
-  isAuthenticated: !!decodedUser, //
+  user: user,
+  token: user ? token : null,
+  isAuthenticated: !!user, //
   status: 'idle',
   error: null,
 };
-//asenkron api isteği login
+
+
+// createAsyncThunk'ı 'authService'i kullanacak şekilde 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (loginData, { rejectWithValue }) => {
     try {
-      const response = await api.post('/Auth/login', loginData);
-      const { token } = response.data;
-      localStorage.setItem('token', token);
-      
-      // Token'ı çöz ve user objesini döndür
-      const decoded = jwtDecode(token);
-      const user = {
-        email: decoded.email,
-        role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
-      };
-      
-      return { token, user };
+      // 3. API'yi değil, servisi çağır
+      const data = await authService.login(loginData);
+      return data; // { token, user } objesini döndür
     } catch (error) {
-      return rejectWithValue(error.response.data || 'Giriş başarısız!');
+      return rejectWithValue(error); // Hata servisten zaten işlenmiş geliyor
     }
   }
 );
@@ -55,10 +46,9 @@ export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (registerData, { rejectWithValue }) => {
     try {
-      await api.post('/Auth/register', registerData);
-      return;
+      await authService.register(registerData);
     } catch (error) {
-      return rejectWithValue(error.response.data || 'Kayıt başarısız!');
+      return rejectWithValue(error);
     }
   }
 );
@@ -68,21 +58,24 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      localStorage.removeItem('token');
+      // 4. Logout mantığını da servise taşıyabiliriz (veya burada kalabilir)
+      authService.logout(); // localStorage'ı temizle
       state.token = null;
       state.isAuthenticated = false;
-      state.user = null; // User objesini de temizle
+      state.user = null;
     },
   },
+
   extraReducers: (builder) => {
     builder
+      // Login
       .addCase(loginUser.pending, (state) => {
         state.status = 'loading';
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.token = action.payload.token;
-        state.user = action.payload.user; // State'i user objesiyle güncelle
+        state.user = action.payload.user;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -91,7 +84,19 @@ export const authSlice = createSlice({
         state.error = action.payload;
         state.token = null;
         state.isAuthenticated = false;
-        state.user = null; // Hata durumunda user'ı temizle
+        state.user = null;
+      })
+      // Register (Sadece toast bildirimi için durum tutabiliriz)
+      .addCase(registerUser.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(registerUser.fulfilled, (state) => {
+        state.status = 'succeeded';
+        state.error = null;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
       });
   },
 });

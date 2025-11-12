@@ -9,9 +9,9 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   // state.auth.user objesini (role ve email ile) bekliyoruz
-  const { isAuthenticated, user } = useSelector((state) => state.auth || {});
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   // state.cart.items dizisini bekliyoruz
-  const cart = useSelector((state) => state.cart || { items: [] });
+  const cart = useSelector((state) => state.cart);
 
   const [collapsed, setCollapsed] = useState(true);
   const [showMenus, setShowMenus] = useState(false);
