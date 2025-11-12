@@ -1,5 +1,5 @@
 import api from '../api/axiosInstance';
-import {jtwDecode} from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 
 //Login
 const login = async(loginData) => {
@@ -9,7 +9,7 @@ const login = async(loginData) => {
         localStorage.setItem('token', token);
 
         //tokenı çöz ve user objesine döndür.
-        const decoded = jtwDecode(token);
+        const decoded = jwtDecode(token);
         const user = {
             email: decoded.email,
             role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']

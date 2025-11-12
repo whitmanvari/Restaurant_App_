@@ -28,7 +28,7 @@ export default function Navbar() {
     garlic: false,
   });
 
-  const cartCount = Array.isArray(cart.items) ? cart.items.length : 0;
+  const cartCount = Array.isArray(cartItems) ? cartItems.length : 0;
 
   const toggleCollapse = () => setCollapsed((c) => !c);
   
