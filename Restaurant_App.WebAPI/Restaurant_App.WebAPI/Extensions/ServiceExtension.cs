@@ -11,6 +11,7 @@ using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.DataAccess.Concrete.Identity; // ApplicationIdentityDbContext için
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Restaurant_App.Application.IdentityErrors;
 
 namespace Restaurant_App.WebAPI.Extensions
 {
@@ -63,7 +64,8 @@ namespace Restaurant_App.WebAPI.Extensions
                 options.User.RequireUniqueEmail = true;
             })
             .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber <TurkishIdentityErrorDescriber>();
 
             // JWT ayarları 
             var key = config["DataAccess:Jwt:Key"];

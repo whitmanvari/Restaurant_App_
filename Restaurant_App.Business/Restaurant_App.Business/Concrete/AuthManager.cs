@@ -70,7 +70,7 @@ namespace Restaurant_App.Business.Concrete
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        public async Task<bool> Register(UserRegisterDTO model)
+        public async Task<IdentityResult> Register(UserRegisterDTO model)
         {
             var user = new ApplicationUser
             {
@@ -83,7 +83,7 @@ namespace Restaurant_App.Business.Concrete
             {
                 await _userManager.AddToRoleAsync(user, "User"); //yeni kullanıcıya varsayılan olarak user ata
             }
-            return result.Succeeded;
+            return result;
         }
     }
 }

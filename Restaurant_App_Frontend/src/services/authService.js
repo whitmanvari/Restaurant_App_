@@ -16,7 +16,13 @@ const login = async(loginData) => {
         };
         return {token, user};
     } catch(error) {
-        return Promise.reject(error.response.data || 'Giriş Başarısız!'); 
+        if (error.response) {
+          // Sunucudan 401 gibi bir hata gelirse
+          return Promise.reject(error.response.data || 'Giriş başarısız!');
+        } else {
+          // Network hatası (CORS, ERR_FAILED vb.) gelirse
+          return Promise.reject(error.message || 'Sunucuya bağlanılamadı.');
+        }
     }
 };
 
@@ -26,7 +32,23 @@ const register = async(registerData) => {
         await api.post('Auth/register', registerData);
         return true;
     } catch(error) {
-        return Promise.reject(error.response.data || 'Kayıt Başarısız!');
+        if (error.response) {
+            const data = error.response.data;
+            if(data.errors && Array.isArray(data.errors)){
+                const errorMessage = data.errors.join('\n');
+                return Promise.reject(errorMessage);
+            }
+            // büyük e harfi ile error geldiyse
+            if(data.Errors && Array.isArray(data.errors)){
+                const errorMessage = data.errors.join('\n');
+                return Promise.reject(errorMessage);
+            }
+            //başka bir formatta geldiyse 
+            return Promise.reject(data.message || data || 'Kayıt başarısız!');
+        } else {
+            //network hatasıysa
+            return Promise.reject(error.message || 'Sunucuya bağlanılamadı.');
+        }
     }
 }
 
