@@ -5,7 +5,7 @@ import LoginPage from './pages/LoginPage';
 import NotificationManager from './components/NotificationManager';
 import Layout from './components/Layout';
 import MenuPage from './pages/MenuPage';
-// import RegisterPage from './pages.RegisterPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
           <Route path="menu" element={<MenuPage />} /> 
           <Route path="menu/:category" element={<MenuPage />} /> {/* Kategori filtresi için bu kalsın */}
 
-          <Route path="signup" element={<HomePage />} /> {/* TODO: RegisterPage */}
+          <Route path="signup" element={<RegisterPage />} />
           <Route path="reservations" element={<HomePage />} /> {/* TODO: ReservationPage */}
           <Route path="reservations/new" element={<HomePage />} />
           <Route path="cart" element={<HomePage />} /> {/* TODO: CartPage */}

@@ -58,7 +58,6 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      // 4. Logout mantığını da servise taşıyabiliriz (veya burada kalabilir)
       authService.logout(); // localStorage'ı temizle
       state.token = null;
       state.isAuthenticated = false;

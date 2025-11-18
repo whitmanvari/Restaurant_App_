@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Restaurant_App.Business.Abstract;
 using Restaurant_App.Application.Dto; 
+using Restaurant_App.Business.Abstract;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -21,8 +21,11 @@ namespace Restaurant_App.WebAPI.Controllers
                 return BadRequest(ModelState);
 
             var result = await _authService.Register(model);
-            if (!result)
-                return BadRequest("Kayıt sırasında bir hata oluştu.");
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return BadRequest(new { Errors = errors });
+            }
 
             return Ok("Kullanıcı başarıyla oluşturuldu.");
         }
