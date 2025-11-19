@@ -22,22 +22,20 @@ if (token) {
 const initialState = {
   user: user,
   token: user ? token : null,
-  isAuthenticated: !!user, //
+  isAuthenticated: !!user, 
   status: 'idle',
   error: null,
 };
 
-
-// createAsyncThunk'ı 'authService'i kullanacak şekilde 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (loginData, { rejectWithValue }) => {
     try {
-      // 3. API'yi değil, servisi çağır
+      // API'yi değil, servisi çağır
       const data = await authService.login(loginData);
       return data; // { token, user } objesini döndür
     } catch (error) {
-      return rejectWithValue(error); // Hata servisten zaten işlenmiş geliyor
+      return rejectWithValue(error); 
     }
   }
 );
@@ -85,7 +83,7 @@ export const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
       })
-      // Register (Sadece toast bildirimi için durum tutabiliriz)
+      // Register 
       .addCase(registerUser.pending, (state) => {
         state.status = 'loading';
       })
