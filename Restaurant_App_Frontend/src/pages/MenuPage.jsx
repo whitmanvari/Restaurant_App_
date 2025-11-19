@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "../store/slices/categorySlice";
-import { fetchProductsByFilter, setPageNumber } from "../store/slices/productSlice"; // YENİ IMPORTLAR
+import { fetchProductsByFilter, setPageNumber } from "../store/slices/productSlice"; 
 import ProductDetailModal from '../components/ProductDetailModal';
+import { Allergens } from '../constants/allergens';
 
 function MenuPage() {
     const dispatch = useDispatch();
@@ -15,6 +16,7 @@ function MenuPage() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [activeCategory, setActiveCategory] = useState('Tümü');
     const [searchTerm, setSearchTerm] = useState('');
+    const [excludedAllergensMask, setExcludedAllergensMask] = useState(0);
 
     // 1. İlk Yükleme ve Parametre Değişiminde Tetikleme
     useEffect(() => {
@@ -28,7 +30,8 @@ function MenuPage() {
             pageNumber: pagination.pageNumber,
             pageSize: 6, // Her sayfada 6 ürün
             searchTerm: searchTerm,
-            category: activeCategory === 'Tümü' ? null : activeCategory
+            category: activeCategory === 'Tümü' ? null : activeCategory,
+            excludeAllergens: excludedAllergensMask
         };
 
         // İsteği At
@@ -40,6 +43,15 @@ function MenuPage() {
     const handleCategoryClick = (categoryName) => {
         setActiveCategory(categoryName);
         dispatch(setPageNumber(1)); // Kategori değişince 1. sayfaya dön
+    };
+
+    //Alerjen Değişimi
+    const handleAllergenChange = (allergenId) => {
+        // Bitwise XOR (^) işlemi: Varsa çıkarır, yoksa ekler.
+        // Örnek: Mask 0 iken 4 (Süt) seçildi -> 0 ^ 4 = 4.
+        // Tekrar seçilirse -> 4 ^ 4 = 0.
+        setExcludedAllergensMask(prevMask => prevMask ^ allergenId);
+        dispatch(setPageNumber(1)); // Filtre değişince başa dön
     };
 
     // Arama Değişimi
@@ -77,6 +89,30 @@ function MenuPage() {
                     </div>
                 </div>
             </div>
+            
+            {/* Alerjen Filtresi Butonları */}
+            <div className="col-md-12 text-center">
+                    <small className="text-muted d-block mb-2">Şunları İçermesin:</small>
+                    <div className="d-flex flex-wrap justify-content-center gap-2">
+                        {Allergens.map(allergen => {
+                            // Bu alerjen şu an seçili mi? (Bitwise AND kontrolü)
+                            const isSelected = (excludedAllergensMask & allergen.id) === allergen.id;
+                            
+                            return (
+                                <button
+                                    key={allergen.id}
+                                    className={`btn btn-sm rounded-pill ${isSelected ? 'btn-danger' : 'btn-outline-secondary'}`}
+                                    onClick={() => handleAllergenChange(allergen.id)}
+                                    style={{ fontSize: '0.8rem' }}
+                                >
+                                    <i className={`${allergen.icon} me-1`}></i>
+                                    {allergen.label}
+                                    {isSelected && <i className="fas fa-times ms-2"></i>}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
 
             {/* --- KATEGORİLER --- */}
             <div className="d-flex justify-content-center mb-5 overflow-auto">
