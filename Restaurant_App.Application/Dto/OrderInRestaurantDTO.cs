@@ -7,5 +7,7 @@
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = string.Empty;
         public List<OrderItemInRestaurantDTO> OrderItems { get; set; } = new List<OrderItemInRestaurantDTO>();
+        public string? UserId { get; set; }
+        public string? UserName { get; set; } // Admin panelinde ismini göstermek için
     }
 }

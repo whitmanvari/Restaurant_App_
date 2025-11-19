@@ -1,26 +1,176 @@
-.brandLogo {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background-color: #fff;
-  color: #d63384; // Bootstrap pink rengi
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  margin-right: 10px;
-}
+$text-light: #f8f9fa;
+$text-dark: #2c2c2c;
+$accent-gold: #c5a059;
+$bg-dark: #111;
 
-// Navbar'daki kullanıcı avatarı için stil
-.userAvatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
+.navbar-custom {
+    transition: all 0.4s ease-in-out;
+    padding: 1.5rem 0; // Başlangıçta geniş ve ferah
+    background-color: transparent; // Şeffaf
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
 
-.dropdown-menu.show-manual {
-  display: block;
+    // Aşağı kaydırınca devreye girecek stil (Scrolled state)
+    &.scrolled {
+        background-color: rgba(17, 17, 17, 0.95); // Koyu, hafif transparan 
+        padding: 0.8rem 0; // Daralıyor
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
+
+    .brand-logo {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: $text-light;
+        text-decoration: none;
+        letter-spacing: 2px;
+
+        span {
+            color: $accent-gold;
+        }
+    }
+
+    .nav-link {
+        color: rgba(255, 255, 255, 0.8) !important;
+        font-family: 'Lato', sans-serif;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 400;
+        margin: 0 10px;
+        transition: color 0.3s;
+        position: relative;
+
+        &:hover,
+        &.active {
+            color: $accent-gold !important;
+        }
+
+        // Alt çizgi animasyonu
+        &::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: 5px;
+            left: 0;
+            background-color: $accent-gold;
+            transition: width 0.3s;
+        }
+
+        &:hover::after {
+            width: 100%;
+        }
+    }
+    .btn-auth {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        padding: 8px 20px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s;
+
+        &:hover {
+            background-color: $accent-gold;
+            border-color: $accent-gold;
+            color: #000;
+        }
+    }
+    // User Avatar
+    .user-dropdown-btn {
+        display: flex;
+        align-items: center;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 0.9rem;
+
+        img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid $accent-gold;
+            margin-right: 10px;
+        }
+    }
+}
+// Kullanıcı Dropdown Menüsü Özelleştirmesi
+.dropdown-menu {
+    background-color: #111 !important; // Kömür siyahı zemin 
+    border: 1px solid rgba(255, 255, 255, 0.1); // İnce çerçeve
+    padding: 0.5rem 0;
+    margin-top: 10px !important; // Biraz aşağıdan başlasın
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); // Derinlik hissi
+    border-radius: 0;
+    min-width: 220px;
+    // Menü öğeleri
+    .dropdown-item {
+        color: #ccc !important; // Varsayılan yazı rengi (Gri)
+        padding: 10px 20px;
+        font-family: 'Lato', sans-serif;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        .user-header {
+            padding: 10px 20px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+
+            small {
+                display: block;
+                color: #888;
+                font-size: 0.8rem;
+            }
+        }
+        // İkonlar
+        i {
+            width: 20px;
+            text-align: center;
+            margin-right: 8px;
+            color: $accent-gold; // İkonlar altın rengi olsun
+        }
+
+        // Üzerine gelince (Hover)
+        &:hover,
+        &:focus {
+            background-color: $accent-gold !important; // Arka plan Altın olsun
+            color: #000 !important; // Yazı Siyah olsun (Okunabilirlik için)
+
+            i {
+                color: #000;
+            }
+        }
+    }
+    .cart-badge {
+        font-size: 0.6rem;
+    }
+
+    // Toggler ikonu için beyaz filtre 
+    .custom-toggler-icon {
+        filter: invert(1);
+    }
+    // Çıkış Yap butonu için özel kural
+    .dropdown-item.text-danger {
+        color: #ff6b6b !important; // Hafif kırmızı
+
+        &:hover {
+            background-color: #ff6b6b !important;
+            color: #fff !important;
+
+            i {
+                color: #fff;
+            }
+        }
+    }
+    // Ayırıcı çizgi
+    .dropdown-divider {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
 }

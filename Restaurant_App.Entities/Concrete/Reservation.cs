@@ -1,4 +1,5 @@
 ﻿using Restaurant_App.Entities.Abstract;
+using Restaurant_App.Entities.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete
@@ -14,6 +15,7 @@ namespace Restaurant_App.Entities.Concrete
         public int TableId { get; set; }
         public Table? Table { get; set; }
         public string? SpecialRequests { get; set; }
+        public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
         public Reservation()
         {
             ReservationDate = DateTime.Now;

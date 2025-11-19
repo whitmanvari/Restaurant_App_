@@ -9,5 +9,7 @@
         public int NumberOfGuests { get; set; }
         public int TableId { get; set; }
         public string? SpecialRequests { get; set; }
+        public int Status { get; set; } // Enum integer olarak taşınır
+        public string StatusName { get; set; } // Frontend'de kolay göstermek için (Onaylandı vs.)
     }
 }

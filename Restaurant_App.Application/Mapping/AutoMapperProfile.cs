@@ -55,7 +55,12 @@ namespace Restaurant_App.Application.Mapping
                 .ForMember(dest => dest.Product, opt => opt.Ignore());
 
             // Reservation
-            CreateMap<Reservation, ReservationDTO>().ReverseMap();
+            CreateMap<Reservation, ReservationDTO>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status))
+                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status.ToString()));
+
+            CreateMap<ReservationDTO, Reservation>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (ReservationStatus)src.Status));
 
             // Rating
             CreateMap<Rating, RatingDTO>().ReverseMap();
