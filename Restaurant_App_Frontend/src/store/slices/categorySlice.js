@@ -7,7 +7,6 @@ const initialState = {
   error: null,
 };
 
-// createAsyncThunk'ı 'categoryService'i kullanacak şekilde güncelle
 export const fetchCategories = createAsyncThunk(
   'categories/fetchCategories',
   async (_, { rejectWithValue }) => {

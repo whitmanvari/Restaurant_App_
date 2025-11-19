@@ -116,6 +116,9 @@ function AdminDashboard() {
                     <button className="btn btn-outline-dark" onClick={() => window.location.href = '/admin/orders'}>
                         <i className="fas fa-tasks me-2"></i> Siparişler
                     </button>
+                    <button className="btn btn-outline-dark" onClick={() => window.location.href = '/admin/settings'}>
+                        <i className="fas fa-cog me-2"></i> Ayarlar
+                    </button>
                 </div>
             </div>
 

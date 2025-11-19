@@ -10,6 +10,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import CartPage from './pages/CartPage'; 
 import AdminMenuPage from './pages/AdminMenuPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';
+import AdminSettingsPage from './pages/AdminSettingsPage'; t
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           
           <Route path="menu" element={<MenuPage />} /> 
           <Route path="menu/:category" element={<MenuPage />} />
+          <Route path="admin/settings" element={<AdminSettingsPage />} />
 
           <Route path="reservations" element={<HomePage />} />
           <Route path="cart" element={<HomePage />} />
