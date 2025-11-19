@@ -11,6 +11,7 @@ namespace Restaurant_App.Entities.Concrete
         public Table? Table { get; set; }
         public DateTime OrderDate { get; set; }
         public double TotalAmount { get; set; }
+        public string? UserId { get; set; }
         public OrderStatusInRestaurant Status { get; set; }
         public List<OrderItemInRestaurant> OrderItemsInRestaurant { get; set; }
         public OrderInRestaurant()

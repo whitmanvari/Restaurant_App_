@@ -1,167 +1,135 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/slices/authSlice";
+import '../styles/navbar.scss';
 
 export default function Navbar() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
-  // Veriyi 'cart' olarak alıyoruz
-  const cart = useSelector((state) => state.cart);
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
+    const cart = useSelector((state) => state.cart);
 
-  const [collapsed, setCollapsed] = useState(true);
-  const [showMenus, setShowMenus] = useState(false);
-  const [showAllergies, setShowAllergies] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+    const cartCount = Array.isArray(cart?.items) ? cart.items.length : 0;
 
-  // Alerjen state'i
-  const [allergies, setAllergies] = useState({
-    nuts: false,
-    gluten: false,
-    dairy: false,
-  });
-  const [excludeIngredients, setExcludeIngredients] = useState({
-    onion: false,
-    garlic: false,
-  });
+    const [scrolled, setScrolled] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const [isNavCollapsed, setIsNavCollapsed] = useState(true);
 
-  const cartCount = Array.isArray(cart?.items) ? cart.items.length : 0;
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 50) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
-  const toggleCollapse = () => setCollapsed((c) => !c);
-  
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
-  };
-
-  const toggleAllergy = (key) =>
-    setAllergies((prev) => ({ ...prev, [key]: !prev[key] }));
-
-  const toggleExclude = (key) =>
-    setExcludeIngredients((prev) => ({ ...prev, [key]: !prev[key] }));
-
-  const applyFilters = () => {
-    const params = {
-      allergies,
-      exclude: excludeIngredients,
+    const handleLogout = () => {
+        dispatch(logout());
+        setShowUserMenu(false);
+        navigate("/login");
     };
-    console.log("Filtre uygula", params);
-    setShowAllergies(false);
-  };
 
-  const clearFilters = () => {
-    setAllergies({ nuts: false, gluten: false, dairy: false });
-    setExcludeIngredients({ onion: false, garlic: false });
-  };
+    return (
+        <nav className={`navbar navbar-expand-lg fixed-top navbar-custom ${scrolled ? 'scrolled' : ''}`}>
+            <div className="container">
 
-return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
-      <div className="container">
-        {/*Marka ve Toggler butonu aynı*/}
-        <Link className="navbar-brand d-flex align-items-center" to="/">
-          <div className="brand-logo">R</div>
-          <span>Restaurant App</span>
-        </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          aria-expanded={!collapsed}
-          onClick={toggleCollapse}
-        >
-          <span className="navbar-toggler-icon" />
-        </button>
+                {/* 1. SOL: LOGO */}
+                <Link className="brand-logo" to="/">
+                    Restaur<span>ant</span>
+                </Link>
 
-        <div className={`collapse navbar-collapse ${!collapsed ? "show" : ""}`}>
-          {/* Sol linkler */}
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            {/*Anasayfa*/}
-            <li className="nav-item">
-              <NavLink className="nav-link" end to="/">Anasayfa</NavLink>
-            </li>
-            {/* Menüler Dropdown*/}
-            <li className="nav-item dropdown">
-              <button
-                className="nav-link btn btn-link dropdown-toggle"
-                onClick={() => setShowMenus((s) => !s)}
-              >
-                Menüler
-              </button>
-              <ul
-                className={`dropdown-menu ${showMenus ? "show-manual" : ""}`}
-                onMouseLeave={() => setShowMenus(false)}
-              >
-                {/*menü linkleri*/}
-              </ul>
-            </li>
-            {/* Rezervasyonlar*/}
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/reservations">Rezervasyonlar</NavLink>
-            </li>
-          </ul>
-
-          {/* ... (Orta Arama Formu ve Alerjenler Dropdown'ı aynı) ... */}
-
-          {/* Sağ Aksiyonlar */}
-          <ul className="navbar-nav ms-auto align-items-center">
-            {/* Alerjen ve sepet linkleri */}
-
-            {/* Kullanıcı / Auth */}
-            {isAuthenticated ? (
-              // Hesabım
-              <li className="nav-item dropdown">
+                {/* Mobil Menü Butonu */}
                 <button
-                  className="btn btn-link nav-link dropdown-toggle text-white d-flex align-items-center"
-                  // 'onClick' eklendi
-                  onClick={() => setShowUserMenu((s) => !s)} 
+                    className="navbar-toggler"
+                    type="button"
+                    onClick={() => setIsNavCollapsed(!isNavCollapsed)}
+                    aria-controls="navbarNav"
+                    aria-expanded={!isNavCollapsed}
+                    aria-label="Toggle navigation"
                 >
-                  <img
-                    src={user?.avatar || "/placeholder-avatar.png"}
-                    alt="avatar"
-                    className="user-avatar"
-                  />
-                  <span className="d-none d-sm-inline">{user?.email || "Kullanıcı"}</span>
+                    <span className="navbar-toggler-icon custom-toggler-icon"></span>
                 </button>
-                {/* 'show-manual' class'ı ve 'onMouseLeave' */}
-                <ul 
-                  className={`dropdown-menu dropdown-menu-end ${showUserMenu ? "show-manual" : ""}`}
-                  onMouseLeave={() => setShowUserMenu(false)}
-                >
-                  <li>
-                    <Link className="dropdown-item" to="/profile">Profilim</Link>
-                  </li>
-                  {user?.role === "Admin" && (
-                    <li>
-                      <Link className="dropdown-item" to="/admin">Admin Panel</Link>
-                    </li>
-                  )}
-                  <li><hr className="dropdown-divider" /></li>
-                  <li>
-                    <button className="dropdown-item" onClick={handleLogout}>
-                      Çıkış Yap
-                    </button>
-                  </li>
-                </ul>
-              </li>
-            ) : (
-              // Giriş yapmamış
-              <>
-                <li className="nav-item">
-                  <NavLink className="nav-link text-white" to="/login">
-                    Giriş Yap
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <Link className="btn btn-light ms-2" to="/signup">
-                    Kayıt Ol
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
-        </div>
-      </div>
-    </nav>
-  );
+
+                <div className={`${isNavCollapsed ? 'collapse' : ''} navbar-collapse`} id="navbarNav">
+
+                    {/* 2. ORTA: LİNKLER */}
+                    <ul className="navbar-nav mx-auto">
+                        <li className="nav-item">
+                            <NavLink className="nav-link" to="/" end>Ana Sayfa</NavLink>
+                        </li>
+                        <li className="nav-item">
+                            <NavLink className="nav-link" to="/menu">Menü</NavLink>
+                        </li>
+                        <li className="nav-item">
+                            <NavLink className="nav-link" to="/reservations">Rezervasyon</NavLink>
+                        </li>
+                        {user?.role === 'Admin' && (
+                            <li className="nav-item">
+                                <NavLink className="nav-link text-warning" to="/admin">Yönetim</NavLink>
+                            </li>
+                        )}
+                    </ul>
+
+                    {/* 3. SAĞ: SEPET & AUTH */}
+                    <ul className="navbar-nav align-items-center gap-3">
+
+                        <li className="nav-item position-relative">
+                            <Link to="/cart" className="nav-link p-0">
+                                <i className="fas fa-shopping-bag fs-5"></i>
+                                {cartCount > 0 && (
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
+                        </li>
+
+                        {isAuthenticated ? (
+                            <li className="nav-item dropdown position-relative">
+                                <button
+                                    className="user-dropdown-btn"
+                                    onClick={() => setShowUserMenu(!showUserMenu)}
+                                    onBlur={() => setTimeout(() => setShowUserMenu(false), 200)}
+                                >
+                                    <img
+                                        src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.email || 'User'}&background=c5a059&color=fff`}
+                                        alt="avatar"
+                                    />
+                                    <span className="d-none d-md-inline">{user?.fullName || user?.email?.split('@')[0]}</span>
+                                </button>
+                                {showUserMenu && (
+                                    <div className="dropdown-menu show position-absolute end-0">
+                                        <div className="user-header">
+                                            <small>Hoşgeldin,</small>
+                                            <strong>{user?.fullName}</strong>
+                                        </div>
+                                        <Link className="dropdown-item" to="/profile">
+                                            <i className="fas fa-user"></i> Profilim
+                                        </Link>
+                                        <Link className="dropdown-item" to="/my-orders">
+                                            <i className="fas fa-receipt"></i> Siparişlerim
+                                        </Link>
+                                        <div className="dropdown-divider"></div>
+                                        <button className="dropdown-item text-danger" onClick={handleLogout}>
+                                            <i className="fas fa-sign-out-alt"></i> Çıkış Yap
+                                        </button>
+                                    </div>
+                                )}
+                            </li>
+                        ) : (
+                            <li className="nav-item">
+                                <Link className="btn btn-auth" to="/login">Giriş Yap</Link>
+                            </li>
+                        )}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    );
 }

@@ -1,0 +1,208 @@
+$bg-cream: #F3F2ED;
+$text-charcoal: #2C2C2C;
+$accent-gold: #C5A059;
+
+.home-container {
+  background-color: $bg-cream;
+  font-family: 'Lato', sans-serif;
+  color: $text-charcoal;
+  overflow-x: hidden;
+
+  .hero-section {
+    position: relative;
+    height: 100vh; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-image: url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2574&auto=format&fit=crop');
+
+    // Karartma katmanını koyulaştırdık (0.4 -> 0.65)
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(
+        to bottom, 
+        rgba(0,0,0,0.2) 0%, 
+        rgba(0,0,0,0.5) 50%,
+        rgba(0,0,0,0.8) 100%
+      );
+      z-index: 1; 
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      color: #fff;
+      animation: fadeInUp 1s ease-out;
+      max-width: 800px; 
+      padding: 0 20px;
+      margin-top: 50px;
+
+      h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 5rem; 
+        margin-bottom: 1.5rem;
+        letter-spacing: 3px;
+        line-height: 1.2;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); 
+        
+        span {
+            color: $accent-gold;
+            font-style: italic;
+            text-shadow: 0 4px 20px rgba(197, 160, 89, 0.3);
+        }
+      }
+
+      p {
+        font-size: 1.4rem;
+        font-weight: 300;
+        margin-bottom: 3rem;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.9); 
+        text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+      }
+
+      .btn-hero {
+        padding: 18px 50px;
+        background: rgba(197, 160, 89, 0.9);
+        border: none;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        backdrop-filter: blur(5px); // Arkadaki resmi hafif buzlar
+
+        &:hover {
+          background: #fff;
+          color: #000;
+          transform: translateY(-3px); // Hafif yukarı kalkar
+          box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        &.secondary {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.5);
+            margin-left: 15px;
+            
+            &:hover {
+                background: #fff;
+                color: #000;
+                border-color: #fff;
+            }
+      }
+    }
+  }
+}
+
+  // 2. ABOUT SECTION
+  .about-section {
+    padding: 5rem 2rem;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      color: $text-charcoal;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #666;
+    }
+    
+    .separator {
+        width: 100px;
+        height: 2px;
+        background-color: $accent-gold;
+        margin: 2rem auto;
+    }
+  }
+
+  // 3. FEATURED DISHES
+  .featured-section {
+    padding: 4rem 2rem;
+    background-color: #fff; // Hafif kontrast
+
+    .section-title {
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      margin-bottom: 3rem;
+    }
+
+    .dish-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 0 2rem;
+
+      .dish-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+        cursor: pointer;
+
+        &:hover {
+          transform: translateY(-10px);
+          
+          .dish-info {
+              transform: translateY(0);
+          }
+        }
+
+        img {
+          width: 100%;
+          height: 350px;
+          object-fit: cover;
+          display: block;
+        }
+
+        .dish-info {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(255, 255, 255, 0.95);
+          padding: 1.5rem;
+          transform: translateY(100%); // Başlangıçta gizli
+          transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+          
+          h4 {
+              font-family: 'Playfair Display', serif;
+              margin-bottom: 0.5rem;
+          }
+          
+          .price {
+              color: $accent-gold;
+              font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animasyonlar
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
