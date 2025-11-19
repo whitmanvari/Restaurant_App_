@@ -52,6 +52,24 @@ const register = async(registerData) => {
     }
 }
 
+const updateProfile = async (data) => {
+    try {
+        const response = await api.put('/Auth/update-profile', data);
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error.response?.data || 'Güncelleme hatası');
+    }
+};
+
+const getProfile = async () => {
+    try {
+        const response = await api.get('/Auth/get-profile');
+        return response.data;
+    } catch (error) {
+        return Promise.reject(error.response?.data || 'Profil çekme hatası');
+    }
+};
+
 const logout = () => {
     localStorage.removeItem('token');
 }
@@ -59,5 +77,7 @@ const logout = () => {
 export const authService = {
     login,
     register,
-    logout
+    logout,
+    updateProfile,
+    getProfile
 }

@@ -88,5 +88,32 @@ namespace Restaurant_App.Business.Concrete
             }
             return result;
         }
+        public async Task<bool> UpdateUserProfile(string userId, UserUpdateDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+
+            user.FullName = model.FullName;
+            user.PhoneNumber = model.PhoneNumber;
+            user.Address = model.Address;
+            user.City = model.City;
+
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
+
+        public async Task<UserUpdateDTO> GetUserProfile(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return null;
+
+            return new UserUpdateDTO
+            {
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                Address = user.Address,
+                City = user.City
+            };
+        }
     }
 }

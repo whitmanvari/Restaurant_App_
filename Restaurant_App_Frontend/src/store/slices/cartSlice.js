@@ -34,6 +34,20 @@ export const addProductToCart = createAsyncThunk(
   }
 );
 
+// API İSTEĞİ: Sepetten Sil 
+export const removeProductFromCart = createAsyncThunk(
+    'cart/removeProductFromCart',
+    async (productId, { rejectWithValue }) => {
+      try {
+        // Backend silme işleminden sonra güncel sepeti dönmeli (CartDTO)
+        const data = await cartService.removeFromCart(productId);
+        return data; 
+      } catch (error) {
+        return rejectWithValue(error);
+      }
+    }
+  );
+
 export const cartSlice = createSlice({
   name: 'cart',
   initialState,
@@ -60,6 +74,13 @@ export const cartSlice = createSlice({
       .addCase(addProductToCart.pending, (state) => { state.status = 'loading'; })
       .addCase(addProductToCart.fulfilled, updateCartState)
       .addCase(addProductToCart.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      // removeProductFromCart
+      .addCase(removeProductFromCart.pending, (state) => { state.status = 'loading'; })
+      .addCase(removeProductFromCart.fulfilled, updateCartState)
+      .addCase(removeProductFromCart.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });

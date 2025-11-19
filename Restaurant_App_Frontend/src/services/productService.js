@@ -1,27 +1,39 @@
 import api from '../api/axiosInstance';
 
-//get all products
-const getAll = async() => {
-    try{
-        const response = await api.get('/Product/GetAll');
-        return response.data; //dto list
-    }
-    catch(error){
-        return Promise.reject(error.response.data);
-    }
-}
-//get products by category (menüdeki filtreleme işi)
-const getByCategory = async(categoryName) => {
-    try{
-        const response = await api.get(`/Product/ByCategory?category=${categoryName}`);
-        return response.data;
-    } 
-    catch(error) {
-        return Promise.reject(error.response.data);
-    }
-}
+// Tüm ürünleri getir
+const getAll = async () => {
+    const response = await api.get('/Product/GetAll');
+    return response.data;
+};
+
+// Kategoriye göre getir
+const getByCategory = async (categoryName) => {
+    const response = await api.get(`/Product/ByCategory?category=${categoryName}`);
+    return response.data;
+};
+
+// Yeni ürün ekle
+const create = async (productData) => {
+    const response = await api.post('/Product/Create', productData);
+    return response.data;
+};
+
+// Ürün güncelle
+const update = async (id, productData) => {
+    const response = await api.put(`/Product/Update/${id}`, productData);
+    return response.data;
+};
+
+// Ürün sil
+const remove = async (id) => {
+    const response = await api.delete(`/Product/Delete/${id}`);
+    return response.data;
+};
 
 export const productService = {
     getAll,
-    getByCategory
-}
+    getByCategory,
+    create, 
+    update, 
+    remove  
+};

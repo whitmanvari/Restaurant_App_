@@ -7,6 +7,8 @@ import Layout from './components/Layout';
 import MenuPage from './pages/MenuPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserProfilePage from './pages/UserProfilePage';
+import CartPage from './pages/CartPage'; 
+import AdminMenuPage from './pages/AdminMenuPage';
 
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
           
           <Route path="admin" element={<AdminDashboard />} />
           <Route path="profile" element={<UserProfilePage />} />
+          <Route path="cart" element={<CartPage />} />
+          <Route path="admin/menu" element={<AdminMenuPage />} />
           
           <Route path="menu" element={<MenuPage />} /> 
           <Route path="menu/:category" element={<MenuPage />} />
