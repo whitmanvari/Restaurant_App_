@@ -2,13 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { orderService } from '../services/orderService';
 import { authService } from '../services/authService';
+import { reservationService } from '../services/reservationService'; // EKLENDİ
 import { toast } from 'react-toastify';
 
 function UserProfilePage() {
     const { user } = useSelector(state => state.auth);
+
+    // State'ler
     const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'info'
+    const [loadingOrders, setLoadingOrders] = useState(true); // loadingOrders 
+
+    const [myReservations, setMyReservations] = useState([]); //Rezervasyon State'i
+
+    const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'info' | 'reservations'
 
     // Profil Form State'i
     const [profileData, setProfileData] = useState({
@@ -28,7 +34,7 @@ function UserProfilePage() {
             })
             .catch(err => setLoadingOrders(false));
 
-        // 2. Profil Detaylarını Çek (User objesinde olmayan detaylar)
+        // 2. Profil Detaylarını Çek
         authService.getProfile()
             .then(data => {
                 setProfileData({
@@ -39,7 +45,18 @@ function UserProfilePage() {
                 });
             })
             .catch(err => console.error("Profil yüklenemedi"));
-    }, []);
+
+        // 3. Rezervasyonları Çek 
+        reservationService.getMyReservations()
+            .then(data => {
+                setMyReservations(data);
+            })
+            .catch(err => {
+                console.warn("Rezervasyonlar çekilemedi:", err);
+                setMyReservations([]);
+
+            }, []);
+    })
 
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
@@ -77,6 +94,15 @@ function UserProfilePage() {
                             >
                                 <i className="fas fa-receipt me-2"></i> Sipariş Geçmişi
                             </button>
+
+                            {/*REZERVASYONLAR */}
+                            <button
+                                className={`list-group-item list-group-item-action ${activeTab === 'reservations' ? 'active bg-dark border-dark' : ''}`}
+                                onClick={() => setActiveTab('reservations')}
+                            >
+                                <i className="fas fa-calendar-alt me-2"></i> Rezervasyonlarım
+                            </button>
+
                             <button
                                 className={`list-group-item list-group-item-action ${activeTab === 'info' ? 'active bg-dark border-dark' : ''}`}
                                 onClick={() => setActiveTab('info')}
@@ -128,7 +154,51 @@ function UserProfilePage() {
                             </div>
                         )}
 
-                        {/* TAB 2: HESAP BİLGİLERİ (FORM) */}
+                        {/* TAB 2: REZERVASYONLAR*/}
+                        {activeTab === 'reservations' && (
+                            <div>
+                                <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Rezervasyonlarım</h4>
+                                {myReservations.length === 0 ? (
+                                    <div className="alert alert-light text-center">
+                                        Henüz bir rezervasyonunuz bulunmuyor.
+                                        <br />
+                                        <a href="/reservations" className="btn btn-outline-dark btn-sm mt-2">Rezervasyon Yap</a>
+                                    </div>
+                                ) : (
+                                    <div className="table-responsive">
+                                        <table className="table table-hover align-middle">
+                                            <thead className="table-light">
+                                                <tr>
+                                                    <th>Tarih</th>
+                                                    <th>Saat</th>
+                                                    <th>Kişi</th>
+                                                    <th>Not</th>
+                                                    <th>Durum</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {myReservations.map(res => (
+                                                    <tr key={res.id}>
+                                                        <td>{new Date(res.reservationDate).toLocaleDateString('tr-TR')}</td>
+                                                        <td>{new Date(res.reservationDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</td>
+                                                        <td>{res.numberOfGuests}</td>
+                                                        <td><small className="text-muted">{res.specialRequests || '-'}</small></td>
+                                                        <td>
+                                                            {res.status === 0 && <span className="badge bg-warning text-dark">Onay Bekliyor</span>}
+                                                            {res.status === 1 && <span className="badge bg-success">Onaylandı</span>}
+                                                            {res.status === 2 && <span className="badge bg-danger">Reddedildi</span>}
+                                                            {res.status === 3 && <span className="badge bg-secondary">İptal</span>}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* TAB 3: HESAP BİLGİLERİ (FORM) */}
                         {activeTab === 'info' && (
                             <div>
                                 <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Hesap Bilgileri</h4>

@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { reservationService } from '../services/reservationService';
 import api from '../api/axiosInstance';
+import TableDetailModal from '../components/TableDetailModal';
 
 function AdminDashboard() {
     const { user } = useSelector(state => state.auth);
@@ -13,6 +14,7 @@ function AdminDashboard() {
     const [activeOrders, setActiveOrders] = useState([]);
     const [activeTab, setActiveTab] = useState('reservations'); // 'reservations' veya 'liveMap'
     const [loading, setLoading] = useState(true);
+    const [selectedTableData, setSelectedTableData] = useState(null); // { table, order }
 
     // Verileri Çek
     useEffect(() => {
@@ -32,9 +34,7 @@ function AdminDashboard() {
             const tableRes = await api.get('/Table');
             setTables(tableRes.data);
 
-            // 3. Aktif Masa Siparişlerini çek (OrderInRestaurant)
-            // Backend'de 'GetOrdersWithDetails' endpointi vardı, tüm siparişleri döner.
-            // Biz sadece aktif olanları (Pending, InProgress, Served) filtreleyeceğiz.
+            // 3. Aktif Masa Siparişlerini çek
             const orderRes = await api.get('/OrderInRestaurant/all/details');
             const activeOnes = orderRes.data.filter(o =>
                 o.status !== 'Completed' && o.status !== 'Canceled'
@@ -44,41 +44,44 @@ function AdminDashboard() {
             setLoading(false);
         } catch (error) {
             console.error("Veri çekme hatası:", error);
-            toast.error("Veriler yüklenirken hata oluştu.");
         }
     };
 
-    // --- REZERVASYON İŞLEMLERİ ---
+    //REZERVASYON İŞLEMLERİ 
     const handleStatusChange = async (reservation, newStatus) => {
         try {
-            // Backend enum: 0:Pending, 1:Approved, 2:Rejected
             const updatedRes = { ...reservation, status: newStatus };
             await reservationService.update(reservation.id, updatedRes);
 
             toast.success(`Rezervasyon ${newStatus === 1 ? 'onaylandı' : 'reddedildi'}.`);
-            fetchData(); // Listeyi yenile
+            fetchData();
         } catch (error) {
             toast.error("İşlem başarısız.");
         }
     };
 
-    // --- HELPER: Masa Durumunu Analiz Et ---
+    // HELPER: Masa Durumunu Analiz Et
     const getTableStatus = (tableId) => {
-        // 1. Masa şu an dolu mu? (Aktif sipariş var mı?)
         const activeOrder = activeOrders.find(o => o.tableId === tableId);
         if (activeOrder) return { status: 'occupied', data: activeOrder };
 
-        // 2. Masa bugün rezerve mi? (Onaylı ve tarihi bugün olan)
         const today = new Date().toISOString().slice(0, 10);
         const isReserved = reservations.find(r =>
             r.tableId === tableId &&
-            r.status === 1 && // Onaylı
+            r.status === 1 &&
             r.reservationDate.startsWith(today)
         );
         if (isReserved) return { status: 'reserved', data: isReserved };
 
-        // 3. Boş
         return { status: 'empty', data: null };
+    };
+
+    const handleTableClick = (table, status, activeOrderData) => {
+        if (status === 'occupied' && activeOrderData) {
+            setSelectedTableData({ table: table, order: activeOrderData });
+        } else {
+            toast.info(`Masa ${table.tableNumber} şu an ${status === 'empty' ? 'boş' : 'rezerve'}.`);
+        }
     };
 
     if (loading) return <div className="text-center mt-5 pt-5"><div className="spinner-border text-warning"></div></div>;
@@ -92,11 +95,7 @@ function AdminDashboard() {
                     <p className="text-muted">Merhaba Şef {user?.fullName}, bugün restoranın harika görünüyor.</p>
                 </div>
                 <div className="d-flex gap-2">
-                    {/* Menü Yönetimi Butonu */}
-                    <button
-                        className="btn btn-outline-dark"
-                        onClick={() => window.location.href = '/admin/menu'} 
-                    >
+                    <button className="btn btn-outline-dark" onClick={() => window.location.href = '/admin/menu'}>
                         <i className="fas fa-utensils me-2"></i> Menü Yönetimi
                     </button>
                     <button
@@ -114,10 +113,13 @@ function AdminDashboard() {
                     >
                         <i className="fas fa-th me-2"></i> Salon Durumu
                     </button>
+                    <button className="btn btn-outline-dark" onClick={() => window.location.href = '/admin/orders'}>
+                        <i className="fas fa-tasks me-2"></i> Siparişler
+                    </button>
                 </div>
             </div>
 
-            {/* --- TAB 1: REZERVASYONLAR --- */}
+            {/*TAB 1: REZERVASYONLAR*/}
             {activeTab === 'reservations' && (
                 <div className="card shadow-sm border-0">
                     <div className="card-header bg-white py-3">
@@ -168,56 +170,48 @@ function AdminDashboard() {
                 </div>
             )}
 
-            {/* --- TAB 2: SALON DURUMU (CANLI HARİTA) --- */}
+            {/*TAB 2: SALON DURUMU*/}
             {activeTab === 'liveMap' && (
                 <div>
                     <div className="row g-4">
                         {tables.map(table => {
                             const { status, data } = getTableStatus(table.id);
-
-                            let cardClass = 'border-success'; // Boş
                             let bgClass = 'bg-white';
                             let icon = 'fa-chair';
                             let statusText = 'Müsait';
 
                             if (status === 'occupied') {
-                                cardClass = 'border-danger bg-light-danger';
                                 bgClass = 'bg-danger text-white';
                                 icon = 'fa-utensils';
                                 statusText = 'Dolu';
                             } else if (status === 'reserved') {
-                                cardClass = 'border-warning';
                                 bgClass = 'bg-warning text-dark';
                                 icon = 'fa-clock';
                                 statusText = 'Rezerve';
                             }
 
                             return (
-                                <div key={table.id} className="col-6 col-md-4 col-lg-3">
-                                    <div className={`card h-100 shadow-sm ${status === 'occupied' ? 'border-danger border-2' : ''}`}>
+                                <div
+                                    key={table.id}
+                                    className="col-6 col-md-4 col-lg-3"
+                                    onClick={() => handleTableClick(table, status, data)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <div className={`card h-100 shadow-sm ${status === 'occupied' ? 'border-danger border-2' : 'border-success'}`}>
                                         <div className={`card-header py-2 d-flex justify-content-between align-items-center ${bgClass}`}>
                                             <span className="fw-bold">{table.tableNumber}</span>
                                             <small>{statusText}</small>
                                         </div>
                                         <div className="card-body text-center">
                                             <i className={`fas ${icon} fa-2x mb-3 ${status === 'occupied' ? 'text-danger' : (status === 'reserved' ? 'text-warning' : 'text-success')}`}></i>
-
-                                            {/* BOŞ İSE */}
-                                            {status === 'empty' && (
-                                                <p className="text-muted small">Kapasite: {table.capacity}</p>
-                                            )}
-
-                                            {/* DOLU İSE (SİPARİŞ VAR) */}
+                                            {status === 'empty' && <p className="text-muted small">Kapasite: {table.capacity}</p>}
                                             {status === 'occupied' && (
                                                 <div className="text-start small">
-                                                    {/* Backend'deki UserName burada görünür */}
                                                     <div className="fw-bold mb-1"><i className="fas fa-user me-1"></i> {data.userName || 'Misafir'}</div>
                                                     <div className="text-danger fw-bold"><i className="fas fa-receipt me-1"></i> {data.totalAmount} ₺</div>
                                                     <div className="text-muted mt-1 fst-italic">{data.status}</div>
                                                 </div>
                                             )}
-
-                                            {/* REZERVE İSE */}
                                             {status === 'reserved' && (
                                                 <div className="text-start small">
                                                     <div className="fw-bold">{data.customerName}</div>
@@ -231,6 +225,18 @@ function AdminDashboard() {
                         })}
                     </div>
                 </div>
+            )}
+
+            {/* MASA DETAY MODALI */}
+            {selectedTableData && (
+                <TableDetailModal
+                    table={selectedTableData.table}
+                    activeOrder={selectedTableData.order}
+                    onClose={() => setSelectedTableData(null)}
+                    onUpdate={() => {
+                        fetchData();
+                    }}
+                />
             )}
         </div>
     );

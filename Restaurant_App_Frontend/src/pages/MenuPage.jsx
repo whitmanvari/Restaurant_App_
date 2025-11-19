@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "../store/slices/categorySlice";
 import { fetchProducts } from "../store/slices/productSlice";
+import ProductDetailModal from '../components/ProductDetailModal';
 
 function MenuPage() {
     const dispatch = useDispatch();
@@ -9,19 +10,32 @@ function MenuPage() {
     const { categories, status: categoryStatus } = useSelector((state) => state.categories);
     const { products, status: productStatus } = useSelector((state) => state.products);
 
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [activeCategory, setActiveCategory] = useState('Tümü');
+
     useEffect(() => {
         if (categoryStatus === 'idle') {
             dispatch(fetchCategories());
         }
+        // Sayfa ilk açıldığında tüm ürünleri getir
         if (productStatus === 'idle') {
             dispatch(fetchProducts());
         }
     }, [categoryStatus, productStatus, dispatch]);
 
+    const handleCategoryClick = (categoryName) => {
+        setActiveCategory(categoryName);
+        if (categoryName === 'Tümü') {
+            dispatch(fetchProducts());
+        } else {
+            dispatch(fetchProductsByCategory(categoryName));
+        }
+    };
+
     if (productStatus === 'loading' || categoryStatus === 'loading') {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
-                <div className="spinner-border text-primary" role="status">
+                <div className="spinner-border text-warning" role="status">
                     <span className="visually-hidden">Yükleniyor...</span>
                 </div>
             </div>
@@ -29,16 +43,16 @@ function MenuPage() {
     }
 
     return (
-        <div>
-            <h1 className="mb-4">Menümüz</h1>
+        <div className="container mt-5 pt-4 mb-5">
+            <h2 className="mb-4 text-center" style={{ fontFamily: 'Playfair Display' }}>Menümüz</h2>
 
-            <div className="mb-4">
-                <h4>Kategoriler</h4>
-                <div className="list-group list-group-horizontal-sm overflow-auto">
+            {/* KATEGORİLER */}
+            <div className="d-flex justify-content-center mb-5 overflow-auto">
+                <div className="btn-group">
                     <button
                         type="button"
-                        className="list-group-item list-group-item-action active"
-                        onClick={() => dispatch(fetchProducts())} // "Tümü" butonu
+                        className={`btn ${activeCategory === 'Tümü' ? 'btn-dark' : 'btn-outline-dark'}`}
+                        onClick={() => handleCategoryClick('Tümü')}
                     >
                         Tümü
                     </button>
@@ -46,7 +60,8 @@ function MenuPage() {
                         <button
                             type="button"
                             key={category.id}
-                            className="list-group-item list-group-item-action"
+                            className={`btn ${activeCategory === category.name ? 'btn-dark' : 'btn-outline-dark'}`}
+                            onClick={() => handleCategoryClick(category.name)}
                         >
                             {category.name}
                         </button>
@@ -54,29 +69,50 @@ function MenuPage() {
                 </div>
             </div>
 
-            <h4>Ürünler</h4>
+            {/* ÜRÜNLER */}
             <div className="row row-cols-1 row-cols-md-3 g-4">
                 {products.map((product) => (
                     <div className="col" key={product.id}>
-                        <div className="card h-100">
+                        <div className="card h-100 shadow-sm border-0">
                             <img
-                                src={product.imageUrls[0] || 'https://via.placeholder.com/150'}
+                                src={product.imageUrls?.[0] || 'https://via.placeholder.com/300x200?text=Resim+Yok'}
                                 className="card-img-top"
                                 alt={product.name}
-                                style={{ height: '200px', objectFit: 'cover' }}
+                                style={{ height: '250px', objectFit: 'cover' }}
                             />
                             <div className="card-body">
-                                <h5 className="card-title">{product.name}</h5>
-                                <p className="card-text text-muted">{product.description}</p>
+                                <h5 className="card-title" style={{ fontFamily: 'Playfair Display' }}>{product.name}</h5>
+                                <p className="card-text text-muted small">
+                                    {product.description.length > 60 ? product.description.substring(0, 60) + '...' : product.description}
+                                </p>
                             </div>
-                            <div className="card-footer d-flex justify-content-between align-items-center">
-                                <span className="text-success fw-bold">{product.price} TL</span>
-                                <button className="btn btn-primary btn-sm">Sepete Ekle</button>
+                            <div className="card-footer bg-white border-0 d-flex justify-content-between align-items-center pb-3">
+                                <span className="text-success fw-bold fs-5">{product.price} ₺</span>
+                                <button
+                                    className="btn btn-outline-dark btn-sm px-3"
+                                    onClick={() => setSelectedProduct(product)}
+                                >
+                                    İncele
+                                </button>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {products.length === 0 && (
+                <div className="text-center mt-5 text-muted">
+                    Bu kategoride henüz ürün bulunmuyor.
+                </div>
+            )}
+
+            {/* ÜRÜN DETAY MODALI */}
+            {selectedProduct && (
+                <ProductDetailModal
+                    product={selectedProduct}
+                    onClose={() => setSelectedProduct(null)}
+                />
+            )}
         </div>
     );
 }

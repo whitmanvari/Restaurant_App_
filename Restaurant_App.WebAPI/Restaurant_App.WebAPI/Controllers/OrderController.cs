@@ -87,5 +87,30 @@ namespace Restaurant_App.WebAPI.Controllers
             await _orderService.Delete(order);
             return NoContent();
         }
+
+        // Admin: Tüm Paket Siparişleri Listele
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllOrders()
+        {
+            var orders = await _orderService.GetAll();
+            var dto = _mapper.Map<List<OrderDTO>>(orders);
+            return Ok(dto);
+        }
+
+        // Admin: Sipariş Durumunu Güncelle (Hazırlanıyor, Yola Çıktı vb.)
+        [HttpPut("update-status/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromQuery] int state) // int olarak alıyoruz (Enum)
+        {
+            var order = await _orderService.GetById(id);
+            if (order == null) return NotFound("Sipariş bulunamadı.");
+
+            // Enum dönüşümü (OrderState: 0=Waiting, 1=Completed, 2=Canceled, 3=Preparing)
+            order.OrderState = (Restaurant_App.Entities.Enums.OrderState)state;
+
+            await _orderService.Update(order);
+            return Ok("Durum güncellendi.");
+        }
     }
 }
