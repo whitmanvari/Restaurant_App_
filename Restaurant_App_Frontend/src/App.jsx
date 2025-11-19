@@ -10,8 +10,8 @@ import UserProfilePage from './pages/UserProfilePage';
 import CartPage from './pages/CartPage'; 
 import AdminMenuPage from './pages/AdminMenuPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';
-import AdminSettingsPage from './pages/AdminSettingsPage'; t
-
+import AdminSettingsPage from './pages/AdminSettingsPage'; 
+import AdminAnalyticsPage from './pages/AdminAnalyticsPage'; 
 
 function App() {
  return (
@@ -29,6 +29,7 @@ function App() {
           <Route path="cart" element={<CartPage />} />
           <Route path="admin/menu" element={<AdminMenuPage />} />
           <Route path="admin/orders" element={<AdminOrdersPage />} />
+          <Route path="admin/analytics" element={<AdminAnalyticsPage />} />
           
           <Route path="menu" element={<MenuPage />} /> 
           <Route path="menu/:category" element={<MenuPage />} />

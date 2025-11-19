@@ -24,6 +24,24 @@ const update = async (id, productData) => {
     return response.data;
 };
 
+const getMostPopular = async (count) => {
+    const response = await api.get(`/Product/MostPopular?count=${count}`);
+    return response.data;
+};
+
+// En Yüksek Puanlılar
+const getTopRated = async (count) => {
+    // minRating=4 (4 ve üzeri puanlılar), count=5
+    const response = await api.get(`/Product/TopRated?minRating=4&count=${count}`);
+    return response.data;
+};
+
+// Kategori İstatistikleri
+const getCategoryCount = async (categoryName) => {
+    const response = await api.get(`/Product/CountByCategory?category=${categoryName}`);
+    return response.data;
+};
+
 // Ürün sil
 const remove = async (id) => {
     const response = await api.delete(`/Product/Delete/${id}`);
@@ -42,5 +60,8 @@ export const productService = {
     create, 
     update, 
     remove,
-    getProductsByFilter
+    getProductsByFilter,
+    getMostPopular, 
+    getTopRated,    
+    getCategoryCount
 };
