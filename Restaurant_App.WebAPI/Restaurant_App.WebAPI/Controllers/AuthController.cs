@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Application.Dto; 
 using Restaurant_App.Business.Abstract;
+using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -28,6 +30,28 @@ namespace Restaurant_App.WebAPI.Controllers
             }
 
             return Ok("Kullanıcı başarıyla oluşturuldu.");
+        }
+        [HttpPut("update-profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDTO model)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Unauthorized();
+
+            var result = await _authService.UpdateUserProfile(userId, model);
+            if (result) return Ok(new { Message = "Profil güncellendi." });
+            return BadRequest("Güncelleme sırasında hata oluştu.");
+        }
+
+        [HttpGet("get-profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Unauthorized();
+
+            var profile = await _authService.GetUserProfile(userId);
+            return Ok(profile);
         }
 
         [HttpPost("login")]
