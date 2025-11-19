@@ -2,66 +2,62 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { productService } from "../../services/productService";
 
 const initialState = {
-    products : [],
-    status: 'idle', //loading,succeeded, failed
+    products: [],
+    pagination: {
+        pageNumber: 1,
+        pageSize: 6,
+        totalPages: 0,
+        totalRecords: 0
+    },
+    status: 'idle',
     error: null
 };
 
-//api isteği: tüm ürünleri çekme
-export const fetchProducts = createAsyncThunk(
-    'products/fetchProducts',
-    async (_, { rejectWithValue}) => {
+// Filtreli ve Sayfalı Ürün Çekme
+export const fetchProductsByFilter = createAsyncThunk(
+    'products/fetchProductsByFilter',
+    async (filterParams, { rejectWithValue }) => {
         try {
-            const data = await productService.getAll();
-            return data; //dönen dto listesi
-        } catch(error) {
+            // filterParams örneği: { pageNumber: 1, searchTerm: 'burger', category: 'Ana Yemekler' }
+            const data = await productService.getProductsByFilter(filterParams);
+            return data; // Backend'den dönen PagedResponse<ProductDTO>
+        } catch (error) {
             return rejectWithValue(error);
         }
     }
 );
 
-//api isteği: kategoriye göre ürün çekme
-export const fetchProductsByCategory = createAsyncThunk(
-    'products/fetchProductsByCategory',
-    async(categoryName, {rejectWithValue}) => {
-        try{
-            const data = await productService.getByCategory(categoryName);
-            return data;
-        }
-        catch(error) {
-            return rejectWithValue(error);
-        }
-    }
-)
 export const productSlice = createSlice({
     name: 'products',
     initialState,
-    reducers: {},
+    reducers: {
+        // Sayfa numarasını resetlemek veya değiştirmek istersek manuel reducer
+        setPageNumber: (state, action) => {
+            state.pagination.pageNumber = action.payload;
+        }
+    },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchProducts.pending, (state) => {
+            //FETCH FILTERED
+            .addCase(fetchProductsByFilter.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(fetchProducts.fulfilled, (state, action) => {
+            .addCase(fetchProductsByFilter.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.products = action.payload; //ürün listesini state'e kaydet
+                state.products = action.payload.data; // PagedResponse içindeki Data listesi
+
+                // Pagination bilgilerini güncelle
+                state.pagination.pageNumber = action.payload.pageNumber;
+                state.pagination.pageSize = action.payload.pageSize;
+                state.pagination.totalRecords = action.payload.totalRecords;
+                state.pagination.totalPages = action.payload.totalPages;
             })
-            .addCase(fetchProducts.rejected, (state, action) => {
-                state.status = 'failed';
-                state.error = action.payload;
-            })
-            .addCase(fetchProductsByCategory.pending, (state) => {
-                state.status = 'loading';
-            })
-            .addCase(fetchProductsByCategory.fulfilled, (state, action) => {
-                state.status = 'succeeded';
-                state.products = action.payload; // Gelen yeni listeyle değiştir
-            })
-            .addCase(fetchProductsByCategory.rejected, (state, action) => {
+            .addCase(fetchProductsByFilter.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             });
-        },
-    });
+    },
+});
 
+export const { setPageNumber } = productSlice.actions;
 export default productSlice.reducer;
