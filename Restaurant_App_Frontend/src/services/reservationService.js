@@ -10,6 +10,11 @@ const getByTable = async (tableId) => {
     return response.data;
 };
 
+const getMyReservations = async () => {
+    const response = await api.get('/Reservation/my-reservations');
+    return response.data;
+};
+
 const create = async (data) => {
     const response = await api.post('/Reservation', data);
     return response.data;
@@ -30,5 +35,6 @@ export const reservationService = {
     getByTable,
     create,
     update,
-    remove
+    remove,
+    getMyReservations
 };

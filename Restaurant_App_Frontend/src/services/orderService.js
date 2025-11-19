@@ -6,9 +6,35 @@ const getMyOrders = async () => {
     return response.data;
 };
 
+// ADMIN: Tüm Online Siparişleri Getir
+const getAllOnlineOrders = async () => {
+    const response = await api.get('/Order/all');
+    return response.data;
+};
+
 // Yeni Online Sipariş Oluştur (Eve)
 const createOrder = async (orderData) => {
     const response = await api.post('/Order/create', orderData);
+    return response.data;
+};
+
+// ADMIN: Online Sipariş Durumu Güncelle
+const updateOnlineOrderStatus = async (id, statusEnum) => {
+    // statusEnum: 0(Waiting), 1(Completed), 2(Canceled), 3(Preparing)
+    const response = await api.put(`/Order/update-status/${id}?state=${statusEnum}`);
+    return response.data;
+};
+
+// ADMIN: Tüm Masa Siparişlerini Getir 
+const getAllTableOrders = async () => {
+    const response = await api.get('/OrderInRestaurant/all/details');
+    return response.data;
+};
+
+// ADMIN: Masa Sipariş Durumu Güncelle
+const updateTableOrderStatus = async (id, statusString) => {
+    // statusString: "Pending", "InProgress", "Served", "Completed"
+    const response = await api.put(`/OrderInRestaurant/${id}/status`, { id, status: statusString });
     return response.data;
 };
 
@@ -21,5 +47,9 @@ const createTableOrder = async (orderData) => {
 export const orderService = {
     getMyOrders,
     createOrder,
-    createTableOrder
+    createTableOrder,
+    getAllOnlineOrders,
+    updateOnlineOrderStatus,
+    getAllTableOrders,
+    updateTableOrderStatus
 };

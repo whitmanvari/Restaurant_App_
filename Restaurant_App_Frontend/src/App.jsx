@@ -9,6 +9,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserProfilePage from './pages/UserProfilePage';
 import CartPage from './pages/CartPage'; 
 import AdminMenuPage from './pages/AdminMenuPage';
+import AdminOrdersPage from './pages/AdminOrdersPage';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="profile" element={<UserProfilePage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="admin/menu" element={<AdminMenuPage />} />
+          <Route path="admin/orders" element={<AdminOrdersPage />} />
           
           <Route path="menu" element={<MenuPage />} /> 
           <Route path="menu/:category" element={<MenuPage />} />
