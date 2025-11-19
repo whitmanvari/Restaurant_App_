@@ -76,7 +76,10 @@ namespace Restaurant_App.Business.Concrete
             {
                 FullName = model.FullName,
                 UserName = model.Email,
-                Email = model.Email
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                Address = model.Address,
+                City = model.City
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
