@@ -29,11 +29,18 @@ const remove = async (id) => {
     const response = await api.delete(`/Product/Delete/${id}`);
     return response.data;
 };
+// params: { pageNumber, pageSize, searchTerm, category }
+const getProductsByFilter = async (params) => {
+    // Axios params objesini query string'e çevirir (?pageNumber=1&searchTerm=abc...)
+    const response = await api.get('/Product/filter', { params });
+    return response.data;
+};
 
 export const productService = {
     getAll,
     getByCategory,
     create, 
     update, 
-    remove  
+    remove,
+    getProductsByFilter
 };
