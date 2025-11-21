@@ -1,66 +1,65 @@
 .footer-custom {
-    background-color: #111; // Footer her zaman koyu kalsın 
+    background-color: #0b0b0b; // Her zaman koyu siyah
     color: #fff;
-    padding: 5rem 0 3rem 0;
-    font-family: 'Lato', sans-serif;
-    border-top: 5px solid var(--accent-color); // Üstte altın çizgi
-    margin-top: auto; // Layout'ta en alta itmek için
+    padding: 4rem 0 2rem 0;
+    border-top: 1px solid #222;
+    margin-top: auto;
 
     h5 {
-        font-family: 'Playfair Display', serif;
-        color: #fff;
-        margin-bottom: 2rem;
-        font-size: 1.5rem;
-        font-weight: 700;
-        letter-spacing: 2px;
+        color: var(--accent-color); // Altın rengi başlıklar
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        letter-spacing: 1px;
     }
 
-    p,
-    li,
-    a {
-        color: #aaa; // Hafif gri metin
-        font-size: 1rem;
+    p, li, a {
+        color: #999; // Gri metin
+        font-size: 0.95rem;
         line-height: 1.8;
         text-decoration: none;
         transition: 0.3s;
-        list-style: none;
-
+        
         &:hover {
-            color: var(--accent-color);
-            padding-left: 5px; // Hover olunca sağa kaysın
+            color: #fff; 
+            padding-left: 5px;
         }
     }
 
     ul {
         padding: 0;
+        list-style: none;
     }
 
-    .social-icons a {
-        font-size: 1.2rem;
-        margin-right: 15px;
-        color: #fff;
-        border: 1px solid #333;
-        width: 45px;
-        height: 45px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-
-        &:hover {
-            background-color: var(--accent-color);
-            color: #000;
-            border-color: var(--accent-color);
-            transform: translateY(-3px);
+    .social-icons {
+        display: flex;
+        gap: 15px;
+        
+        a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #333;
+            border-radius: 50%;
+            color: #fff;
+            padding: 0; 
+            
+            &:hover {
+                background-color: var(--accent-color);
+                border-color: var(--accent-color);
+                color: #000;
+                transform: translateY(-3px);
+                padding-left: 0; 
+            }
         }
     }
 
     .footer-bottom {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid #222;
         margin-top: 3rem;
         padding-top: 1.5rem;
-        font-size: 0.8rem;
-        color: #666;
+        color: #555;
+        font-size: 0.85rem;
     }
 }

@@ -5,16 +5,19 @@ import { toast } from 'react-toastify';
 import { loginUser, registerUser } from '../store/slices/authSlice';
 import '../styles/auth.scss';
 
-function AuthPage() {
+const AuthPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
 
     const { status, error, isAuthenticated } = useSelector((state) => state.auth);
-
-    // URL '/login' ise panel sağda değil (Login açık), '/signup' ise panel sağda (Register açık)
-    // Bu sayede link ile gelen doğru paneli görür.
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
+
+    // Form States
+    const [loginData, setLoginData] = useState({ email: '', password: '' });
+    const [registerData, setRegisterData] = useState({
+        fullName: '', email: '', password: '', confirmPassword: '', phoneNumber: '', city: ''
+    });
 
     useEffect(() => {
         if (location.pathname === '/signup') {
@@ -24,130 +27,94 @@ function AuthPage() {
         }
     }, [location]);
 
-    // --- REGISTER STATE ---
-    const [regData, setRegData] = useState({
-        fullName: '', email: '', password: '', confirmPassword: '', phoneNumber: '', city: ''
-    });
-
-    // --- LOGIN STATE ---
-    const [loginData, setLoginData] = useState({ email: '', password: '' });
-
-    // --- HANDLERS ---
-    const handleRegChange = (e) => setRegData({ ...regData, [e.target.name]: e.target.value });
-    const handleLoginChange = (e) => setLoginData({ ...loginData, [e.target.name]: e.target.value });
-
-    const handleRegisterSubmit = async (e) => {
-        e.preventDefault();
-        if (regData.password !== regData.confirmPassword) {
-            toast.error("Şifreler eşleşmiyor."); return;
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/');
         }
-        // Basit password check
-        if (regData.password.length < 6) {
-            toast.warning("Şifre en az 6 karakter olmalı."); return;
+        if (status === 'failed' && error) {
+            toast.error(typeof error === 'string' ? error : 'İşlem başarısız.');
         }
+    }, [isAuthenticated, status, error, navigate]);
 
-        // Kayıt işlemi
-        const resultAction = await dispatch(registerUser(regData));
-        if (registerUser.fulfilled.match(resultAction)) {
-            toast.success("Kayıt başarılı! Lütfen giriş yapın.");
-            setIsRightPanelActive(false); // Başarılı olunca Login paneline kay
-            navigate('/login'); // URL'i de güncelle
-        }
-    };
-
-    const handleLoginSubmit = (e) => {
+    const handleLoginSubmit = async (e) => {
         e.preventDefault();
         dispatch(loginUser(loginData));
     };
 
-    // Login başarılıysa ana sayfaya git
-    useEffect(() => {
-        if (isAuthenticated) navigate('/');
-        if (status === 'failed' && error) toast.error(typeof error === 'string' ? error : 'İşlem başarısız.');
-    }, [isAuthenticated, status, error, navigate]);
-
-    // Panel Geçiş Fonksiyonları
-    const switchToSignUp = () => {
-        setIsRightPanelActive(true);
-        navigate('/signup');
-    }
-
-    const switchToSignIn = () => {
-        setIsRightPanelActive(false);
-        navigate('/login');
-    }
+    const handleRegisterSubmit = async (e) => {
+        e.preventDefault();
+        if (registerData.password !== registerData.confirmPassword) {
+            toast.error('Şifreler eşleşmiyor.');
+            return;
+        }
+        const result = await dispatch(registerUser(registerData));
+        if (registerUser.fulfilled.match(result)) {
+            toast.success('Kayıt başarılı! Giriş yapabilirsiniz.');
+            setIsRightPanelActive(false);
+            navigate('/login');
+        }
+    };
 
     return (
-        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-            <div className={`auth-container ${isRightPanelActive ? "right-panel-active" : ""}`} id="container">
-
-                {/* --- SIGN UP (KAYIT) FORMU --- */}
+        <div className="auth-page-wrapper">
+            <div className={`auth-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
+                
+                {/* KAYIT OL FORM */}
                 <div className="form-container sign-up-container">
                     <form onSubmit={handleRegisterSubmit}>
                         <h1>Hesap Oluştur</h1>
-                        <div className="social-container">
-                            <a href="#" className="social"><i className="fab fa-facebook-f"></i></a>
-                            <a href="#" className="social"><i className="fab fa-google"></i></a>
-                            <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
+                        <p className="small text-muted mb-4">Lezzet dünyasına katılın</p>
+                        
+                        <input type="text" placeholder="Ad Soyad" value={registerData.fullName} onChange={(e) => setRegisterData({...registerData, fullName: e.target.value})} required />
+                        <input type="email" placeholder="Email" value={registerData.email} onChange={(e) => setRegisterData({...registerData, email: e.target.value})} required />
+                        <div className="d-flex gap-2 w-100">
+                             <input type="text" placeholder="Telefon" value={registerData.phoneNumber} onChange={(e) => setRegisterData({...registerData, phoneNumber: e.target.value})} />
+                             <input type="text" placeholder="Şehir" value={registerData.city} onChange={(e) => setRegisterData({...registerData, city: e.target.value})} />
                         </div>
-                        <span>veya email ile kayıt ol</span>
+                        <input type="password" placeholder="Şifre" value={registerData.password} onChange={(e) => setRegisterData({...registerData, password: e.target.value})} required />
+                        <input type="password" placeholder="Şifre Tekrar" value={registerData.confirmPassword} onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})} required />
 
-                        <input type="text" name="fullName" placeholder="Ad Soyad" value={regData.fullName} onChange={handleRegChange} required className="form-control" />
-                        <input type="email" name="email" placeholder="Email" value={regData.email} onChange={handleRegChange} required className="form-control" />
-
-                        {/* Yan yana inputlar için küçük grid */}
-                        <div className="d-flex w-100 gap-2">
-                            <input type="text" name="city" placeholder="Şehir" value={regData.city} onChange={handleRegChange} className="form-control" />
-                            <input type="text" name="phoneNumber" placeholder="Tel" value={regData.phoneNumber} onChange={handleRegChange} className="form-control" />
-                        </div>
-
-                        <input type="password" name="password" placeholder="Şifre" value={regData.password} onChange={handleRegChange} required className="form-control" />
-                        <input type="password" name="confirmPassword" placeholder="Şifre Tekrar" value={regData.confirmPassword} onChange={handleRegChange} required className="form-control" />
-
-                        <button type="submit" disabled={status === 'loading'}>Kaydol</button>
+                        <button type="submit" disabled={status === 'loading'}>
+                            {status === 'loading' ? 'Kaydediliyor...' : 'Kayıt Ol'}
+                        </button>
                     </form>
                 </div>
 
-                {/* --- SIGN IN (GİRİŞ) FORMU --- */}
+                {/* GİRİŞ YAP FORM */}
                 <div className="form-container sign-in-container">
                     <form onSubmit={handleLoginSubmit}>
-                        <h1>Giriş Yap</h1>
-                        <div className="social-container">
-                            <a href="#" className="social"><i className="fab fa-facebook-f"></i></a>
-                            <a href="#" className="social"><i className="fab fa-google"></i></a>
-                            <a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
-                        </div>
-                        <span>hesabınızla giriş yapın</span>
-
-                        <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleLoginChange} required className="form-control" />
-                        <input type="password" name="password" placeholder="Şifre" value={loginData.password} onChange={handleLoginChange} required className="form-control" />
-
-                        <a href="#" className="mt-2 text-muted text-decoration-none small">Şifremi unuttum?</a>
-                        <button type="submit" disabled={status === 'loading'}>Giriş</button>
+                        <h1 className="mb-2">Hoşgeldiniz</h1>
+                        <p className="small text-muted mb-4">Lütfen hesabınıza giriş yapın</p>
+                        
+                        <input type="email" placeholder="Email" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} required />
+                        <input type="password" placeholder="Şifre" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} required />
+                        
+                        <a href="#" className="small text-muted my-2">Şifremi unuttum</a>
+                        
+                        <button type="submit" disabled={status === 'loading'}>
+                            {status === 'loading' ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+                        </button>
                     </form>
                 </div>
 
-                {/* --- OVERLAY (KAYAN RESİM) --- */}
+                {/* OVERLAY */}
                 <div className="overlay-container">
                     <div className="overlay">
-                        {/* SOL OVERLAY: Giriş paneli açıkken görünür (Kaydolmaya davet eder) */}
                         <div className="overlay-panel overlay-left">
-                            <h1>Tekrar Hoşgeldiniz!</h1>
-                            <p>Restoranımızın lezzetleriyle buluşmak için giriş yapın.</p>
-                            <button className="ghost" onClick={switchToSignIn}>Giriş Yap</button>
+                            <h1>Tekrar Merhaba!</h1>
+                            <p>Zaten bir hesabınız var mı? Giriş yaparak rezervasyonlarınıza ulaşın.</p>
+                            <button className="ghost" onClick={() => navigate('/login')}>Giriş Yap</button>
                         </div>
-
-                        {/* SAĞ OVERLAY: Kayıt paneli açıkken görünür (Giriş yapmaya davet eder) */}
                         <div className="overlay-panel overlay-right">
-                            <h1>Merhaba, Lezzet Tutkunu!</h1>
-                            <p>Kişisel bilgilerinizi girin ve bizimle lezzet yolculuğuna başlayın.</p>
-                            <button className="ghost" onClick={switchToSignUp}>Kaydol</button>
+                            <h1>Yeni Lezzetler Keşfet</h1>
+                            <p>Henüz üye değil misiniz? Hemen kayıt olun ve özel fırsatlardan yararlanın.</p>
+                            <button className="ghost" onClick={() => navigate('/signup')}>Kayıt Ol</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default AuthPage;

@@ -80,7 +80,7 @@ namespace Restaurant_App.Business.Concrete
             {
                 // Mantık: (ÜrünAlerjenleri & İstenmeyenler) == 0 ise çakışma yok demektir.
                 // Örnek: Ürün (Süt|Yumurta) içeriyor, Biz (Fıstık) istemiyoruz -> Çakışma yok (0), Ürün gelir.
-                // Örnek: Ürün (Süt|Yumurta) içeriyor, Biz (Süt) istemiyoruz -> Çakışma var (Süt biti), Ürün gelmez.
+                // Örnek: Ürün (Süt|Yumurta) içeriyor, Biz (Süt) istemiyoruz -> Çakışma var (Süt biti), Ürün gelmez.m run
                 allProducts = allProducts.Where(x => ((int)x.Allergic & p.ExcludeAllergens.Value) == 0).ToList();
             }
 

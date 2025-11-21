@@ -34,7 +34,7 @@ const AdminAnalyticsPage = () => {
         }
     });
 
-    // Premium Color Palette - Adachi Style
+    // Premium Color Palette 
     const CHART_COLORS = {
         primary: '#C5A059',
         secondary: '#8B7355',
