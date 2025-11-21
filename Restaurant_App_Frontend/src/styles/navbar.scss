@@ -1,12 +1,7 @@
-$text-light: #f8f9fa;
-$text-dark: #2c2c2c;
-$accent-gold: #c5a059;
-$bg-dark: #111;
-
 .navbar-custom {
     transition: all 0.4s ease-in-out;
-    padding: 1.5rem 0; // Başlangıçta geniş ve ferah
-    background-color: transparent; // Şeffaf
+    padding: 1.5rem 0;
+    background-color: transparent; // Ana sayfada en tepedeyken şeffaf
     position: fixed;
     top: 0;
     width: 100%;
@@ -14,39 +9,53 @@ $bg-dark: #111;
 
     // Aşağı kaydırınca devreye girecek stil (Scrolled state)
     &.scrolled {
-        background-color: rgba(17, 17, 17, 0.95); // Koyu, hafif transparan 
-        padding: 0.8rem 0; // Daralıyor
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        background-color: var(--navbar-bg);
+        padding: 0.8rem 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-color);
     }
 
     .brand-logo {
         font-family: 'Playfair Display', serif;
-        font-size: 1.8rem;
+        font-size: 2.2rem;
         font-weight: 700;
-        color: $text-light;
+        color: var(--text-main) !important;
         text-decoration: none;
-        letter-spacing: 2px;
+        letter-spacing: 3px;
+        position: relative;
 
-        span {
-            color: $accent-gold;
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-color);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        &:hover::after {
+            transform: scaleX(1);
         }
     }
 
     .nav-link {
-        color: rgba(255, 255, 255, 0.8) !important;
+        color: var(--text-main) !important;
         font-family: 'Lato', sans-serif;
         font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 2px;
-        font-weight: 400;
+        font-weight: 600;
         margin: 0 10px;
         transition: color 0.3s;
         position: relative;
 
         &:hover,
         &.active {
-            color: $accent-gold !important;
+            color: var(--accent-color) !important;
         }
 
         // Alt çizgi animasyonu
@@ -57,7 +66,7 @@ $bg-dark: #111;
             height: 1px;
             bottom: 5px;
             left: 0;
-            background-color: $accent-gold;
+            background-color: var(--accent-color);
             transition: width 0.3s;
         }
 
@@ -65,9 +74,10 @@ $bg-dark: #111;
             width: 100%;
         }
     }
+
     .btn-auth {
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #fff;
+        border: 1px solid var(--text-main);
+        color: var(--text-main);
         padding: 8px 20px;
         font-size: 0.8rem;
         text-transform: uppercase;
@@ -75,18 +85,19 @@ $bg-dark: #111;
         transition: all 0.3s;
 
         &:hover {
-            background-color: $accent-gold;
-            border-color: $accent-gold;
-            color: #000;
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #000; // Hover olunca yazı siyah olsun
         }
     }
-    // User Avatar
+
+    // User Avatar Alanı
     .user-dropdown-btn {
         display: flex;
         align-items: center;
         background: transparent;
         border: none;
-        color: #fff;
+        color: var(--text-main);
         font-size: 0.9rem;
 
         img {
@@ -94,71 +105,93 @@ $bg-dark: #111;
             height: 35px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid $accent-gold;
+            border: 2px solid var(--accent-color);
             margin-right: 10px;
         }
     }
+
+    // Dark modda ikonu beyazlat, Light modda siyah bırak
+    .navbar-toggler-icon {
+        filter: invert(1);
+    }
+
+    @at-root [data-bs-theme="light"] & .navbar-toggler-icon {
+        filter: invert(0);
+    }
+
+    .navbar-toggler {
+        border-color: var(--text-main);
+    }
 }
-// Kullanıcı Dropdown Menüsü Özelleştirmesi
+
+// KULLANICI DROPDOWN MENÜSÜ
 .dropdown-menu {
-    background-color: #111 !important; // Kömür siyahı zemin 
-    border: 1px solid rgba(255, 255, 255, 0.1); // İnce çerçeve
+    background-color: var(--bg-card) !important; // Kart rengini alsın
+    border: 1px solid var(--border-color);
     padding: 0.5rem 0;
-    margin-top: 10px !important; // Biraz aşağıdan başlasın
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); // Derinlik hissi
+    margin-top: 10px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     border-radius: 0;
     min-width: 220px;
+
     // Menü öğeleri
     .dropdown-item {
-        color: #ccc !important; // Varsayılan yazı rengi (Gri)
+        color: var(--text-main) !important;
         padding: 10px 20px;
         font-family: 'Lato', sans-serif;
         font-size: 0.9rem;
         transition: all 0.2s ease;
         cursor: pointer;
+        background-color: transparent;
 
         .user-header {
             padding: 10px 20px;
-            color: #fff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 5px;
 
             small {
                 display: block;
-                color: #888;
+                color: var(--text-muted);
                 font-size: 0.8rem;
             }
         }
+
         // İkonlar
         i {
             width: 20px;
             text-align: center;
             margin-right: 8px;
-            color: $accent-gold; // İkonlar altın rengi olsun
+            color: var(--accent-color);
         }
 
-        // Üzerine gelince (Hover)
+        // Hover
         &:hover,
         &:focus {
-            background-color: $accent-gold !important; // Arka plan Altın olsun
-            color: #000 !important; // Yazı Siyah olsun (Okunabilirlik için)
+            background-color: var(--accent-color) !important;
+            color: #fff !important;
 
             i {
-                color: #000;
+                color: #fff;
+            }
+
+            .user-header {
+                color: #fff;
+
+                small {
+                    color: #eee;
+                }
             }
         }
     }
+
     .cart-badge {
         font-size: 0.6rem;
     }
 
-    // Toggler ikonu için beyaz filtre 
-    .custom-toggler-icon {
-        filter: invert(1);
-    }
-    // Çıkış Yap butonu için özel kural
+    // Çıkış Yap butonu
     .dropdown-item.text-danger {
-        color: #ff6b6b !important; // Hafif kırmızı
+        color: #ff6b6b !important;
 
         &:hover {
             background-color: #ff6b6b !important;
@@ -169,8 +202,8 @@ $bg-dark: #111;
             }
         }
     }
-    // Ayırıcı çizgi
+
     .dropdown-divider {
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid var(--border-color);
     }
 }

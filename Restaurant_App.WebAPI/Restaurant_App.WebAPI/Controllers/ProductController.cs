@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Application.Dto;
+using Restaurant_App.Application.Pagination;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
@@ -109,6 +110,13 @@ namespace Restaurant_App.WebAPI.Controllers
         {
             var count = await _productService.GetCountByCategory(category);
             return Ok(count);
+        }
+
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetByFilter([FromQuery] PaginationParams p)
+        {
+            var response = await _productService.GetProductsByFilter(p);
+            return Ok(response);
         }
     }
 }

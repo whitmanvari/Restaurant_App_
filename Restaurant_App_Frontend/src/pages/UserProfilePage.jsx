@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { orderService } from '../services/orderService';
 import { authService } from '../services/authService';
-import { reservationService } from '../services/reservationService'; // EKLENDİ
+import { reservationService } from '../services/reservationService';
 import { toast } from 'react-toastify';
+import UserOrderDetailModal from '../components/UserOrderDetailModal';
 
 function UserProfilePage() {
     const { user } = useSelector(state => state.auth);
@@ -11,9 +12,8 @@ function UserProfilePage() {
     // State'ler
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true); // loadingOrders 
-
     const [myReservations, setMyReservations] = useState([]); //Rezervasyon State'i
-
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'info' | 'reservations'
 
     // Profil Form State'i
@@ -145,6 +145,14 @@ function UserProfilePage() {
                                                         <td>{new Date(order.orderDate).toLocaleDateString('tr-TR')}</td>
                                                         <td className="fw-bold">{order.totalAmount} ₺</td>
                                                         <td><span className="badge bg-success">Tamamlandı</span></td>
+                                                        <td className="text-end">
+                                                            <button
+                                                                className="btn btn-sm btn-outline-dark"
+                                                                onClick={() => setSelectedOrderId(order.id)}
+                                                            >
+                                                                İncele
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -258,6 +266,13 @@ function UserProfilePage() {
                     </div>
                 </div>
             </div>
+            {/* SİPARİŞ DETAY MODALI */}
+            {selectedOrderId && (
+                <UserOrderDetailModal
+                    orderId={selectedOrderId}
+                    onClose={() => setSelectedOrderId(null)}
+                />
+            )}
         </div>
     );
 }

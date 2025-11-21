@@ -1,4 +1,6 @@
-﻿using Restaurant_App.Business.Abstract;
+﻿using Restaurant_App.Application.Dto;
+using Restaurant_App.Application.Pagination;
+using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
@@ -67,6 +69,58 @@ namespace Restaurant_App.Business.Concrete
         public async Task Update(Product entity)
         {
             await _productDal.Update(entity);
+        }
+
+        public async Task<PagedResponse<ProductDTO>> GetProductsByFilter(PaginationParams p)
+        {
+            var allProducts = await _productDal.GetAll(x => !x.IsDeleted);
+
+            //Alerjen Filtreleme
+            if (p.ExcludeAllergens.HasValue && p.ExcludeAllergens.Value > 0)
+            {
+                // Mantık: (ÜrünAlerjenleri & İstenmeyenler) == 0 ise çakışma yok demektir.
+                // Örnek: Ürün (Süt|Yumurta) içeriyor, Biz (Fıstık) istemiyoruz -> Çakışma yok (0), Ürün gelir.
+                // Örnek: Ürün (Süt|Yumurta) içeriyor, Biz (Süt) istemiyoruz -> Çakışma var (Süt biti), Ürün gelmez.
+                allProducts = allProducts.Where(x => ((int)x.Allergic & p.ExcludeAllergens.Value) == 0).ToList();
+            }
+
+            // Kategori Filtresi
+            if (!string.IsNullOrEmpty(p.Category) && p.Category != "Tümü")
+            {
+                allProducts = allProducts.Where(x => x.Category != null && x.Category.Name == p.Category).ToList();
+            }
+
+            // Arama (Search) Filtresi
+            if (!string.IsNullOrEmpty(p.SearchTerm))
+            {
+                string lowerTerm = p.SearchTerm.ToLower();
+                allProducts = allProducts.Where(x => x.Name.ToLower().Contains(lowerTerm) ||
+                                                     x.Description.ToLower().Contains(lowerTerm)).ToList();
+            }
+
+            // Toplam Kayıt Sayısı 
+            int totalRecords = allProducts.Count;
+
+            //Sayfalama (Skip/Take)
+            var pagedList = allProducts
+                .Skip((p.PageNumber - 1) * p.PageSize)
+                .Take(p.PageSize)
+                .ToList();
+
+            // 6. DTO Dönüşümü (Manuel veya Mapper ile)
+            var dtoList = pagedList.Select(p => new ProductDTO
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category?.Name ?? "",
+                ImageUrls = p.Images.Select(i => i.Url).ToList(),
+                Allergic = (int)p.Allergic
+            }).ToList();
+
+            return new PagedResponse<ProductDTO>(dtoList, p.PageNumber, p.PageSize, totalRecords);
         }
     }
 }

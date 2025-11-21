@@ -12,6 +12,12 @@ const getAllOnlineOrders = async () => {
     return response.data;
 };
 
+//Tek bir siparişin detayını getir (İçindeki ürünlerle birlikte)
+const getOrderDetails = async (id) => {
+    const response = await api.get(`/Order/${id}`);
+    return response.data;
+};
+
 // Yeni Online Sipariş Oluştur (Eve)
 const createOrder = async (orderData) => {
     const response = await api.post('/Order/create', orderData);
@@ -47,6 +53,7 @@ const createTableOrder = async (orderData) => {
 export const orderService = {
     getMyOrders,
     createOrder,
+    getOrderDetails,
     createTableOrder,
     getAllOnlineOrders,
     updateOnlineOrderStatus,

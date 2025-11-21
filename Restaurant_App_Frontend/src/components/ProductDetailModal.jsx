@@ -24,6 +24,17 @@ function ProductDetailModal({ product, onClose }) {
         }
     }, [product]);
 
+    const handleDeleteComment = async (commentId) => {
+        if (!window.confirm("Bu yorumu silmek istediğinize emin misiniz?")) return;
+        try {
+            await commentService.remove(commentId);
+            toast.success("Yorum silindi.");
+            loadData(); // Listeyi yenile
+        } catch (error) {
+            toast.error("Silme yetkiniz yok veya hata oluştu.");
+        }
+    };
+
     const loadData = async () => {
         try {
             const [commentsData, avgData] = await Promise.all([
@@ -83,7 +94,7 @@ function ProductDetailModal({ product, onClose }) {
                     </div>
                     <div className="modal-body p-0">
                         <div className="row g-0">
-                            {/* SOL: Ürün Görseli & Bilgi */}
+                            {/* SOL Taraf*/}
                             <div className="col-md-5 bg-light d-flex flex-column align-items-center justify-content-center p-4 text-center">
                                 <img
                                     src={product.imageUrls?.[0]}
@@ -105,60 +116,54 @@ function ProductDetailModal({ product, onClose }) {
                                 </button>
                             </div>
 
-                            {/* SAĞ: Yorumlar & Form */}
+                            {/* SAĞ Taraf */}
                             <div className="col-md-7 p-4">
                                 <h5 className="mb-3">Müşteri Yorumları ({comments.length})</h5>
 
-                                {/* Yorum Listesi */}
                                 <div className="comment-list mb-4" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                                     {loading ? <div className="spinner-border spinner-border-sm"></div> : (
-                                        comments.length === 0 ? <p className="text-muted small">Henüz yorum yapılmamış. İlk yorumu sen yap!</p> :
+                                        comments.length === 0 ? <p className="text-muted small">Henüz yorum yok.</p> :
                                             comments.map(comment => (
-                                                <div key={comment.id} className="mb-3 border-bottom pb-2">
+                                                <div key={comment.id} className="mb-3 border-bottom pb-2 position-relative">
+
+                                                    {/* Admin veya Yorum Sahibi için Silme Butonu */}
+                                                    {(user?.role === 'Admin' || user?.email === comment.userId) && (
+                                                        <button
+                                                            className="btn btn-sm text-danger position-absolute top-0 end-0 p-0"
+                                                            onClick={() => handleDeleteComment(comment.id)}
+                                                            title="Yorumu Sil"
+                                                        >
+                                                            <i className="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    )}
+
                                                     <div className="d-flex justify-content-between align-items-center">
-                                                        <strong className="small">Bir Misafir</strong>
-                                                        <div className="text-warning small">
+                                                        <strong className="small">Misafir</strong>
+                                                        <div className="text-warning small me-3"> 
                                                             {[...Array(comment.ratingValue)].map((_, i) => <i key={i} className="fas fa-star"></i>)}
                                                         </div>
                                                     </div>
-                                                    <p className="small text-muted mb-1">{comment.text}</p>
+                                                    <p className="small text-muted mb-1 mt-1">{comment.text}</p>
                                                     <small className="text-muted" style={{ fontSize: '0.7rem' }}>{new Date(comment.createdDate).toLocaleDateString()}</small>
                                                 </div>
                                             ))
                                     )}
                                 </div>
-
-                                {/* Yorum Yap Formu */}
+                                {/* Form kısmı*/}
                                 {isAuthenticated ? (
                                     <form onSubmit={handleSubmitComment} className="bg-light p-3 rounded">
                                         <h6 className="mb-2">Fikrini Paylaş</h6>
                                         <div className="mb-2">
                                             <label className="small me-2">Puanın:</label>
                                             {[1, 2, 3, 4, 5].map(num => (
-                                                <i
-                                                    key={num}
-                                                    className={`fas fa-star cursor-pointer ${num <= newRating ? 'text-warning' : 'text-secondary opacity-25'}`}
-                                                    onClick={() => setNewRating(num)}
-                                                    style={{ cursor: 'pointer', marginRight: '2px' }}
-                                                ></i>
+                                                <i key={num} className={`fas fa-star cursor-pointer ${num <= newRating ? 'text-warning' : 'text-secondary opacity-25'}`} onClick={() => setNewRating(num)} style={{ cursor: 'pointer', marginRight: '2px' }}></i>
                                             ))}
                                         </div>
-                                        <textarea
-                                            className="form-control form-control-sm mb-2"
-                                            placeholder="Yorumunuz..."
-                                            rows="2"
-                                            value={newComment}
-                                            onChange={e => setNewComment(e.target.value)}
-                                            required
-                                        ></textarea>
-                                        <button type="submit" className="btn btn-sm btn-outline-dark w-100" disabled={submitting}>
-                                            {submitting ? 'Gönderiliyor...' : 'Yorumu Gönder'}
-                                        </button>
+                                        <textarea className="form-control form-control-sm mb-2" placeholder="Yorumunuz..." rows="2" value={newComment} onChange={e => setNewComment(e.target.value)} required></textarea>
+                                        <button type="submit" className="btn btn-sm btn-outline-dark w-100" disabled={submitting}>{submitting ? 'Gönderiliyor...' : 'Yorumu Gönder'}</button>
                                     </form>
                                 ) : (
-                                    <div className="alert alert-light text-center small">
-                                        Yorum yapmak için <a href="/login">giriş yapın</a>.
-                                    </div>
+                                    <div className="alert alert-light text-center small">Yorum yapmak için <a href="/login">giriş yapın</a>.</div>
                                 )}
                             </div>
                         </div>

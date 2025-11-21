@@ -52,9 +52,5 @@ namespace Restaurant_App.WebAPI.Controllers
             var dto = _mapper.Map<List<RatingDTO>>(ratings); //
             return Ok(dto);
         }
-
-        // Rating silme işlemi de Comment silme ile ilişkili olduğundan
-        // ve veritabanı bütünlüğünü (foreign key constraint)
-        // bozmamak için buraya eklemiyoruz.
     }
 }

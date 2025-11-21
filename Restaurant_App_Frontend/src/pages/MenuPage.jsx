@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "../store/slices/categorySlice";
-import { fetchProductsByFilter, setPageNumber } from "../store/slices/productSlice"; 
+import { fetchProductsByFilter, setPageNumber } from "../store/slices/productSlice";
 import ProductDetailModal from '../components/ProductDetailModal';
 import { Allergens } from '../constants/allergens';
 
@@ -89,30 +89,30 @@ function MenuPage() {
                     </div>
                 </div>
             </div>
-            
+
             {/* Alerjen Filtresi Butonları */}
             <div className="col-md-12 text-center">
-                    <small className="text-muted d-block mb-2">Şunları İçermesin:</small>
-                    <div className="d-flex flex-wrap justify-content-center gap-2">
-                        {Allergens.map(allergen => {
-                            // Bu alerjen şu an seçili mi? (Bitwise AND kontrolü)
-                            const isSelected = (excludedAllergensMask & allergen.id) === allergen.id;
-                            
-                            return (
-                                <button
-                                    key={allergen.id}
-                                    className={`btn btn-sm rounded-pill ${isSelected ? 'btn-danger' : 'btn-outline-secondary'}`}
-                                    onClick={() => handleAllergenChange(allergen.id)}
-                                    style={{ fontSize: '0.8rem' }}
-                                >
-                                    <i className={`${allergen.icon} me-1`}></i>
-                                    {allergen.label}
-                                    {isSelected && <i className="fas fa-times ms-2"></i>}
-                                </button>
-                            );
-                        })}
-                    </div>
+                <small className="text-muted d-block mb-2">Şunları İçermesin:</small>
+                <div className="d-flex flex-wrap justify-content-center gap-2">
+                    {Allergens.map(allergen => {
+                        // Bu alerjen şu an seçili mi? (Bitwise AND kontrolü)
+                        const isSelected = (excludedAllergensMask & allergen.id) === allergen.id;
+
+                        return (
+                            <button
+                                key={allergen.id}
+                                className={`btn btn-sm rounded-pill ${isSelected ? 'btn-danger' : 'btn-outline-secondary'}`}
+                                onClick={() => handleAllergenChange(allergen.id)}
+                                style={{ fontSize: '0.8rem' }}
+                            >
+                                <i className={`${allergen.icon} me-1`}></i>
+                                {allergen.label}
+                                {isSelected && <i className="fas fa-times ms-2"></i>}
+                            </button>
+                        );
+                    })}
                 </div>
+            </div>
 
             {/* --- KATEGORİLER --- */}
             <div className="d-flex justify-content-center mb-5 overflow-auto">
@@ -148,82 +148,80 @@ function MenuPage() {
                     <div className="row row-cols-1 row-cols-md-3 g-4">
                         {products.map((product) => (
                             <div className="col" key={product.id}>
-                                <div className="card h-100 shadow-sm border-0 fade-in-up">
+                                <div className="menu-card shadow-sm" onClick={() => setSelectedProduct(product)}>
+
+                                    {/* Arka Plan Resmi */}
                                     <img
-                                        src={product.imageUrls?.[0] || 'https://via.placeholder.com/300x200?text=Resim+Yok'}
-                                        className="card-img-top"
+                                        src={product.imageUrls?.[0] || 'https://via.placeholder.com/300x200'}
+                                        className="card-img-bg"
                                         alt={product.name}
-                                        style={{ height: '250px', objectFit: 'cover' }}
                                     />
-                                    <div className="card-body">
-                                        <h5 className="card-title" style={{ fontFamily: 'Playfair Display' }}>{product.name}</h5>
-                                        <p className="card-text text-muted small">
-                                            {product.description.length > 60 ? product.description.substring(0, 60) + '...' : product.description}
-                                        </p>
+
+                                    {/* Hover Olunca Çıkacak Katman */}
+                                    <div className="card-overlay">
+                                        <h5>{product.name}</h5>
+                                        <p>{product.description.substring(0, 50)}...</p>
+                                        <div className="price-tag">{product.price} ₺</div>
+                                        <button className="btn-inspect">İncele</button>
                                     </div>
-                                    <div className="card-footer bg-white border-0 d-flex justify-content-between align-items-center pb-3">
-                                        <span className="text-success fw-bold fs-5">{product.price} ₺</span>
-                                        <button
-                                            className="btn btn-outline-dark btn-sm px-3"
-                                            onClick={() => setSelectedProduct(product)}
-                                        >
-                                            İncele
-                                        </button>
-                                    </div>
+
                                 </div>
                             </div>
                         ))}
-                    </div>
+                </div>
 
-                    {products.length === 0 && (
-                        <div className="text-center mt-5 text-muted p-5 bg-light rounded">
-                            <i className="fas fa-search fa-3x mb-3 opacity-50"></i>
-                            <p>Aradığınız kriterlere uygun ürün bulunamadı.</p>
-                        </div>
-                    )}
-
-                    {/* PAGINATION (SAYFALAMA)  */}
-                    {pagination.totalPages > 1 && (
-                        <div className="d-flex justify-content-center mt-5">
-                            <nav>
-                                <ul className="pagination">
-                                    <li className={`page-item ${pagination.pageNumber === 1 ? 'disabled' : ''}`}>
-                                        <button className="page-link text-dark" onClick={() => handlePageChange(pagination.pageNumber - 1)}>
-                                            <i className="fas fa-chevron-left"></i>
-                                        </button>
-                                    </li>
-
-                                    {[...Array(pagination.totalPages)].map((_, i) => (
-                                        <li key={i} className={`page-item ${pagination.pageNumber === i + 1 ? 'active' : ''}`}>
-                                            <button
-                                                className={`page-link ${pagination.pageNumber === i + 1 ? 'bg-dark border-dark text-white' : 'text-dark'}`}
-                                                onClick={() => handlePageChange(i + 1)}
-                                            >
-                                                {i + 1}
-                                            </button>
-                                        </li>
-                                    ))}
-
-                                    <li className={`page-item ${pagination.pageNumber === pagination.totalPages ? 'disabled' : ''}`}>
-                                        <button className="page-link text-dark" onClick={() => handlePageChange(pagination.pageNumber + 1)}>
-                                            <i className="fas fa-chevron-right"></i>
-                                        </button>
-                                    </li>
-                                </ul>
-                            </nav>
-                        </div>
-                    )}
-                </>
+            {products.length === 0 && (
+                <div className="text-center mt-5 text-muted p-5 bg-light rounded">
+                    <i className="fas fa-search fa-3x mb-3 opacity-50"></i>
+                    <p>Aradığınız kriterlere uygun ürün bulunamadı.</p>
+                </div>
             )}
 
-            {/* ÜRÜN DETAY MODALI */}
-            {selectedProduct && (
-                <ProductDetailModal
-                    product={selectedProduct}
-                    onClose={() => setSelectedProduct(null)}
-                />
+            {/* PAGINATION (SAYFALAMA)  */}
+            {pagination.totalPages > 1 && (
+                <div className="d-flex justify-content-center mt-5">
+                    <nav>
+                        <ul className="pagination">
+                            <li className={`page-item ${pagination.pageNumber === 1 ? 'disabled' : ''}`}>
+                                <button className="page-link text-dark" onClick={() => handlePageChange(pagination.pageNumber - 1)}>
+                                    <i className="fas fa-chevron-left"></i>
+                                </button>
+                            </li>
+
+                            {[...Array(pagination.totalPages)].map((_, i) => (
+                                <li key={i} className={`page-item ${pagination.pageNumber === i + 1 ? 'active' : ''}`}>
+                                    <button
+                                        className={`page-link ${pagination.pageNumber === i + 1 ? 'bg-dark border-dark text-white' : 'text-dark'}`}
+                                        onClick={() => handlePageChange(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                </li>
+                            ))}
+
+                            <li className={`page-item ${pagination.pageNumber === pagination.totalPages ? 'disabled' : ''}`}>
+                                <button className="page-link text-dark" onClick={() => handlePageChange(pagination.pageNumber + 1)}>
+                                    <i className="fas fa-chevron-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             )}
-        </div>
+        </>
+    )
+}
+
+{/* ÜRÜN DETAY MODALI */ }
+{
+    selectedProduct && (
+        <ProductDetailModal
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+        />
+    )
+}
+        </div >
     );
 }
 
