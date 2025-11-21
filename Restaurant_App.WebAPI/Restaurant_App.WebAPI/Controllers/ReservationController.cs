@@ -100,5 +100,15 @@ namespace Restaurant_App.WebAPI.Controllers
             await _reservationService.Delete(reservation);
             return NoContent();
         }
+
+        [HttpGet("my-reservations")]
+        [Authorize]
+        public async Task<IActionResult> GetMyReservations()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var all = await _reservationService.GetAll(r => r.CreatedBy == userId);
+            var dto = _mapper.Map<List<ReservationDTO>>(all);
+            return Ok(dto);
+        }
     }
 }

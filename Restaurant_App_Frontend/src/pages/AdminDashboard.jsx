@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { reservationService } from '../services/reservationService';
 import api from '../api/axiosInstance';
 import TableDetailModal from '../components/TableDetailModal';
+import ReservationEditModal from '../components/ReservationEditModal';
 
 function AdminDashboard() {
     const { user } = useSelector(state => state.auth);
@@ -15,6 +16,7 @@ function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('reservations'); // 'reservations' veya 'liveMap'
     const [loading, setLoading] = useState(true);
     const [selectedTableData, setSelectedTableData] = useState(null); // { table, order }
+    const [selectedReservation, setSelectedReservation] = useState(null);
 
     // Verileri Çek
     useEffect(() => {
@@ -167,6 +169,18 @@ function AdminDashboard() {
                                                 </div>
                                             )}
                                         </td>
+                                        <td>
+                                            {res.status === 0 && (
+                                                <div className="btn-group btn-group-sm me-2">
+                                                    <button onClick={() => handleStatusChange(res, 1)} className="btn btn-success" title="Onayla"><i className="fas fa-check"></i></button>
+                                                    <button onClick={() => handleStatusChange(res, 2)} className="btn btn-danger" title="Reddet"><i className="fas fa-times"></i></button>
+                                                </div>
+                                            )}
+                                            {/* DÜZENLE BUTONU */}
+                                            <button className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedReservation(res)} title="Düzenle">
+                                                <i className="fas fa-edit"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                                 {reservations.length === 0 && <tr><td colSpan="6" className="text-center py-4">Henüz rezervasyon yok.</td></tr>}
@@ -241,6 +255,17 @@ function AdminDashboard() {
                     onClose={() => setSelectedTableData(null)}
                     onUpdate={() => {
                         fetchData();
+                    }}
+                />
+            )}
+
+            {/* REZERVASYON DÜZENLEME MODALI */}
+            {selectedReservation && (
+                <ReservationEditModal
+                    reservation={selectedReservation}
+                    onClose={() => setSelectedReservation(null)}
+                    onUpdate={() => {
+                        fetchData(); // Listeyi yenile
                     }}
                 />
             )}

@@ -1,4 +1,155 @@
-@import "bootstrap/scss/bootstrap"; //bootstrap sass motoru, node modules içerisinde
+// Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+@import "bootstrap/scss/bootstrap";
+
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+:root {
+    // LIGHT MODE 
+    --bg-body: #f8f7f4; // Sıcak beyaz
+    --bg-card: #ffffff;
+    --text-main: #2c2c2c;
+    --text-muted: #6c757d;
+    --accent-color: #c5a059; // Altın
+    --accent-light: #d4b77e;
+    --border-color: #e8e6e1;
+    --navbar-bg: rgba(248, 247, 244, 0.95);
+    --input-bg: #ffffff;
+    --gradient-primary: linear-gradient(135deg, #c5a059 0%, #d4b77e 100%);
+}
+
+[data-bs-theme="dark"] {
+    // DARK MODE
+    --bg-body: #0a0a0a;
+    --bg-card: #1a1a1a;
+    --text-main: #f0f0f0;
+    --text-muted: #a0a0a0;
+    --accent-color: #c5a059;
+    --accent-light: #d4b77e;
+    --border-color: #333333;
+    --navbar-bg: rgba(10, 10, 10, 0.95);
+    --input-bg: #1a1a1a;
+    --gradient-primary: linear-gradient(135deg, #c5a059 0%, #d4b77e 100%);
+}
+
+// GLOBAL AYARLAR
+body {
+    background-color: var(--bg-body) !important;
+    color: var(--text-main) !important;
+    font-family: 'Montserrat', sans-serif; // Ana font
+    transition: all 0.3s ease;
+}
+
+// Başlıklar için Font
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.brand-logo,
+.hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+// LİNK VE BUTONLAR
+a {
+    text-decoration: none;
+    color: var(--text-main);
+    transition: 0.3s;
+
+    &:hover {
+        color: var(--accent-color);
+    }
+}
+
+// Buton stilleri
+.btn {
+    border-radius: 2px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    
+    &.btn-dark {
+        background: var(--gradient-primary);
+        border: none;
+        
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(197, 160, 89, 0.3);
+        }
+    }
+}
+
+// INPUT ALANLARI 
+.form-control,
+.form-select {
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--border-color);
+    color: var(--text-main) !important;
+    padding: 12px 15px;
+    border-radius: 8px; // Hafif yuvarlak
+
+    &:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(var(--accent-color), 0.2);
+        background-color: var(--input-bg) !important;
+        color: var(--text-main) !important;
+    }
+
+    &::placeholder {
+        color: var(--text-muted);
+        opacity: 0.7;
+    }
+}
+
+// PAGINATION 
+.pagination {
+    .page-link {
+        background-color: var(--bg-card);
+        border-color: var(--border-color);
+        color: var(--text-main);
+
+        &:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        color: #fff;
+    }
+
+    .page-item.disabled .page-link {
+        background-color: var(--bg-body);
+        color: var(--text-muted);
+    }
+}
+
+// Kartlar için tutarlı gölge
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    
+    &:hover {
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+}
+
+// SCSS Modüllerimiz
 @import "navbar";
 @import "auth";
 @import "home";
+@import "footer";
+@import "product-card";
+@import "analytics";

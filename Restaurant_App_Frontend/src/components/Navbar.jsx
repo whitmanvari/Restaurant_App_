@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"; // 1. useLocation EKLENDİ
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/slices/authSlice";
 import '../styles/navbar.scss';
+import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation(); // 2. Location hook'unu çağır
 
     const { isAuthenticated, user } = useSelector((state) => state.auth);
     const cart = useSelector((state) => state.cart);
@@ -16,6 +18,10 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [isNavCollapsed, setIsNavCollapsed] = useState(true);
+    const { theme, toggleTheme } = useTheme();
+
+    // Ana sayfada mıyız kontrolü
+    const isHomePage = location.pathname === '/';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -35,8 +41,12 @@ export default function Navbar() {
         navigate("/login");
     };
 
+    // 3. MANTIK: Eğer scroll yapıldıysa VEYA ana sayfada değilsek 'scrolled' class'ını ekle.
+    // 'scrolled' class'ı navbar.scss içinde arka planı koyu (rgba(17,17,17, 0.95)) yapıyor.
+    const navbarClass = `navbar navbar-expand-lg fixed-top navbar-custom ${scrolled || !isHomePage ? 'scrolled' : ''}`;
+
     return (
-        <nav className={`navbar navbar-expand-lg fixed-top navbar-custom ${scrolled ? 'scrolled' : ''}`}>
+        <nav className={navbarClass}>
             <div className="container">
 
                 {/* 1. SOL: LOGO */}
@@ -78,7 +88,20 @@ export default function Navbar() {
 
                     {/* 3. SAĞ: SEPET & AUTH */}
                     <ul className="navbar-nav align-items-center gap-3">
-
+                        {/* TEMA DEĞİŞTİRME BUTONU */}
+                        <li className="nav-item">
+                            <button
+                                onClick={toggleTheme}
+                                className="btn nav-link border-0"
+                                title={theme === 'light' ? "Koyu Moda Geç" : "Açık Moda Geç"}
+                            >
+                                {theme === 'light' ? (
+                                    <i className="fas fa-moon fs-5"></i>
+                                ) : (
+                                    <i className="fas fa-sun fs-5 text-warning"></i>
+                                )}
+                            </button>
+                        </li>
                         <li className="nav-item position-relative">
                             <Link to="/cart" className="nav-link p-0">
                                 <i className="fas fa-shopping-bag fs-5"></i>

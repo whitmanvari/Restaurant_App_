@@ -1,4 +1,6 @@
-﻿using Restaurant_App.Entities.Concrete;
+﻿using Restaurant_App.Application.Dto;
+using Restaurant_App.Application.Pagination;
+using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
 
 namespace Restaurant_App.Business.Abstract
@@ -10,5 +12,6 @@ namespace Restaurant_App.Business.Abstract
         Task<Product> GetProductDetails(int id);
         Task<List<Product>> SearchProducts(string searchTerm);
         Task<int> GetCountByCategory(string category);
+        Task<PagedResponse<ProductDTO>> GetProductsByFilter(PaginationParams paginationParams);
     }
 }
