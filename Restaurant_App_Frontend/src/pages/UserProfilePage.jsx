@@ -5,274 +5,249 @@ import { authService } from '../services/authService';
 import { reservationService } from '../services/reservationService';
 import { toast } from 'react-toastify';
 import UserOrderDetailModal from '../components/UserOrderDetailModal';
+import '../styles/home.scss'; 
 
 function UserProfilePage() {
     const { user } = useSelector(state => state.auth);
 
     // State'ler
     const [orders, setOrders] = useState([]);
-    const [loadingOrders, setLoadingOrders] = useState(true); // loadingOrders 
-    const [myReservations, setMyReservations] = useState([]); //Rezervasyon State'i
+    const [myReservations, setMyReservations] = useState([]); 
     const [selectedOrderId, setSelectedOrderId] = useState(null);
-    const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'info' | 'reservations'
+    const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'reservations' | 'settings'
+    const [loading, setLoading] = useState(true);
 
     // Profil Form State'i
     const [profileData, setProfileData] = useState({
-        fullName: '',
-        phoneNumber: '',
-        city: '',
-        address: ''
+        fullName: '', phoneNumber: '', city: '', address: ''
     });
-    const [loadingProfile, setLoadingProfile] = useState(false);
+    const [updating, setUpdating] = useState(false);
 
     useEffect(() => {
-        // 1. Siparişleri Çek
-        orderService.getMyOrders()
-            .then(data => {
-                setOrders(data);
-                setLoadingOrders(false);
-            })
-            .catch(err => setLoadingOrders(false));
-
-        // 2. Profil Detaylarını Çek
-        authService.getProfile()
-            .then(data => {
+        const loadData = async () => {
+            try {
+                const [ordersData, profileRes, resData] = await Promise.all([
+                    orderService.getMyOrders(),
+                    authService.getProfile(),
+                    reservationService.getMyReservations()
+                ]);
+                
+                setOrders(ordersData.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate)));
+                setMyReservations(resData.sort((a,b) => new Date(b.reservationDate) - new Date(a.reservationDate)));
+                
                 setProfileData({
-                    fullName: data.fullName || '',
-                    phoneNumber: data.phoneNumber || '',
-                    city: data.city || '',
-                    address: data.address || ''
+                    fullName: profileRes.fullName || '',
+                    phoneNumber: profileRes.phoneNumber || '',
+                    city: profileRes.city || '',
+                    address: profileRes.address || ''
                 });
-            })
-            .catch(err => console.error("Profil yüklenemedi"));
-
-        // 3. Rezervasyonları Çek 
-        reservationService.getMyReservations()
-            .then(data => {
-                setMyReservations(data);
-            })
-            .catch(err => {
-                console.warn("Rezervasyonlar çekilemedi:", err);
-                setMyReservations([]);
-
-            }, []);
-    })
+                setLoading(false);
+            } catch (error) {
+                console.error("Veri yükleme hatası", error);
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, []);
 
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
-        setLoadingProfile(true);
+        setUpdating(true);
         try {
             await authService.updateProfile(profileData);
-            toast.success("Profil bilgileriniz güncellendi.");
+            toast.success("Profil bilgileriniz başarıyla güncellendi.");
         } catch (error) {
-            toast.error("Güncelleme başarısız.");
+            toast.error("Güncelleme sırasında bir hata oluştu.");
         } finally {
-            setLoadingProfile(false);
+            setUpdating(false);
         }
     };
 
+    // Durum Rozeti Yardımcısı
+    const getStatusBadge = (status) => {
+        // Rezervasyon için status int gelebilir, sipariş için enum
+        if (status === 1 || status === 'Completed') return <span className="badge bg-success bg-opacity-10 text-success px-3 py-2">Tamamlandı</span>;
+        if (status === 0 || status === 'Pending') return <span className="badge bg-warning bg-opacity-10 text-warning px-3 py-2">Bekliyor</span>;
+        if (status === 2 || status === 'Canceled' || status === 'Rejected') return <span className="badge bg-danger bg-opacity-10 text-danger px-3 py-2">İptal/Red</span>;
+        return <span className="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2">{status}</span>;
+    };
+
+    if (loading) return <div className="d-flex justify-content-center align-items-center min-vh-100"><div className="spinner-border text-warning"></div></div>;
+
     return (
         <div className="container mt-5 pt-5 mb-5">
-            <div className="row">
-                {/* SOL: KART */}
-                <div className="col-md-4 mb-4">
-                    <div className="card shadow-sm border-0 text-center p-4">
-                        <div className="mb-3">
-                            <img
-                                src={`https://ui-avatars.com/api/?name=${user?.email}&size=128&background=111&color=fff`}
-                                className="rounded-circle border border-3 border-warning"
-                                alt="Profile"
-                            />
-                        </div>
-                        <h4 className="mb-1">{profileData.fullName || user?.fullName}</h4>
-                        <p className="text-muted small mb-3">{user?.email}</p>
+            <div className="row g-4">
+                
+                {/* SOL: PROFİL KARTI */}
+                <div className="col-lg-4">
+                    <div className="card border-0 shadow-sm h-100" style={{ backgroundColor: 'var(--bg-card)' }}>
+                        <div className="card-body text-center p-5">
+                            <div className="position-relative d-inline-block mb-4">
+                                <img
+                                    src={`https://ui-avatars.com/api/?name=${user?.email}&size=128&background=c5a059&color=fff`}
+                                    className="rounded-circle p-1 border border-2 border-warning"
+                                    style={{ width: '100px', height: '100px' }}
+                                    alt="Profile"
+                                />
+                            </div>
+                            <h4 className="mb-1" style={{ fontFamily: 'Playfair Display' }}>{profileData.fullName || user?.fullName}</h4>
+                            <p className="text-muted small mb-4">{user?.email}</p>
 
-                        <div className="list-group list-group-flush text-start mt-3">
-                            <button
-                                className={`list-group-item list-group-item-action ${activeTab === 'orders' ? 'active bg-dark border-dark' : ''}`}
-                                onClick={() => setActiveTab('orders')}
-                            >
-                                <i className="fas fa-receipt me-2"></i> Sipariş Geçmişi
-                            </button>
-
-                            {/*REZERVASYONLAR */}
-                            <button
-                                className={`list-group-item list-group-item-action ${activeTab === 'reservations' ? 'active bg-dark border-dark' : ''}`}
-                                onClick={() => setActiveTab('reservations')}
-                            >
-                                <i className="fas fa-calendar-alt me-2"></i> Rezervasyonlarım
-                            </button>
-
-                            <button
-                                className={`list-group-item list-group-item-action ${activeTab === 'info' ? 'active bg-dark border-dark' : ''}`}
-                                onClick={() => setActiveTab('info')}
-                            >
-                                <i className="fas fa-user-cog me-2"></i> Hesap Bilgileri
-                            </button>
+                            <div className="d-grid gap-2">
+                                <button 
+                                    className={`btn text-start py-3 px-4 ${activeTab === 'orders' ? 'btn-dark' : 'btn-light text-muted'}`}
+                                    onClick={() => setActiveTab('orders')}
+                                >
+                                    <i className="fas fa-receipt me-3"></i> Sipariş Geçmişi
+                                </button>
+                                <button 
+                                    className={`btn text-start py-3 px-4 ${activeTab === 'reservations' ? 'btn-dark' : 'btn-light text-muted'}`}
+                                    onClick={() => setActiveTab('reservations')}
+                                >
+                                    <i className="fas fa-calendar-alt me-3"></i> Rezervasyonlarım
+                                </button>
+                                <button 
+                                    className={`btn text-start py-3 px-4 ${activeTab === 'settings' ? 'btn-dark' : 'btn-light text-muted'}`}
+                                    onClick={() => setActiveTab('settings')}
+                                >
+                                    <i className="fas fa-user-cog me-3"></i> Hesap Ayarları
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* SAĞ: İÇERİK */}
-                <div className="col-md-8">
-                    <div className="card shadow-sm border-0 p-4" style={{ minHeight: '400px' }}>
+                {/* SAĞ: İÇERİK ALANI */}
+                <div className="col-lg-8">
+                    <div className="card border-0 shadow-sm h-100" style={{ backgroundColor: 'var(--bg-card)' }}>
+                        <div className="card-body p-4 p-lg-5">
 
-                        {/* TAB 1: SİPARİŞLER */}
-                        {activeTab === 'orders' && (
-                            <div>
-                                <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Geçmiş Siparişlerim</h4>
-                                {loadingOrders ? (
-                                    <div className="text-center"><div className="spinner-border text-warning"></div></div>
-                                ) : orders.length === 0 ? (
-                                    <div className="alert alert-light text-center">
-                                        Henüz bir siparişiniz bulunmuyor.
-                                    </div>
-                                ) : (
-                                    <div className="table-responsive">
-                                        <table className="table table-hover">
-                                            <thead className="table-light">
-                                                <tr>
-                                                    <th>Sipariş No</th>
-                                                    <th>Tarih</th>
-                                                    <th>Tutar</th>
-                                                    <th>Durum</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {orders.map(order => (
-                                                    <tr key={order.id}>
-                                                        <td>#{order.orderNum || order.id}</td>
-                                                        <td>{new Date(order.orderDate).toLocaleDateString('tr-TR')}</td>
-                                                        <td className="fw-bold">{order.totalAmount} ₺</td>
-                                                        <td><span className="badge bg-success">Tamamlandı</span></td>
-                                                        <td className="text-end">
-                                                            <button
-                                                                className="btn btn-sm btn-outline-dark"
-                                                                onClick={() => setSelectedOrderId(order.id)}
-                                                            >
-                                                                İncele
-                                                            </button>
-                                                        </td>
+                            {/* TAB 1: SİPARİŞLER */}
+                            {activeTab === 'orders' && (
+                                <div className="animate-fade-in">
+                                    <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Geçmiş Siparişler</h4>
+                                    {orders.length === 0 ? (
+                                        <div className="text-center py-5 text-muted">
+                                            <i className="fas fa-shopping-bag fa-3x mb-3 opacity-25"></i>
+                                            <p>Henüz bir siparişiniz bulunmuyor.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="table-responsive">
+                                            <table className="table align-middle" style={{ color: 'var(--text-main)' }}>
+                                                <thead>
+                                                    <tr className="text-muted small text-uppercase">
+                                                        <th>Sipariş No</th>
+                                                        <th>Tarih</th>
+                                                        <th>Tutar</th>
+                                                        <th>Durum</th>
+                                                        <th></th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* TAB 2: REZERVASYONLAR*/}
-                        {activeTab === 'reservations' && (
-                            <div>
-                                <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Rezervasyonlarım</h4>
-                                {myReservations.length === 0 ? (
-                                    <div className="alert alert-light text-center">
-                                        Henüz bir rezervasyonunuz bulunmuyor.
-                                        <br />
-                                        <a href="/reservations" className="btn btn-outline-dark btn-sm mt-2">Rezervasyon Yap</a>
-                                    </div>
-                                ) : (
-                                    <div className="table-responsive">
-                                        <table className="table table-hover align-middle">
-                                            <thead className="table-light">
-                                                <tr>
-                                                    <th>Tarih</th>
-                                                    <th>Saat</th>
-                                                    <th>Kişi</th>
-                                                    <th>Not</th>
-                                                    <th>Durum</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {myReservations.map(res => (
-                                                    <tr key={res.id}>
-                                                        <td>{new Date(res.reservationDate).toLocaleDateString('tr-TR')}</td>
-                                                        <td>{new Date(res.reservationDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</td>
-                                                        <td>{res.numberOfGuests}</td>
-                                                        <td><small className="text-muted">{res.specialRequests || '-'}</small></td>
-                                                        <td>
-                                                            {res.status === 0 && <span className="badge bg-warning text-dark">Onay Bekliyor</span>}
-                                                            {res.status === 1 && <span className="badge bg-success">Onaylandı</span>}
-                                                            {res.status === 2 && <span className="badge bg-danger">Reddedildi</span>}
-                                                            {res.status === 3 && <span className="badge bg-secondary">İptal</span>}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* TAB 3: HESAP BİLGİLERİ (FORM) */}
-                        {activeTab === 'info' && (
-                            <div>
-                                <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Hesap Bilgileri</h4>
-                                <form onSubmit={handleProfileUpdate}>
-                                    <div className="row mb-3">
-                                        <div className="col-md-6">
-                                            <label className="small text-muted">Ad Soyad</label>
-                                            <input
-                                                type="text" className="form-control"
-                                                value={profileData.fullName}
-                                                onChange={e => setProfileData({ ...profileData, fullName: e.target.value })}
-                                            />
+                                                </thead>
+                                                <tbody>
+                                                    {orders.map(order => (
+                                                        <tr key={order.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                                            <td className="fw-bold">#{order.orderNum || order.id}</td>
+                                                            <td>{new Date(order.orderDate).toLocaleDateString('tr-TR')}</td>
+                                                            <td className="text-success fw-bold">{order.totalAmount} ₺</td>
+                                                            <td>{getStatusBadge(order.orderState)}</td>
+                                                            <td className="text-end">
+                                                                <button onClick={() => setSelectedOrderId(order.id)} className="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                                                    Detay
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <div className="col-md-6">
-                                            <label className="small text-muted">Email (Değiştirilemez)</label>
-                                            <input type="text" className="form-control bg-light" value={user?.email} disabled />
-                                        </div>
-                                    </div>
+                                    )}
+                                </div>
+                            )}
 
-                                    <div className="row mb-3">
-                                        <div className="col-md-6">
-                                            <label className="small text-muted">Telefon</label>
-                                            <input
-                                                type="text" className="form-control" placeholder="5XX..."
-                                                value={profileData.phoneNumber}
-                                                onChange={e => setProfileData({ ...profileData, phoneNumber: e.target.value })}
-                                            />
+                            {/* TAB 2: REZERVASYONLAR */}
+                            {activeTab === 'reservations' && (
+                                <div className="animate-fade-in">
+                                    <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Rezervasyonlarım</h4>
+                                    {myReservations.length === 0 ? (
+                                        <div className="text-center py-5 text-muted">
+                                            <i className="fas fa-calendar-times fa-3x mb-3 opacity-25"></i>
+                                            <p>Aktif rezervasyonunuz bulunmuyor.</p>
+                                            <a href="/reservations" className="btn btn-sm btn-outline-dark mt-2">Hemen Rezervasyon Yap</a>
                                         </div>
-                                        <div className="col-md-6">
-                                            <label className="small text-muted">Şehir</label>
-                                            <input
-                                                type="text" className="form-control" placeholder="İstanbul"
-                                                value={profileData.city}
-                                                onChange={e => setProfileData({ ...profileData, city: e.target.value })}
-                                            />
+                                    ) : (
+                                        <div className="d-flex flex-column gap-3">
+                                            {myReservations.map(res => (
+                                                <div key={res.id} className="p-3 border rounded d-flex justify-content-between align-items-center flex-wrap gap-3" style={{ borderColor: 'var(--border-color)' }}>
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <div className="bg-light rounded p-3 text-center" style={{ minWidth: '80px' }}>
+                                                            <div className="fw-bold text-dark" style={{ fontSize: '1.2rem' }}>{new Date(res.reservationDate).getDate()}</div>
+                                                            <div className="small text-uppercase text-muted">{new Date(res.reservationDate).toLocaleString('tr-TR', { month: 'short' })}</div>
+                                                        </div>
+                                                        <div>
+                                                            <h6 className="mb-1 fw-bold">Akşam Yemeği ({res.numberOfGuests} Kişi)</h6>
+                                                            <p className="mb-0 small text-muted">
+                                                                <i className="far fa-clock me-1"></i> {new Date(res.reservationDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                                                <span className="mx-2">|</span>
+                                                                <i className="fas fa-chair me-1"></i> Masa {res.tableId ? res.tableId : 'Otomatik'}
+                                                            </p>
+                                                            {res.specialRequests && <small className="text-warning d-block mt-1"><i className="fas fa-info-circle me-1"></i> {res.specialRequests}</small>}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        {getStatusBadge(res.status)}
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    </div>
+                                    )}
+                                </div>
+                            )}
 
-                                    <div className="mb-3">
-                                        <label className="small text-muted">Kayıtlı Adres</label>
-                                        <textarea
-                                            className="form-control" rows="3"
-                                            placeholder="Adresinizi buraya girin..."
-                                            value={profileData.address}
-                                            onChange={e => setProfileData({ ...profileData, address: e.target.value })}
-                                        ></textarea>
-                                    </div>
+                            {/* TAB 3: AYARLAR */}
+                            {activeTab === 'settings' && (
+                                <div className="animate-fade-in">
+                                    <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Hesap Bilgileri</h4>
+                                    <form onSubmit={handleProfileUpdate}>
+                                        <div className="row g-3 mb-3">
+                                            <div className="col-md-6">
+                                                <label className="form-label small fw-bold">Ad Soyad</label>
+                                                <input type="text" className="form-control" value={profileData.fullName} onChange={e => setProfileData({...profileData, fullName: e.target.value})} />
+                                            </div>
+                                            <div className="col-md-6">
+                                                <label className="form-label small fw-bold">E-posta</label>
+                                                <input type="text" className="form-control" value={user?.email} disabled style={{ opacity: 0.7 }} />
+                                            </div>
+                                        </div>
+                                        <div className="row g-3 mb-3">
+                                            <div className="col-md-6">
+                                                <label className="form-label small fw-bold">Telefon</label>
+                                                <input type="text" className="form-control" value={profileData.phoneNumber} onChange={e => setProfileData({...profileData, phoneNumber: e.target.value})} />
+                                            </div>
+                                            <div className="col-md-6">
+                                                <label className="form-label small fw-bold">Şehir</label>
+                                                <input type="text" className="form-control" value={profileData.city} onChange={e => setProfileData({...profileData, city: e.target.value})} />
+                                            </div>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="form-label small fw-bold">Adres</label>
+                                            <textarea className="form-control" rows="3" value={profileData.address} onChange={e => setProfileData({...profileData, address: e.target.value})}></textarea>
+                                        </div>
+                                        <div className="text-end">
+                                            <button type="submit" className="btn btn-dark px-4" disabled={updating}>
+                                                {updating ? 'Güncelleniyor...' : 'Kaydet'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            )}
 
-                                    <div className="d-flex justify-content-end">
-                                        <button type="submit" className="btn btn-dark px-4" disabled={loadingProfile}>
-                                            {loadingProfile ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </div>
-            {/* SİPARİŞ DETAY MODALI */}
-            {selectedOrderId && (
-                <UserOrderDetailModal
-                    orderId={selectedOrderId}
-                    onClose={() => setSelectedOrderId(null)}
-                />
-            )}
+
+            {/* MODAL */}
+            {selectedOrderId && <UserOrderDetailModal orderId={selectedOrderId} onClose={() => setSelectedOrderId(null)} />}
         </div>
     );
 }

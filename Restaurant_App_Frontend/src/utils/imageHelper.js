@@ -5,25 +5,13 @@ const DEFAULT_IMAGES = {
 };
 
 export const getImageUrl = (url, type = 'product') => {
-    if (!url || url.trim() === "" || url.includes("via.placeholder")) {
-        return DEFAULT_IMAGES[type];
+    if (!url || url.trim() === "" || url?.includes("via.placeholder")) {
+        return DEFAULT_IMAGES[type] || DEFAULT_IMAGES.product;
     }
-    
-    // Cloudinary veya başka bir CDN için optimize et
+
     if (url.includes('cloudinary')) {
         return url.replace('/upload/', '/upload/w_500,h_500,c_fill,q_auto,f_auto/');
     }
-    
+
     return url;
 };
-
-// ProductDetailModal.jsx'te kullanım
-<img
-    src={getImageUrl(product.imageUrls?.[0], 'product')}
-    className="img-fluid rounded shadow-sm mb-3"
-    style={{ maxHeight: '250px', objectFit: 'cover', width: '100%' }}
-    alt={product.name}
-    onError={(e) => {
-        e.target.src = DEFAULT_IMAGES.product;
-    }}
-/>

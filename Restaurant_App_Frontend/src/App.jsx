@@ -12,6 +12,7 @@ import AdminMenuPage from './pages/AdminMenuPage';
 import AdminOrdersPage from './pages/AdminOrdersPage';
 import AdminSettingsPage from './pages/AdminSettingsPage'; 
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage'; 
+import ReservationPage from './pages/ReservationPage'; 
 
 function App() {
  return (
@@ -24,23 +25,22 @@ function App() {
           <Route path="login" element={<AuthPage />} />
           <Route path="signup" element={<AuthPage />} />
           
-          <Route path="admin" element={<AdminDashboard />} />
-          <Route path="profile" element={<UserProfilePage />} />
+          {/* Kullanıcı Sayfaları */}
+          <Route path="menu" element={<MenuPage />} /> 
+          <Route path="menu/:category" element={<MenuPage />} />
           <Route path="cart" element={<CartPage />} />
+          <Route path="profile" element={<UserProfilePage />} />
+          <Route path="my-orders" element={<UserProfilePage />} /> {/* Siparişlerim profilin içinde */}
+          <Route path="reservations" element={<ReservationPage />} /> {/* ReservationPage tanımlı olmalı */}
+
+          {/* Admin Sayfaları */}
+          <Route path="admin" element={<AdminDashboard />} />
           <Route path="admin/menu" element={<AdminMenuPage />} />
           <Route path="admin/orders" element={<AdminOrdersPage />} />
           <Route path="admin/analytics" element={<AdminAnalyticsPage />} />
-          
-          <Route path="menu" element={<MenuPage />} /> 
-          <Route path="menu/:category" element={<MenuPage />} />
           <Route path="admin/settings" element={<AdminSettingsPage />} />
 
-          <Route path="reservations" element={<HomePage />} />
-          <Route path="cart" element={<HomePage />} />
-          <Route path="my-orders" element={<HomePage />} />
-          <Route path="profile" element={<HomePage />} />
-          <Route path="admin" element={<HomePage />} />
-
+          {/* 404 - Hatalı URL girilirse ana sayfaya at */}
           <Route path="*" element={<HomePage />} />
         </Route>
       </Routes>
