@@ -1,6 +1,7 @@
 ﻿using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enums;
 using System.Linq.Expressions;
 
 namespace Restaurant_App.Business.Concrete
@@ -31,7 +32,51 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
         {
-            return await _tableDal.GetAvailableTables(reservationDate, numberOfGuests);
+            var candidateTables = await _tableDal.GetAvailableTables(reservationDate, numberOfGuests);
+            // Çakışma Kontrolü(Business Logic)
+            // Bir rezervasyon varsayılan olarak 2 saat sürer.
+            // Eğer masanın rezervasyonları içinde, istenen saat ile çakışan varsa o masayı ele.
+
+            var availableTables = new List<Table>();
+
+            foreach (var table in candidateTables)
+            {
+                bool isOccupied = false;
+
+                if (table.Reservations != null)
+                {
+                    foreach (var res in table.Reservations)
+                    {
+                        // Sadece ONAYLANMIŞ rezervasyonlar masayı kapatır
+                        if (res.Status == ReservationStatus.Approved)
+                        {
+                            // Zaman Çakışması Kontrolü
+                            // Mevcut Rezervasyon: [ResStart, ResEnd]
+                            // İstenen Rezervasyon: [ReqStart, ReqEnd]
+                            // Çakışma şartı: ResStart < ReqEnd && ResEnd > ReqStart
+
+                            DateTime resStart = res.ReservationDate;
+                            DateTime resEnd = res.ReservationDate.AddHours(2); // 2 saatlik oturum
+
+                            DateTime reqStart = reservationDate;
+                            DateTime reqEnd = reservationDate.AddHours(2);
+
+                            if (resStart < reqEnd && resEnd > reqStart)
+                            {
+                                isOccupied = true;
+                                break; // Çakışma bulundu, diğer rezervasyonlara bakmaya gerek yok
+                            }
+                        }
+                    }
+                }
+
+                if (!isOccupied)
+                {
+                    availableTables.Add(table);
+                }
+            }
+
+            return availableTables;
         }
 
         public async Task<Table?> GetTableWithReservations(int tableId)

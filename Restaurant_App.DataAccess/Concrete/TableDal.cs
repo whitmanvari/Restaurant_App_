@@ -24,9 +24,11 @@ namespace Restaurant_App.DataAccess.Concrete
             return await _context.Tables.CountAsync(t => t.IsAvailable);
         }
 
+        // Burada sadece kapasiteye ve fiziksel uygunluğa (bozuk mu?) bakıyoruz.
         public async Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
         {
             return await _context.Tables
+                .Include(t => t.Reservations) // Rezervasyonları dahil et ki Manager'da kontrol edebilelim
                 .Where(t => t.IsAvailable && t.Capacity >= numberOfGuests)
                 .ToListAsync();
         }
