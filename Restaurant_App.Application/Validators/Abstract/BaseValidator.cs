@@ -45,14 +45,15 @@ namespace Restaurant_App.Application.Validators.Abstract
         protected void DateCannotBePast(Expression<Func<TDto, DateTime>> expression)
         {
             RuleFor(expression)
-                .GreaterThan(DateTime.Now)
-                    .WithMessage("Tarih geçmiş olamaz!");
+                .Must(date => date.ToUniversalTime() > DateTime.UtcNow)
+                .WithMessage("Geçmiş bir zamana rezervasyon yapılamaz. Lütfen ileri bir tarih seçin.");
         }
         protected void MustBeValidPhone(Expression<Func<TDto, string>> expression)
         {
             RuleFor(expression)
                 .Matches(@"^\+?\d{10,15}$")
-                    .WithMessage("Telefon formatı geçerli değil.");
+                .When(x => !string.IsNullOrEmpty(expression.Compile()(x))) // boşsa atla
+                .WithMessage("Telefon formatı geçerli değil.");
         }
     }
 }

@@ -11,7 +11,7 @@ function ReservationPage() {
 
     const [tables, setTables] = useState([]);
     const [selectedTableId, setSelectedTableId] = useState('');
-    
+
     // Form State
     const [formData, setFormData] = useState({
         reservationDate: '',
@@ -25,7 +25,7 @@ function ReservationPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!isAuthenticated) {
             toast.info("Rezervasyon yapmak için lütfen giriş yapınız.");
             navigate('/login');
@@ -33,11 +33,17 @@ function ReservationPage() {
         }
 
         const payload = {
-            ...formData,
-            tableId: selectedTableId ? parseInt(selectedTableId) : 0, // Seçilmezse 0 gönderelim, backend otomatik atar
+            reservationDate: formData.reservationDate ? new Date(formData.reservationDate).toISOString() : null,
+            numberOfGuests: formData.numberOfGuests,
+            specialRequests: formData.specialRequests || null,
+            tableId: selectedTableId ? parseInt(selectedTableId) : 0,
             customerName: user.fullName || user.email,
-            customerPhone: user.phoneNumber || "Belirtilmedi",
+            customerPhone: user.phoneNumber || "+900000000000", // regex ile uyumlu
+            status: 0,
+            statusName: "Pending"
         };
+
+        console.log("Gönderilen payload:", payload);
 
         try {
             await api.post('/Reservation', payload);
@@ -51,10 +57,10 @@ function ReservationPage() {
 
     return (
         <div className="d-flex flex-wrap" style={{ minHeight: '100vh', paddingTop: '80px' }}>
-            
+
             {/* SOL TARAF: GÖRSEL */}
             <div className="col-lg-6 d-none d-lg-block position-relative">
-                <div 
+                <div
                     style={{
                         backgroundImage: "url('https://images.unsplash.com/photo-1559339352-11d035aa65de?q=80&w=1974&auto=format&fit=crop')",
                         backgroundSize: 'cover',
@@ -77,15 +83,15 @@ function ReservationPage() {
             </div>
 
             {/* SAĞ TARAF: FORM (Dinamik Arkaplan Rengi) */}
-            <div 
+            <div
                 className="col-lg-6 d-flex align-items-center justify-content-center p-5"
-                style={{ 
+                style={{
                     backgroundColor: 'var(--bg-card)', // Light: Beyaz, Dark: Koyu Gri
                     color: 'var(--text-main)'          // Light: Siyah, Dark: Beyaz
                 }}
             >
                 <div style={{ maxWidth: '500px', width: '100%' }}>
-                    
+
                     <div className="text-center mb-5">
                         <h2 style={{ fontFamily: 'Playfair Display', fontSize: '2.5rem' }}>Rezervasyon</h2>
                         <div style={{ width: '60px', height: '3px', background: '#c5a059', margin: '15px auto' }}></div>
@@ -93,12 +99,12 @@ function ReservationPage() {
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        
+
                         <div className="row mb-4">
                             <div className="col-md-6">
                                 <label className="form-label fw-bold small text-uppercase">Tarih & Saat</label>
-                                <input 
-                                    type="datetime-local" 
+                                <input
+                                    type="datetime-local"
                                     className="form-control py-3"
                                     value={formData.reservationDate}
                                     onChange={e => setFormData({ ...formData, reservationDate: e.target.value })}
@@ -107,19 +113,19 @@ function ReservationPage() {
                             </div>
                             <div className="col-md-6">
                                 <label className="form-label fw-bold small text-uppercase">Kişi Sayısı</label>
-                                <select 
+                                <select
                                     className="form-select py-3"
                                     value={formData.numberOfGuests}
                                     onChange={e => setFormData({ ...formData, numberOfGuests: parseInt(e.target.value) })}
                                 >
-                                    {[2,3,4,5,6,8,10,12,15].map(n => <option key={n} value={n}>{n} Kişi</option>)}
+                                    {[2, 3, 4, 5, 6, 8, 10, 12, 15].map(n => <option key={n} value={n}>{n} Kişi</option>)}
                                 </select>
                             </div>
                         </div>
 
                         <div className="mb-4">
                             <label className="form-label fw-bold small text-uppercase">Masa Tercihi</label>
-                            <select 
+                            <select
                                 className="form-select py-3"
                                 value={selectedTableId}
                                 onChange={e => setSelectedTableId(e.target.value)}
@@ -133,8 +139,8 @@ function ReservationPage() {
 
                         <div className="mb-5">
                             <label className="form-label fw-bold small text-uppercase">Özel İstekler</label>
-                            <textarea 
-                                className="form-control" 
+                            <textarea
+                                className="form-control"
                                 rows="3"
                                 placeholder="Doğum günü, alerji vb. notlarınız..."
                                 value={formData.specialRequests}
@@ -148,7 +154,7 @@ function ReservationPage() {
                             </button>
                         ) : (
                             <div className="text-center">
-                                <div className="alert alert-warning border-0 mb-3" style={{background: 'rgba(197, 160, 89, 0.1)', color: 'var(--text-main)'}}>
+                                <div className="alert alert-warning border-0 mb-3" style={{ background: 'rgba(197, 160, 89, 0.1)', color: 'var(--text-main)' }}>
                                     Rezervasyon yapmak için hesabınıza giriş yapmanız gerekmektedir.
                                 </div>
                                 <button type="button" onClick={() => navigate('/login')} className="btn btn-outline-dark w-100 py-3 text-uppercase fw-bold">

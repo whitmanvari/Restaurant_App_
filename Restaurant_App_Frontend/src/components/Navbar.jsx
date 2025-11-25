@@ -74,12 +74,26 @@ export default function Navbar() {
                         <li className="nav-item">
                             <NavLink className="nav-link" to="/menu">Menü</NavLink>
                         </li>
+                        
+                        {/* DİNAMİK REZERVASYON LİNKİ */}
                         <li className="nav-item">
-                            <NavLink className="nav-link" to="/reservations">Rezervasyon</NavLink>
+                            {user?.role === 'Admin' ? (
+                                // Admin ise Yönetim Sayfasına git
+                                <NavLink className="nav-link" to="/admin/reservations">
+                                    Rezervasyon Yönetimi
+                                </NavLink>
+                            ) : (
+                                // Normal kullanıcı veya Misafir ise Form Sayfasına git
+                                <NavLink className="nav-link" to="/reservations">
+                                    Rezervasyon
+                                </NavLink>
+                            )}
                         </li>
+
+                        {/* Admin için Ekstra Yönetim Linki */}
                         {user?.role === 'Admin' && (
                             <li className="nav-item">
-                                <NavLink className="nav-link text-warning" to="/admin">Yönetim</NavLink>
+                                <NavLink className="nav-link text-warning" to="/admin">Panel</NavLink>
                             </li>
                         )}
                     </ul>
@@ -128,7 +142,7 @@ export default function Navbar() {
                                             alt="avatar"
                                         />
                                     </div>
-                                    <span className="user-name">{user?.fullName?.split(' ')[0] || 'Misafir'}</span>
+                                    <span className="user-name">{user?.fullName?.split(' ')[0] || 'Yönetici'}</span>
                                     <i className={`fas fa-chevron-down ms-2 small transition-icon ${showUserMenu ? 'rotate' : ''}`}></i>
                                 </button>
 
