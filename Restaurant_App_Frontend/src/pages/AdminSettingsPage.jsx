@@ -22,7 +22,8 @@ function AdminSettingsPage() {
         try {
             const [catRes, tableRes] = await Promise.all([
                 categoryService.getAll(),
-                tableService.getAll()
+                // Sadece masaların listesini çekmek yeterli
+                tableService.getAll() 
             ]);
             setCategories(catRes);
             setTables(tableRes);
@@ -46,7 +47,7 @@ function AdminSettingsPage() {
         setIsEditMode(true);
         setFormData(type === 'category'
             ? { type: 'category', id: item.id, name: item.name, description: item.description }
-            : { type: 'table', id: item.id, tableNumber: item.tableNumber, capacity: item.capacity }
+            : { type: 'table', id: item.id, tableNumber: item.tableNumber, capacity: item.capacity, isAvailable: item.isAvailable } // isAvailable'ı almayı unutma
         );
         setShowModal(true);
     };
@@ -58,7 +59,9 @@ function AdminSettingsPage() {
                 const payload = { id: formData.id, name: formData.name, description: formData.description };
                 isEditMode ? await categoryService.update(payload.id, payload) : await categoryService.create(payload);
             } else {
-                const payload = { id: formData.id, tableNumber: formData.tableNumber, capacity: parseInt(formData.capacity), isAvailable: true };
+                // Masa güncellenirken isAvailable değerini koru
+                const isAvail = isEditMode ? formData.isAvailable : true; 
+                const payload = { id: formData.id, tableNumber: formData.tableNumber, capacity: parseInt(formData.capacity), isAvailable: isAvail };
                 isEditMode ? await tableService.update(payload.id, payload) : await tableService.create(payload);
             }
             toast.success("İşlem başarılı.");
@@ -86,7 +89,7 @@ function AdminSettingsPage() {
         <div className="container mt-5 pt-5 mb-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 style={{ fontFamily: 'Playfair Display' }}>Restoran Ayarları</h2>
+                    <h2 style={{ fontFamily: 'Playfair Display', color: 'var(--text-main)' }}>Restoran Ayarları</h2>
                     <p className="text-muted">Menü kategorilerini ve masa düzenini buradan yönetebilirsiniz.</p>
                 </div>
                 <button className="btn btn-dark" onClick={() => openAddModal(activeTab === 'categories' ? 'category' : 'table')}>
@@ -96,7 +99,7 @@ function AdminSettingsPage() {
             </div>
 
             {/* TABS */}
-            <div className="card border-0 shadow-sm">
+            <div className="card border-0 shadow-sm" style={{backgroundColor: 'var(--bg-card)'}}>
                 <div className="card-header bg-white border-bottom-0 pt-4 px-4">
                     <ul className="nav nav-tabs card-header-tabs">
                         <li className="nav-item">
@@ -114,7 +117,7 @@ function AdminSettingsPage() {
 
                 <div className="card-body p-0">
                     <div className="table-responsive">
-                        <table className="table table-hover align-middle mb-0">
+                        <table className="table table-hover align-middle mb-0" style={{color: 'var(--text-main)'}}>
                             <thead className="bg-light">
                                 {activeTab === 'categories' ? (
                                     <tr>
@@ -126,7 +129,7 @@ function AdminSettingsPage() {
                                     <tr>
                                         <th className="ps-4">Masa No</th>
                                         <th>Kapasite</th>
-                                        <th>Durum</th>
+                                        <th>Durum (isAvailable)</th>
                                         <th className="text-end pe-4">İşlemler</th>
                                     </tr>
                                 )}
@@ -134,7 +137,7 @@ function AdminSettingsPage() {
                             <tbody>
                                 {activeTab === 'categories' ? (
                                     categories.map(cat => (
-                                        <tr key={cat.id}>
+                                        <tr key={cat.id} style={{borderBottom: '1px solid var(--border-color)'}}>
                                             <td className="ps-4 fw-bold">{cat.name}</td>
                                             <td className="text-muted small">{cat.description || '-'}</td>
                                             <td className="text-end pe-4">
@@ -145,10 +148,14 @@ function AdminSettingsPage() {
                                     ))
                                 ) : (
                                     tables.map(tbl => (
-                                        <tr key={tbl.id}>
+                                        <tr key={tbl.id} style={{borderBottom: '1px solid var(--border-color)'}}>
                                             <td className="ps-4 fw-bold">{tbl.tableNumber}</td>
                                             <td>{tbl.capacity} Kişi</td>
-                                            <td>{tbl.isAvailable ? <span className="badge bg-success bg-opacity-10 text-success">Aktif</span> : <span className="badge bg-danger bg-opacity-10 text-danger">Pasif</span>}</td>
+                                            <td>
+                                                <span className={`badge ${tbl.isAvailable ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'}`}>
+                                                    {tbl.isAvailable ? 'Aktif' : 'Pasif'}
+                                                </span>
+                                            </td>
                                             <td className="text-end pe-4">
                                                 <button className="btn btn-sm btn-link text-primary" onClick={() => openEditModal('table', tbl)}><i className="fas fa-edit"></i></button>
                                                 <button className="btn btn-sm btn-link text-danger" onClick={() => handleDelete('table', tbl.id)}><i className="fas fa-trash"></i></button>
@@ -196,6 +203,19 @@ function AdminSettingsPage() {
                                                 <label className="form-label small fw-bold">Kapasite</label>
                                                 <input type="number" className="form-control" value={formData.capacity} onChange={e => setFormData({ ...formData, capacity: e.target.value })} required min="1" />
                                             </div>
+                                            {isEditMode && (
+                                                <div className="form-check form-switch mb-3">
+                                                    <input 
+                                                        className="form-check-input" 
+                                                        type="checkbox" 
+                                                        role="switch" 
+                                                        checked={formData.isAvailable}
+                                                        onChange={e => setFormData({ ...formData, isAvailable: e.target.checked })}
+                                                        id="isAvailableSwitch"
+                                                    />
+                                                    <label className="form-check-label" htmlFor="isAvailableSwitch">Şu an kullanıma müsait mi?</label>
+                                                </div>
+                                            )}
                                         </>
                                     )}
                                 </div>
@@ -211,5 +231,3 @@ function AdminSettingsPage() {
         </div>
     );
 }
-
-export default AdminSettingsPage;

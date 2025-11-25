@@ -15,8 +15,14 @@ const getById = async (id) => {
     return response.data;
 };
 
+// Tarih ve Kişi sayısına göre müsait masaları getirir
+const getAvailable = async (date, guests) => {
+    // date formatı: 2023-10-27T15:30:00 gibi olmalı
+    const response = await api.get(`/Table/available?date=${date}&guests=${guests}`);
+    return response.data;
+};
+
 const create = async (tableData) => {
-    // tableData: { tableNumber: "A1", capacity: 4 }
     const response = await api.post('/Table/create', tableData);
     return response.data;
 };
@@ -35,6 +41,7 @@ export const tableService = {
     getAll,
     getAllWithDetails,
     getById,
+    getAvailable, 
     create,
     update,
     remove
