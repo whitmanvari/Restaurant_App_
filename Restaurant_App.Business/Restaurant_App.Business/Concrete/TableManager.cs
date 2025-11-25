@@ -35,27 +35,40 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
         {
-            // 1. Tüm fiziksel olarak uygun masaları çek
+            // ... (1. Tüm fiziksel olarak uygun masaları çekme) ...
             var candidateTables = await _tableDal.GetAvailableTables(reservationDate, numberOfGuests);
 
             // 2. Çakışan Rezervasyonları Bularak ID'lerini Listele
             var startTime = reservationDate.AddMinutes(-10);
             var endTime = reservationDate.AddHours(2);
 
+            // DEBUG M1: Hesaplanan zaman aralığını yazdır
+            Console.WriteLine($"[DEBUG M1] Manager GİREN Sorgu Tarihi: {reservationDate}");
+            Console.WriteLine($"[DEBUG M2] Filtre Başlangıç Aralığı: {startTime}");
+            Console.WriteLine($"[DEBUG M3] Filtre Bitiş Aralığı: {endTime}");
+
             var reservations = await _reservationDal.GetAll(r =>
-                r.Status == ReservationStatus.Approved &&
+                (r.Status == ReservationStatus.Approved || r.Status == ReservationStatus.Pending) &&
                 r.ReservationDate < endTime &&
                 r.ReservationDate.AddHours(2) > startTime
             );
+            // DEBUG M4: Bulunan çakışan rezervasyon sayısını ve ilk rezervasyonun DB saatini yazdır
+            Console.WriteLine($"[DEBUG M4] Çakışan Toplam Rezervasyon Sayısı: {reservations.Count}");
+            if (reservations.Any())
+            {
+                Console.WriteLine($"[DEBUG M5] İlk Çakışan DB Kayıt Tarihi: {reservations.First().ReservationDate}");
+            }
 
             // 3. Rezerve edilmiş masaların ID'lerini listele
             var reservedTableIds = reservations
-                .Where(r => r.TableId.HasValue) // Sadece değeri olanları al
-                .Select(r => r.TableId.Value) // Değeri olanların Value'sunu (int) al
+                .Where(r => r.TableId.HasValue)
+                .Select(r => r.TableId.Value)
                 .ToList();
 
             // 4. Çakışanları listeden çıkar
             var availableTables = candidateTables.Where(t => !reservedTableIds.Contains(t.Id)).ToList();
+            // DEBUG M6: Nihai Müsait Masa Sayısını yazdır
+            Console.WriteLine($"[DEBUG M6] Nihai Müsait Masa Sayısı: {availableTables.Count}");
 
             return availableTables;
         }

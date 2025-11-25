@@ -231,3 +231,5 @@ function AdminSettingsPage() {
         </div>
     );
 }
+
+export default AdminSettingsPage;
