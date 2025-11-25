@@ -1,18 +1,21 @@
 ﻿using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
+using Restaurant_App.DataAccess.Concrete;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
 using System.Linq.Expressions;
 
 namespace Restaurant_App.Business.Concrete
 {
-    public class TableManager: ITableService, IService<Table>
+    public class TableManager : ITableService, IService<Table>
     {
         private readonly ITableDal _tableDal;
+        private readonly IReservationDal _reservationDal;
 
-        public TableManager(ITableDal tableDal)
+        public TableManager(ITableDal tableDal, IReservationDal reservationDal)
         {
             _tableDal = tableDal;
+            _reservationDal = reservationDal;
         }
 
         public async Task Create(Table entity)
@@ -32,53 +35,30 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
         {
+            // 1. Tüm fiziksel olarak uygun masaları çek
             var candidateTables = await _tableDal.GetAvailableTables(reservationDate, numberOfGuests);
-            // Çakışma Kontrolü(Business Logic)
-            // Bir rezervasyon varsayılan olarak 2 saat sürer.
-            // Eğer masanın rezervasyonları içinde, istenen saat ile çakışan varsa o masayı ele.
 
-            var availableTables = new List<Table>();
+            // 2. Çakışan Rezervasyonları Bularak ID'lerini Listele
+            var startTime = reservationDate.AddMinutes(-10);
+            var endTime = reservationDate.AddHours(2);
 
-            foreach (var table in candidateTables)
-            {
-                bool isOccupied = false;
+            var reservations = await _reservationDal.GetAll(r =>
+                r.Status == ReservationStatus.Approved &&
+                r.ReservationDate < endTime &&
+                r.ReservationDate.AddHours(2) > startTime
+            );
 
-                if (table.Reservations != null)
-                {
-                    foreach (var res in table.Reservations)
-                    {
-                        // Sadece ONAYLANMIŞ rezervasyonlar masayı kapatır
-                        if (res.Status == ReservationStatus.Approved)
-                        {
-                            // Zaman Çakışması Kontrolü
-                            // Mevcut Rezervasyon: [ResStart, ResEnd]
-                            // İstenen Rezervasyon: [ReqStart, ReqEnd]
-                            // Çakışma şartı: ResStart < ReqEnd && ResEnd > ReqStart
+            // 3. Rezerve edilmiş masaların ID'lerini listele
+            var reservedTableIds = reservations
+                .Where(r => r.TableId.HasValue) // Sadece değeri olanları al
+                .Select(r => r.TableId.Value) // Değeri olanların Value'sunu (int) al
+                .ToList();
 
-                            DateTime resStart = res.ReservationDate;
-                            DateTime resEnd = res.ReservationDate.AddHours(2); // 2 saatlik oturum
-
-                            DateTime reqStart = reservationDate;
-                            DateTime reqEnd = reservationDate.AddHours(2);
-
-                            if (resStart < reqEnd && resEnd > reqStart)
-                            {
-                                isOccupied = true;
-                                break; // Çakışma bulundu, diğer rezervasyonlara bakmaya gerek yok
-                            }
-                        }
-                    }
-                }
-
-                if (!isOccupied)
-                {
-                    availableTables.Add(table);
-                }
-            }
+            // 4. Çakışanları listeden çıkar
+            var availableTables = candidateTables.Where(t => !reservedTableIds.Contains(t.Id)).ToList();
 
             return availableTables;
         }
-
         public async Task<Table?> GetTableWithReservations(int tableId)
         {
             return await _tableDal.GetTableWithReservations(tableId);

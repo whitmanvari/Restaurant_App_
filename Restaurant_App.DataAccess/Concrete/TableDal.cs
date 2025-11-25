@@ -28,9 +28,8 @@ namespace Restaurant_App.DataAccess.Concrete
         public async Task<List<Table>> GetAvailableTables(DateTime reservationDate, int numberOfGuests)
         {
             return await _context.Tables
-                .Include(t => t.Reservations) // Rezervasyonları dahil et ki Manager'da kontrol edebilelim
-                .Where(t => t.IsAvailable && t.Capacity >= numberOfGuests)
-                .ToListAsync();
+                 .Where(t => t.IsAvailable && t.Capacity >= numberOfGuests)
+                 .ToListAsync();
         }
 
         public async Task<Table?> GetTableWithOrders(int tableId)
