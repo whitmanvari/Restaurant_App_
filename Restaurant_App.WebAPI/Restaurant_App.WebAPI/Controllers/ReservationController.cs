@@ -5,6 +5,7 @@ using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Application.Dto; 
 using System.Security.Claims;
+using Restaurant_App.Entities.Enums;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -109,6 +110,20 @@ namespace Restaurant_App.WebAPI.Controllers
             var all = await _reservationService.GetAll(r => r.CreatedBy == userId);
             var dto = _mapper.Map<List<ReservationDTO>>(all);
             return Ok(dto);
+        }
+
+        //Admin dışında kimse rezervasyon onaylayamayacak.
+        [HttpPut("UpdateStatus/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStatus(int id, ReservationStatus status)
+        {
+            var reservation = await _reservationService.GetById(id);
+            if (reservation == null) return NotFound();
+
+            reservation.Status = status;
+            await _reservationService.Update(reservation);
+
+            return Ok();
         }
     }
 }

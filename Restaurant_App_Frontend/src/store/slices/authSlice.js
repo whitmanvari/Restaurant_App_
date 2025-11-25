@@ -1,47 +1,48 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import { jwtDecode } from 'jwt-decode'; // Token'ı çözmek için
-import {authService} from '../../services/authService';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { jwtDecode } from 'jwt-decode';
+import { authService } from '../../services/authService';
 
+const token = localStorage.getItem("token");
 
-const token = localStorage.getItem('token');
 let user = null;
 if (token) {
   try {
     const decoded = jwtDecode(token);
     if (decoded.exp * 1000 < Date.now()) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     } else {
       user = {
         email: decoded.email,
-        role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+        role: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
       };
     }
-  } catch (e) { localStorage.removeItem('token'); }
+  } catch {
+    localStorage.removeItem("token");
+  }
 }
 
 const initialState = {
+  token: token || null,
   user: user,
-  token: user ? token : null,
-  isAuthenticated: !!user, 
-  status: 'idle',
-  error: null,
+  isAuthenticated: !!user,
+  status: "idle",
+  error: null
 };
 
 export const loginUser = createAsyncThunk(
-  'auth/loginUser',
+  "auth/loginUser",
   async (loginData, { rejectWithValue }) => {
     try {
-      // API'yi değil, servisi çağır
       const data = await authService.login(loginData);
-      return data; // { token, user } objesini döndür
+      return data; // sadece token döner
     } catch (error) {
-      return rejectWithValue(error); 
+      return rejectWithValue(error);
     }
   }
 );
 
 export const registerUser = createAsyncThunk(
-  'auth/registerUser',
+  "auth/registerUser",
   async (registerData, { rejectWithValue }) => {
     try {
       await authService.register(registerData);
@@ -52,47 +53,56 @@ export const registerUser = createAsyncThunk(
 );
 
 export const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     logout: (state) => {
-      authService.logout(); // localStorage'ı temizle
-      state.token = null;
+      authService.logout();
       state.isAuthenticated = false;
       state.user = null;
-    },
+      state.token = null;
+    }
   },
-
   extraReducers: (builder) => {
     builder
-      // Login
+      // LOGIN
       .addCase(loginUser.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.token = action.payload.token;
-        state.user = action.payload.user;
+
+        // TOKEN'I DECODE EDİYORUZ
+        const decoded = jwtDecode(action.payload.token);
+        state.user = {
+          email: decoded.email,
+          role: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+        };
+
+        // LocalStorage’a kaydet
+        localStorage.setItem("token", action.payload.token);
+
         state.isAuthenticated = true;
-        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.payload;
         state.token = null;
-        state.isAuthenticated = false;
         state.user = null;
+        state.isAuthenticated = false;
       })
-      // Register 
+
+      // REGISTER
       .addCase(registerUser.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(registerUser.fulfilled, (state) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.payload;
       });
   },
