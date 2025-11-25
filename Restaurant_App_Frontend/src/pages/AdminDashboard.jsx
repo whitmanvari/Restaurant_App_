@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { reservationService } from '../services/reservationService';
+import { reservationService } from '../services/reservationService'; 
+import { tableService } from '../services/tableService'; 
 import api from '../api/axiosInstance';
 import TableDetailModal from '../components/TableDetailModal';
-import ReservationEditModal from '../components/ReservationEditModal';
-import { Link } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
 
 function AdminDashboard() {
     const { user } = useSelector(state => state.auth);
+    const navigate = useNavigate();
 
-    const [reservations, setReservations] = useState([]); // Sadece bekleyen sayısını görmek için
-    const [tables, setTables] = useState([]);
-    const [activeOrders, setActiveOrders] = useState([]);
+    // State'ler
+    const [reservations, setReservations] = useState([]); // Rezervasyon kayıtları
+    const [tables, setTables] = useState([]); // Masa kayıtları (tablo numarası için)
+    const [activeOrders, setActiveOrders] = useState([]); // Aktif siparişler
     const [loading, setLoading] = useState(true);
     const [selectedTableData, setSelectedTableData] = useState(null); 
 
@@ -24,14 +26,15 @@ function AdminDashboard() {
 
     const fetchData = async () => {
         try {
+            // 1. Tüm verileri çek
             const [resData, tableRes, orderRes] = await Promise.all([
-                reservationService.getAll(),
-                api.get('/Table'),
-                api.get('/OrderInRestaurant/all/details')
+                reservationService.getAll(), // Tüm rezervasyonları çekiyoruz (AdminReservationPage gibi)
+                tableService.getAll(), // Tüm masaları çekiyoruz
+                api.get('/OrderInRestaurant/all/details') // Tüm aktif siparişleri çekiyoruz
             ]);
             
-            setReservations(resData); // Tüm rezervasyonları çek, bekleyen sayısını hesapla
-            setTables(tableRes.data);
+            setReservations(resData);
+            setTables(tableRes);
             
             const activeOnes = orderRes.data.filter(o =>
                 o.status !== 'Completed' && o.status !== 'Canceled'
@@ -44,27 +47,50 @@ function AdminDashboard() {
         }
     };
 
-    // HELPER: Masa Durumunu Analiz Et
+    // HELPER: Masa Durumunu Analiz Et (Aynı gün ve çakışma kontrolü)
     const getTableStatus = (tableId) => {
-        const activeOrder = activeOrders.find(o => o.tableId === tableId);
-        if (activeOrder) return { status: 'occupied', data: activeOrder };
-
-        const today = new Date().toISOString().slice(0, 10);
-        const isReserved = reservations.find(r =>
-            r.tableId === tableId &&
-            r.status === 1 && // Sadece onaylı olanları say
-            r.reservationDate.startsWith(today)
+        // 1. Check Active Orders (DOLU)
+        const activeOrder = activeOrders.find(o => 
+            o.tableId === tableId && 
+            o.status !== 'Completed' && 
+            o.status !== 'Canceled'
         );
-        if (isReserved) return { status: 'reserved', data: isReserved };
+        if (activeOrder) return { status: 'occupied', data: activeOrder, color: 'danger', text: 'Dolu' };
 
-        return { status: 'empty', data: null };
+        // 2. Check Reservations (REZERVE) - Bugün içinde onaylı rezervasyon var mı?
+        const now = new Date();
+        const resForToday = reservations.filter(r =>
+            r.tableId === tableId &&
+            r.status === 1 && // ONAYLI
+            new Date(r.reservationDate).toDateString() === now.toDateString()
+        ).sort((a, b) => new Date(a.reservationDate) - new Date(b.reservationDate)); // En yakın saati bul
+        
+        const nextRes = resForToday[0];
+
+        if (nextRes) {
+            // Ayrıca, bu rezervasyonun başlama zamanı 1 saatten daha kısa bir süre sonra mı?
+            const resTime = new Date(nextRes.reservationDate);
+            const timeUntilRes = (resTime.getTime() - now.getTime()) / (1000 * 60); // Dakika farkı
+
+            // Eğer rezervasyon şimdi aktifse (geçmiş 1 saat veya gelecek 1 saat içindeyse)
+            if (timeUntilRes <= 60 && timeUntilRes >= -120) {
+                 return { status: 'reserved', data: nextRes, color: 'warning', text: 'Rezerve' };
+            }
+        }
+
+        // 3. HİÇBİRİ YOKSA (MÜSAİT)
+        return { status: 'empty', data: null, color: 'success', text: 'Müsait' };
     };
 
     const handleTableClick = (table, status, activeOrderData) => {
         if (status === 'occupied' && activeOrderData) {
+            // Aktif sipariş varsa sipariş detay modalını aç
             setSelectedTableData({ table: table, order: activeOrderData });
+        } else if (status === 'reserved') {
+            // Rezervasyon varsa bilgi ver
+            toast.info(`Masa ${table.tableNumber} bugün rezerve. ${new Date(activeOrderData.reservationDate).toLocaleTimeString()}`);
         } else {
-            toast.info(`Masa ${table.tableNumber} şu an ${status === 'empty' ? 'boş' : 'rezerve'}.`);
+            toast.info(`Masa ${table.tableNumber} şu an boş.`);
         }
     };
 
@@ -78,18 +104,16 @@ function AdminDashboard() {
                     <h1 className="display-6" style={{ fontFamily: 'Playfair Display' }}>Yönetim Paneli</h1>
                     <p className="text-muted">Merhaba Şef {user?.fullName}, bugün restoranın harika görünüyor.</p>
                 </div>
+                {/* Yönetim Butonları (Navbar'da da var, burada da kalsın) */}
                 <div className="d-flex gap-2 flex-wrap">
                     <Link to="/admin/menu" className="btn btn-outline-dark"><i className="fas fa-utensils me-2"></i> Menü</Link>
-                    
                     <Link to="/admin/reservations" className="btn btn-outline-dark">
                         <i className="fas fa-calendar-check me-2"></i> Rezervasyonlar
                         {reservations.filter(r => r.status === 0).length > 0 &&
                             <span className="badge bg-danger ms-2">{reservations.filter(r => r.status === 0).length}</span>
                         }
                     </Link>
-                    
                     <Link to="/admin/orders" className="btn btn-outline-dark"><i className="fas fa-tasks me-2"></i> Siparişler</Link>
-                    <Link to="/admin/analytics" className="btn btn-outline-dark"><i className="fas fa-chart-pie me-2"></i> Raporlar</Link>
                     <Link to="/admin/settings" className="btn btn-outline-dark"><i className="fas fa-cog me-2"></i> Ayarlar</Link>
                 </div>
             </div>
@@ -99,20 +123,8 @@ function AdminDashboard() {
             
             <div className="row g-4">
                 {tables.map(table => {
-                    const { status, data } = getTableStatus(table.id);
-                    let bgClass = 'bg-white';
-                    let icon = 'fa-chair';
-                    let statusText = 'Müsait';
-
-                    if (status === 'occupied') {
-                        bgClass = 'bg-danger text-white';
-                        icon = 'fa-utensils';
-                        statusText = 'Dolu';
-                    } else if (status === 'reserved') {
-                        bgClass = 'bg-warning text-dark';
-                        icon = 'fa-clock';
-                        statusText = 'Rezerve';
-                    }
+                    const { status, data, color, text } = getTableStatus(table.id);
+                    let subText = status === 'occupied' ? `${data.totalAmount} ₺` : (status === 'reserved' ? new Date(data.reservationDate).toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'}) : `${table.capacity} Kişilik`);
 
                     return (
                         <div
@@ -121,27 +133,18 @@ function AdminDashboard() {
                             onClick={() => handleTableClick(table, status, data)}
                             style={{ cursor: 'pointer' }}
                         >
-                            <div className={`card h-100 shadow-sm ${status === 'occupied' ? 'border-danger border-2' : 'border-success'}`}>
-                                <div className={`card-header py-2 d-flex justify-content-between align-items-center ${bgClass}`}>
-                                    <span className="fw-bold">{table.tableNumber}</span>
-                                    <small>{statusText}</small>
+                            <div className={`card h-100 shadow-sm border-${color} border-2`}>
+                                <div className={`card-header py-2 d-flex justify-content-between align-items-center bg-${color} text-white`}>
+                                    <span className="fw-bold">Masa {table.tableNumber}</span>
+                                    <small>{text}</small>
                                 </div>
                                 <div className="card-body text-center">
-                                    <i className={`fas ${icon} fa-2x mb-3 ${status === 'occupied' ? 'text-danger' : (status === 'reserved' ? 'text-warning' : 'text-success')}`}></i>
-                                    {status === 'empty' && <p className="text-muted small">Kapasite: {table.capacity}</p>}
-                                    {status === 'occupied' && (
-                                        <div className="text-start small">
-                                            <div className="fw-bold mb-1"><i className="fas fa-user me-1"></i> {data.userName || 'Misafir'}</div>
-                                            <div className="text-danger fw-bold"><i className="fas fa-receipt me-1"></i> {data.totalAmount} ₺</div>
-                                            <div className="text-muted mt-1 fst-italic">{data.status}</div>
-                                        </div>
-                                    )}
-                                    {status === 'reserved' && (
-                                        <div className="text-start small">
-                                            <div className="fw-bold">{data.customerName}</div>
-                                            <div className="text-muted"><i className="far fa-clock me-1"></i> {new Date(data.reservationDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
-                                        </div>
-                                    )}
+                                    <i className={`fas ${status === 'occupied' ? 'fa-utensils' : (status === 'reserved' ? 'fa-clock' : 'fa-chair')} fa-3x text-${color} mb-3 opacity-75`}></i>
+                                    
+                                    <div className="text-start small">
+                                        <div className={`fw-bold ${status === 'occupied' ? 'text-danger' : ''}`}>{subText}</div>
+                                        <div className="text-muted mt-1 fst-italic">Kapasite: {table.capacity}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
