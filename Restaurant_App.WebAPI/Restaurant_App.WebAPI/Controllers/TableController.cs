@@ -40,10 +40,13 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok(dto);
         }
 
-        // Müsait masaları filtrele (Rezervasyon için)
+        // Belirli bir tarih ve saatte MÜSAİT olan masaları getirir.
+        // Kullanıcı rezervasyon yaparken burayı çağırır.
         [HttpGet("available")]
+        [AllowAnonymous] // Giriş yapmadan da müsaitlik görülebilsin
         public async Task<IActionResult> GetAvailableTables([FromQuery] DateTime date, [FromQuery] int guests)
         {
+            // Manager katmanındaki yeni mantık burada çalışır
             var tables = await _tableService.GetAvailableTables(date, guests);
             var dto = _mapper.Map<List<TableDTO>>(tables);
             return Ok(dto);
