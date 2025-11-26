@@ -16,6 +16,7 @@ import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import ReservationPage from './pages/ReservationPage';
 import AdminReservationPage from './pages/AdminReservationPage'; 
 import ProductDetailPage from './pages/ProductDetailPage'; 
+import AdminUsersPage from './pages/AdminUsersPage';
 
 function App() {
     const { user } = useSelector(state => state.auth); 
@@ -58,7 +59,7 @@ function App() {
                     <Route path="admin/settings" element={<AdminRoute element={<AdminSettingsPage />} />} />
                     <Route path="admin/reservations" element={<AdminRoute element={<AdminReservationPage />} />} />
                     <Route path="admin/tables" element={<AdminRoute element={<AdminDashboard />} />} /> {/* Dashboard'a yönlendirir */}
-
+                    <Route path="admin/users" element={<AdminRoute element={<AdminUsersPage />} />} />
                     {/* 404 - Hatalı URL girilirse ana sayfaya at */}
                     <Route path="*" element={<HomePage />} />
                 </Route>
