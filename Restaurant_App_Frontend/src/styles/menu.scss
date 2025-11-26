@@ -1,0 +1,83 @@
+.menu-page-wrapper {
+    background-color: var(--bg-body);
+    min-height: 100vh;
+    padding-top: 100px;
+    padding-bottom: 60px;
+    transition: background-color 0.3s ease;
+
+    h2 { color: var(--text-main); }
+}
+
+// --- FİLTRE SIDEBAR ---
+.filter-sidebar {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    
+    .form-label { color: var(--text-main); }
+
+    .input-group-text, .form-control {
+        background-color: var(--input-bg);
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
+
+    .list-group-item {
+        background-color: transparent;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-main);
+        
+        &:hover { color: var(--accent-color); }
+        
+        &.active-cat {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+    }
+}
+
+// --- ÜRÜN KARTLARI ---
+.product-hover-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .card-title { color: var(--text-main); }
+    .card-text { color: var(--text-muted); }
+}
+
+// --- PAGINATION ---
+.pagination {
+    .page-item .page-link {
+        background-color: var(--bg-card);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        
+        &:hover {
+            background-color: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+    }
+
+    .page-item.active .page-link {
+        background-color: var(--text-main); // Dark modda açık, light modda koyu
+        color: var(--bg-body);
+        border-color: var(--text-main);
+    }
+    
+    .page-item.disabled .page-link {
+        color: var(--text-muted);
+        background-color: var(--bg-body);
+        opacity: 0.6;
+    }
+}
+
+// Dark Mode özel ayarları (Gerekirse override etmek için)
+[data-bs-theme="dark"] {
+    .filter-sidebar { box-shadow: none; }
+}
