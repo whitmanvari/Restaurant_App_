@@ -73,5 +73,13 @@ namespace Restaurant_App.DataAccess.Concrete
                 .Include(p => p.Images)
                 .ToListAsync();
         }
+        public async Task<List<Product>> GetAllWithDetails()
+        {
+            return await _context.Products
+                .Include(p => p.Category) // Kategoriyi dahil et (Filtre için şart)
+                .Include(p => p.Images)   // Resimleri dahil et (Görsel için şart)
+                .Where(p => !p.IsDeleted) // Silinmemişleri getir
+                .ToListAsync();
+        }
     }
 }

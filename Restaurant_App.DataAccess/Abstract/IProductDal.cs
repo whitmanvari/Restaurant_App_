@@ -11,5 +11,6 @@ namespace Restaurant_App.DataAccess.Abstract
         Task<int> GetCountByCategory(string category);
         Task<Product> GetProductDetails(int id);
         Task<List<Product>> GetProductsByCategory(string category, int page, int pageSize);
+        Task<List<Product>> GetAllWithDetails(); //Tüm detayları, resim kategori vs ile getir.
     }
 }
