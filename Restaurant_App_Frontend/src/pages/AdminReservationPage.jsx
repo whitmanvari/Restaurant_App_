@@ -3,12 +3,17 @@ import { toast } from 'react-toastify';
 import { reservationService } from '../services/reservationService';
 import { tableService } from '../services/tableService';
 import { useSelector } from 'react-redux';
+// YENİ IMPORT
+import ReservationDetailModal from '../components/ReservationDetailModal'; 
 
 export default function AdminReservationPage() {
-    const { user } = useSelector(state => state.auth); 
+    const { user } = useSelector(state => state.auth);
     const [reservations, setReservations] = useState([]);
     const [tables, setTables] = useState([]); 
     const [loading, setLoading] = useState(true);
+    
+    // Seçili rezervasyon için state
+    const [selectedReservation, setSelectedReservation] = useState(null);
 
     useEffect(() => {
         loadData();
@@ -21,7 +26,6 @@ export default function AdminReservationPage() {
                 tableService.getAll() 
             ]);
             
-            // SIRALAMA: Bekleyenler en üstte, sonra tarih sırası
             const sorted = resData.sort((a, b) => {
                 if (a.status === 0 && b.status !== 0) return -1;
                 if (a.status !== 0 && b.status === 0) return 1;
@@ -32,7 +36,6 @@ export default function AdminReservationPage() {
             setTables(tableData);
             setLoading(false);
         } catch (error) {
-            console.error(error);
             toast.error("Veriler yüklenirken hata oluştu.");
             setLoading(false);
         }
@@ -44,21 +47,14 @@ export default function AdminReservationPage() {
         return table ? table.tableNumber : 'Bilinmiyor';
     };
 
-    const handleStatusUpdate = async (reservation, newStatus) => {
-        const updatedRes = {
-            ...reservation,
-            status: newStatus,
-            reservationDate: reservation.reservationDate 
-        };
-        
+    // Hızlı Onay (Listeden direkt onaylamak için)
+    const handleQuickApprove = async (reservation) => {
+        const updatedRes = { ...reservation, status: 1, reservationDate: reservation.reservationDate };
         try {
             await reservationService.update(reservation.id, updatedRes);
-            const statusText = newStatus === 1 ? 'Onaylandı' : 'Reddedildi';
-            toast.success(`Rezervasyon ${statusText}.`);
-            loadData(); 
-        } catch (error) {
-            toast.error("Güncelleme başarısız oldu.");
-        }
+            toast.success("Rezervasyon onaylandı.");
+            loadData();
+        } catch { toast.error("Hata oluştu."); }
     };
 
     const handleDelete = async (id) => {
@@ -67,18 +63,16 @@ export default function AdminReservationPage() {
             await reservationService.remove(id);
             toast.success("Rezervasyon silindi.");
             loadData();
-        } catch (error) {
-            toast.error("Silme işlemi başarısız.");
-        }
+        } catch { toast.error("Silinemedi."); }
     };
     
     const getStatusBadge = (status) => {
         switch (status) {
-            case 0: return <span className="badge bg-warning text-dark px-3 py-2">Bekliyor</span>;
-            case 1: return <span className="badge bg-success px-3 py-2">Onaylandı</span>;
-            case 2: return <span className="badge bg-danger px-3 py-2">Reddedildi</span>;
-            case 3: return <span className="badge bg-secondary px-3 py-2">İptal</span>;
-            default: return <span className="badge bg-light text-dark border px-3 py-2">Bilinmiyor</span>;
+            case 0: return <span className="badge bg-warning text-dark px-2">Bekliyor</span>;
+            case 1: return <span className="badge bg-success px-2">Onaylı</span>;
+            case 2: return <span className="badge bg-danger px-2">Red</span>;
+            case 3: return <span className="badge bg-secondary px-2">İptal</span>;
+            default: return <span className="badge bg-light text-dark border">?</span>;
         }
     };
 
@@ -88,19 +82,15 @@ export default function AdminReservationPage() {
         <div className="container mt-5 pt-5 mb-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 style={{ fontFamily: 'Playfair Display', color: 'var(--text-main)' }}>
-                        Rezervasyon Yönetimi
-                    </h2>
+                    <h2 style={{ fontFamily: 'Playfair Display', color: 'var(--text-main)' }}>Rezervasyon Yönetimi</h2>
                     <p className="text-muted">
-                        Hoşgeldin {user?.fullName}. Toplam {reservations.length} kayıt, 
-                        <span className="text-warning fw-bold ms-1">
-                            {reservations.filter(r => r.status === 0).length} Bekleyen
+                        Hoşgeldin {user?.fullName}. 
+                        <span className="text-warning fw-bold ms-2">
+                            {reservations.filter(r => r.status === 0).length} Bekleyen Talep
                         </span>
                     </p>
                 </div>
-                <button className="btn btn-outline-dark" onClick={loadData}>
-                    <i className="fas fa-sync-alt me-2"></i> Yenile
-                </button>
+                <button className="btn btn-outline-dark" onClick={loadData}><i className="fas fa-sync-alt me-2"></i> Yenile</button>
             </div>
 
             <div className="card shadow-sm border-0" style={{ backgroundColor: 'var(--bg-card)' }}>
@@ -109,12 +99,10 @@ export default function AdminReservationPage() {
                         <thead className="bg-light">
                             <tr>
                                 <th className="ps-4">Durum</th>
-                                <th>Tarih & Saat</th>
+                                <th>Tarih</th>
                                 <th>Müşteri</th>
-                                <th>İletişim</th>
                                 <th>Kişi</th>
                                 <th>Masa</th>
-                                <th>Notlar</th>
                                 <th className="text-end pe-4">İşlemler</th>
                             </tr>
                         </thead>
@@ -126,27 +114,46 @@ export default function AdminReservationPage() {
                                         <div className="fw-bold">{new Date(r.reservationDate).toLocaleDateString('tr-TR')}</div>
                                         <small className="text-muted">{new Date(r.reservationDate).toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}</small>
                                     </td>
-                                    <td className="fw-bold">{r.customerName}</td>
-                                    <td>{r.customerPhone}</td>
+                                    <td>
+                                        <div className="fw-bold">{r.customerName}</div>
+                                        <small className="text-muted">{r.customerPhone}</small>
+                                    </td>
                                     <td>{r.numberOfGuests}</td>
                                     <td><span className="badge bg-light text-dark border">{getTableNumber(r.tableId)}</span></td>
-                                    <td>{r.specialRequests ? <span title={r.specialRequests} className="text-truncate d-inline-block" style={{maxWidth:'150px'}}>{r.specialRequests}</span> : '-'}</td>
+                                    
                                     <td className="text-end pe-4">
+                                        {/* DETAY BUTONU (GÖZ) */}
+                                        <button className="btn btn-sm btn-outline-primary me-2" onClick={() => setSelectedReservation(r)} title="Detayları Gör">
+                                            <i className="fas fa-eye"></i>
+                                        </button>
+
+                                        {/* HIZLI ONAY (Sadece Bekleyenler İçin) */}
                                         {r.status === 0 && (
-                                            <div className="btn-group btn-group-sm me-2">
-                                                <button onClick={() => handleStatusUpdate(r, 1)} className="btn btn-success" title="Onayla"><i className="fas fa-check"></i></button>
-                                                <button onClick={() => handleStatusUpdate(r, 2)} className="btn btn-warning text-white" title="Reddet"><i className="fas fa-times"></i></button>
-                                            </div>
+                                            <button className="btn btn-sm btn-success me-2" onClick={() => handleQuickApprove(r)} title="Hızlı Onayla">
+                                                <i className="fas fa-check"></i>
+                                            </button>
                                         )}
-                                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(r.id)} title="Sil"><i className="fas fa-trash-alt"></i></button>
+                                        
+                                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(r.id)} title="Sil">
+                                            <i className="fas fa-trash-alt"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
-                            {reservations.length === 0 && <tr><td colSpan="8" className="text-center py-5 text-muted">Kayıt bulunamadı.</td></tr>}
+                            {reservations.length === 0 && <tr><td colSpan="6" className="text-center py-5 text-muted">Kayıt yok.</td></tr>}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {/* MODAL */}
+            {selectedReservation && (
+                <ReservationDetailModal 
+                    reservation={selectedReservation} 
+                    onClose={() => setSelectedReservation(null)} 
+                    onUpdate={loadData} 
+                />
+            )}
         </div>
     );
 }
