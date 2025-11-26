@@ -40,7 +40,6 @@ export default function Navbar() {
         navigate("/login");
     };
 
-    // Navbar Sınıfları
     const navbarClass = `navbar navbar-expand-lg fixed-top navbar-custom ${scrolled || !isHomePage ? 'scrolled' : ''}`;
 
     return (
@@ -78,19 +77,17 @@ export default function Navbar() {
                         {/* DİNAMİK REZERVASYON LİNKİ */}
                         <li className="nav-item">
                             {user?.role === 'Admin' ? (
-                                // Admin ise Yönetim Sayfasına git
                                 <NavLink className="nav-link" to="/admin/reservations">
                                     Rezervasyon Yönetimi
                                 </NavLink>
                             ) : (
-                                // Normal kullanıcı veya Misafir ise Form Sayfasına git
                                 <NavLink className="nav-link" to="/reservations">
                                     Rezervasyon
                                 </NavLink>
                             )}
                         </li>
 
-                        {/* Admin için Ekstra Yönetim Linki */}
+                        {/* Admin Paneli Linki */}
                         {user?.role === 'Admin' && (
                             <li className="nav-item">
                                 <NavLink className="nav-link text-warning" to="/admin">Panel</NavLink>
@@ -98,32 +95,26 @@ export default function Navbar() {
                         )}
                     </ul>
 
-                    {/* 3. SAĞ Taraf (Tema, Sepet, User) */}
+                    {/* 3. SAĞ Taraf */}
                     <ul className="navbar-nav align-items-center gap-3 right-nav">
                         
-                        {/* Tema Değiştirici */}
+                        {/* Tema */}
                         <li className="nav-item">
                             <button
                                 onClick={toggleTheme}
                                 className="btn nav-link border-0 p-0 theme-btn"
                                 title={theme === 'light' ? "Koyu Moda Geç" : "Açık Moda Geç"}
                             >
-                                {theme === 'light' ? (
-                                    <i className="fas fa-moon"></i>
-                                ) : (
-                                    <i className="fas fa-sun text-warning"></i>
-                                )}
+                                {theme === 'light' ? <i className="fas fa-moon"></i> : <i className="fas fa-sun text-warning"></i>}
                             </button>
                         </li>
 
-                        {/* Sepet İkonu */}
+                        {/* Sepet */}
                         <li className="nav-item position-relative">
                             <Link to="/cart" className="nav-link p-0 cart-icon-wrapper">
                                 <i className="fas fa-shopping-bag"></i>
                                 {cartCount > 0 && (
-                                    <span className="cart-badge">
-                                        {cartCount}
-                                    </span>
+                                    <span className="cart-badge">{cartCount}</span>
                                 )}
                             </Link>
                         </li>
@@ -138,11 +129,19 @@ export default function Navbar() {
                                 >
                                     <div className="avatar-wrapper">
                                         <img
-                                            src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.email || 'User'}&background=c5a059&color=fff&size=128`}
+                                            src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.fullName || 'User'}&background=c5a059&color=fff&size=128`}
                                             alt="avatar"
                                         />
                                     </div>
-                                    <span className="user-name">{user?.fullName?.split(' ')[0] || 'Yönetici'}</span>
+                                    
+                                    {/* Rol Kontrolü */}
+                                    <span className="user-name">
+                                        {user?.role === 'Admin' 
+                                            ? 'Yönetici' 
+                                            : (user?.fullName?.split(' ')[0] || 'Misafir')
+                                        }
+                                    </span>
+                                    
                                     <i className={`fas fa-chevron-down ms-2 small transition-icon ${showUserMenu ? 'rotate' : ''}`}></i>
                                 </button>
 
@@ -152,6 +151,7 @@ export default function Navbar() {
                                         <div className="dropdown-header-area">
                                             <small>Hoşgeldin,</small>
                                             <strong>{user?.fullName}</strong>
+                                            <div className="badge bg-light text-dark mt-1 border">{user?.role === 'Admin' ? 'Yönetici' : 'Üye'}</div>
                                         </div>
                                         <Link className="dropdown-item-custom" to="/profile">
                                             <i className="fas fa-user me-2"></i> Profilim

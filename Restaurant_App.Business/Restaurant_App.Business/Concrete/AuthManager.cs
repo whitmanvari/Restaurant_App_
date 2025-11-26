@@ -39,7 +39,8 @@ namespace Restaurant_App.Business.Concrete
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("fullName", user.FullName)
             };
 
             // 3. Çektiğimiz rolleri claim listesine 'ClaimTypes.Role' olarak ekle
