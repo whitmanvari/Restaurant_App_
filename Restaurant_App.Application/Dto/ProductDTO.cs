@@ -4,7 +4,8 @@
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int Allergic { get; set; } = 0; //Allergic.none => 0
+        public string? Ingredients { get; set; }
+        public int Allergic { get; set; } = 0; //Allergic.none => 0 (Bitwise enum değeri)
         public double AverageRating { get; set; }
         public int TotalRatings { get; set; }
         public decimal Price { get; set; }
