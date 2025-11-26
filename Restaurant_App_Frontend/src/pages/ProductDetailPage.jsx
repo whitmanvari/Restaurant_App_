@@ -240,14 +240,21 @@ export default function ProductDetailPage() {
                                     <div className="card-body p-4">
                                         <div className="d-flex justify-content-between align-items-start">
                                             <div className="d-flex align-items-center">
+                                                {/* Avatar Harfi: İsmin baş harfi olsun */}
                                                 <div className="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold" style={{width:'45px', height:'45px'}}>
-                                                    {comment.userId ? comment.userId.substring(0,1).toUpperCase() : 'U'}
+                                                    {/* userName varsa baş harfini al, yoksa U */}
+                                                    {comment.userName ? comment.userName.substring(0,1).toUpperCase() : 'U'}
                                                 </div>
                                                 <div>
-                                                    <h6 className="mb-0 fw-bold">{comment.userId?.split('@')[0] || 'Kullanıcı'}</h6>
+                                                    <h6 className="mb-0 fw-bold">{comment.userName || 'Misafir'}</h6>
+                                                    
                                                     <div className="text-warning small">
                                                         {[...Array(comment.ratingValue)].map((_, i) => <i key={i} className="fas fa-star"></i>)}
                                                     </div>
+                                                    {/* Tarih Eklemesi */}
+                                                    <small className="text-muted" style={{fontSize:'0.7rem'}}>
+                                                        {comment.createdDate ? new Date(comment.createdDate).toLocaleDateString('tr-TR') : ''}
+                                                    </small>
                                                 </div>
                                             </div>
                                             {(user?.role === 'Admin' || user?.email === comment.userId) && (

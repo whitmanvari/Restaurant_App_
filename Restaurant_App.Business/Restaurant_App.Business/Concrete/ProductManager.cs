@@ -5,15 +5,18 @@ using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
 using System.Linq.Expressions;
+using AutoMapper;
 
 namespace Restaurant_App.Business.Concrete
 {
     public class ProductManager : IProductService, IService<Product>
     {
         private readonly IProductDal _productDal;
-        public ProductManager(IProductDal productDal)
+        private readonly IMapper _mapper;
+        public ProductManager(IProductDal productDal, IMapper mapper)
         {
             _productDal = productDal;
+            _mapper = mapper;
         }
 
         public async Task Create(Product entity)
@@ -74,16 +77,15 @@ namespace Restaurant_App.Business.Concrete
         // FİLTRELEME VE SAYFALAMA METODU 
         public async Task<PagedResponse<ProductDTO>> GetProductsByFilter(PaginationParams p)
         {
-            // 1. Tüm aktif ürünleri çek 
-            var allProducts = await _productDal.GetAll(x => !x.IsDeleted);
+            var allProducts = await _productDal.GetAllWithDetails();
 
-            // 2. Alerjen Filtreleme
+            // 1. Alerjen Filtreleme
             if (p.ExcludeAllergens.HasValue && p.ExcludeAllergens.Value > 0)
             {
                 allProducts = allProducts.Where(x => ((int)x.Allergic & p.ExcludeAllergens.Value) == 0).ToList();
             }
 
-            // 3. Kategori Filtresi
+            // 2. Kategori Filtresi 
             if (!string.IsNullOrEmpty(p.Category) && p.Category != "Tümü")
             {
                 allProducts = allProducts.Where(x =>
@@ -92,7 +94,7 @@ namespace Restaurant_App.Business.Concrete
                 ).ToList();
             }
 
-            // 4. Arama Filtresi
+            // 3. Arama Filtresi
             if (!string.IsNullOrEmpty(p.SearchTerm))
             {
                 string lowerTerm = p.SearchTerm.ToLower();
@@ -102,7 +104,7 @@ namespace Restaurant_App.Business.Concrete
                 ).ToList();
             }
 
-            // 5. Sayfalama (Pagination)
+            // 4. Sayfalama
             int totalRecords = allProducts.Count;
 
             var pagedList = allProducts
@@ -110,20 +112,8 @@ namespace Restaurant_App.Business.Concrete
                 .Take(p.PageSize)
                 .ToList();
 
-            // 6. DTO Dönüşümü 
-            var dtoList = pagedList.Select(p => new ProductDTO
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                Price = p.Price,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category?.Name ?? "",
-                ImageUrls = p.Images.Select(i => i.Url).ToList(),
-                Allergic = (int)p.Allergic,
-                Ingredients = p.Ingredients
-            }).ToList();
-            
+            // 5. DTO Dönüşümü
+            var dtoList = _mapper.Map<List<ProductDTO>>(pagedList);
 
             return new PagedResponse<ProductDTO>(dtoList, p.PageNumber, p.PageSize, totalRecords);
         }
