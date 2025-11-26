@@ -71,43 +71,46 @@ namespace Restaurant_App.Business.Concrete
             await _productDal.Update(entity);
         }
 
+        // FİLTRELEME VE SAYFALAMA METODU 
         public async Task<PagedResponse<ProductDTO>> GetProductsByFilter(PaginationParams p)
         {
+            // 1. Tüm aktif ürünleri çek 
             var allProducts = await _productDal.GetAll(x => !x.IsDeleted);
 
-            //Alerjen Filtreleme
+            // 2. Alerjen Filtreleme
             if (p.ExcludeAllergens.HasValue && p.ExcludeAllergens.Value > 0)
             {
-                // Mantık: (ÜrünAlerjenleri & İstenmeyenler) == 0 ise çakışma yok demektir.
-                // Örnek: Ürün (Süt|Yumurta) içeriyor, Biz (Fıstık) istemiyoruz -> Çakışma yok (0), Ürün gelir.
-                // Örnek: Ürün (Süt|Yumurta) içeriyor, Biz (Süt) istemiyoruz -> Çakışma var (Süt biti), Ürün gelmez.m run
                 allProducts = allProducts.Where(x => ((int)x.Allergic & p.ExcludeAllergens.Value) == 0).ToList();
             }
 
-            // Kategori Filtresi
+            // 3. Kategori Filtresi
             if (!string.IsNullOrEmpty(p.Category) && p.Category != "Tümü")
             {
-                allProducts = allProducts.Where(x => x.Category != null && x.Category.Name == p.Category).ToList();
+                allProducts = allProducts.Where(x =>
+                    x.Category != null &&
+                    x.Category.Name.Trim().ToLower() == p.Category.Trim().ToLower()
+                ).ToList();
             }
 
-            // Arama (Search) Filtresi
+            // 4. Arama Filtresi
             if (!string.IsNullOrEmpty(p.SearchTerm))
             {
                 string lowerTerm = p.SearchTerm.ToLower();
-                allProducts = allProducts.Where(x => x.Name.ToLower().Contains(lowerTerm) ||
-                                                     x.Description.ToLower().Contains(lowerTerm)).ToList();
+                allProducts = allProducts.Where(x =>
+                    x.Name.ToLower().Contains(lowerTerm) ||
+                    x.Description.ToLower().Contains(lowerTerm)
+                ).ToList();
             }
 
-            // Toplam Kayıt Sayısı 
+            // 5. Sayfalama (Pagination)
             int totalRecords = allProducts.Count;
 
-            //Sayfalama (Skip/Take)
             var pagedList = allProducts
                 .Skip((p.PageNumber - 1) * p.PageSize)
                 .Take(p.PageSize)
                 .ToList();
 
-            // 6. DTO Dönüşümü (Manuel veya Mapper ile)
+            // 6. DTO Dönüşümü 
             var dtoList = pagedList.Select(p => new ProductDTO
             {
                 Id = p.Id,
@@ -117,8 +120,10 @@ namespace Restaurant_App.Business.Concrete
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category?.Name ?? "",
                 ImageUrls = p.Images.Select(i => i.Url).ToList(),
-                Allergic = (int)p.Allergic
+                Allergic = (int)p.Allergic,
+                Ingredients = p.Ingredients
             }).ToList();
+            
 
             return new PagedResponse<ProductDTO>(dtoList, p.PageNumber, p.PageSize, totalRecords);
         }

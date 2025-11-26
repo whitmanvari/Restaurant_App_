@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Restaurant_App.Application.Dto; 
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Application.Dto; 
-using Restaurant_App.Entities.Enums; 
+using Restaurant_App.Entities.Enums;
+using Restaurant_App.Entities.Identity;
 using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
@@ -16,10 +18,13 @@ namespace Restaurant_App.WebAPI.Controllers
     {
         private readonly ICommentService _commentService;
         private readonly IMapper _mapper;
-        public CommentController(ICommentService commentService, IMapper mapper)
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public CommentController(ICommentService commentService, IMapper mapper, UserManager<ApplicationUser> userManager)
         {
             _commentService = commentService;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         [HttpPost("create")]
@@ -56,8 +61,28 @@ namespace Restaurant_App.WebAPI.Controllers
         public async Task<IActionResult> GetByProduct(int productId)
         {
             var comments = await _commentService.GetCommentsWithRatingsByProductId(productId);
-            var dto = _mapper.Map<List<CommentDTO>>(comments); 
-            return Ok(dto);
+
+            var dtoList = new List<CommentDTO>();
+
+            foreach (var c in comments)
+            {
+                // Kullanıcı adını bul
+                var user = await _userManager.FindByIdAsync(c.UserId);
+
+                dtoList.Add(new CommentDTO
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    ProductId = c.Rating.ProductId,
+                    UserId = c.UserId,
+                    UserName = user != null ? user.FullName : "Misafir", 
+                    RatingValue = (int)c.Rating.Value,
+                    CreatedDate = c.CreatedDate
+                });
+            }
+
+            // En yeniden eskiye sırala
+            return Ok(dtoList.OrderByDescending(x => x.CreatedDate));
         }
 
         [HttpGet("ByUser")]

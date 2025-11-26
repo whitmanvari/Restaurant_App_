@@ -4,6 +4,7 @@ import { ratingService } from '../services/ratingService';
 import { useDispatch, useSelector } from 'react-redux';
 import { addProductToCart } from '../store/slices/cartSlice';
 import { toast } from 'react-toastify';
+import { getImageUrl } from '../utils/imageHelper'; 
 
 function ProductDetailModal({ product, onClose }) {
     const dispatch = useDispatch();
@@ -96,8 +97,9 @@ function ProductDetailModal({ product, onClose }) {
                         <div className="row g-0">
                             {/* SOL Taraf*/}
                             <div className="col-md-5 bg-light d-flex flex-column align-items-center justify-content-center p-4 text-center">
+                                {/*getImageUrl kullanımı */}
                                 <img
-                                    src={product.imageUrls?.[0]}
+                                    src={getImageUrl(product.imageUrls?.[0])}
                                     className="img-fluid rounded shadow-sm mb-3"
                                     style={{ maxHeight: '250px', objectFit: 'cover' }}
                                     alt={product.name}
@@ -138,13 +140,19 @@ function ProductDetailModal({ product, onClose }) {
                                                     )}
 
                                                     <div className="d-flex justify-content-between align-items-center">
-                                                        <strong className="small">Misafir</strong>
-                                                        <div className="text-warning small me-3"> 
-                                                            {[...Array(comment.ratingValue)].map((_, i) => <i key={i} className="fas fa-star"></i>)}
-                                                        </div>
+                                                        {/*userName kullanımı */}
+                                                        <strong className="small">{comment.userName || 'Misafir'}</strong>
+                                                        
+                                                        <span className="text-muted ms-2" style={{ fontSize: '0.7rem' }}>
+                                                            {new Date(comment.createdDate).toLocaleDateString('tr-TR')}
+                                                        </span>
                                                     </div>
+                                                    
+                                                    <div className="text-warning small mb-1">
+                                                        {[...Array(comment.ratingValue)].map((_, i) => <i key={i} className="fas fa-star"></i>)}
+                                                    </div>
+                                                    
                                                     <p className="small text-muted mb-1 mt-1">{comment.text}</p>
-                                                    <small className="text-muted" style={{ fontSize: '0.7rem' }}>{new Date(comment.createdDate).toLocaleDateString()}</small>
                                                 </div>
                                             ))
                                     )}
