@@ -59,6 +59,10 @@ function ReservationPage() {
             statusName: "Pending"
         };
 
+        //kontrol
+        console.log("DEBUG F1 - GÖNDERİLEN PAYLOAD:", payload);
+        console.log("DEBUG F2 - HAM TARİH FORMATI:", formData.reservationDate);
+
         try {
             await api.post('/Reservation', payload);
 

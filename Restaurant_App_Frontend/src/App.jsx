@@ -14,6 +14,7 @@ import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
 import ReservationPage from './pages/ReservationPage';
 import AdminReservationPage from './pages/AdminReservationPage';
+import AdminTableManagementPage from './pages/AdminTableManagementPage';
 
 const AdminRoute = () => {
   const { user } = useSelector(state => state.auth);
@@ -45,7 +46,11 @@ function App() {
             <Route path="admin/menu" element={<AdminMenuPage />} />
             <Route path="admin/orders" element={<AdminOrdersPage />} />
             <Route path="admin/analytics" element={<AdminAnalyticsPage />} />
-            <Route path="admin/settings" element={<AdminSettingsPage />} />
+            {/* MASA YÖNETİMİ */}
+            <Route path="admin/tables" element={<AdminRoute element={<AdminTableManagementPage />} />} />
+            
+            {/* AYARLAR (Kategori/Masa Ekleme) */}
+            <Route path="admin/settings" element={<AdminRoute element={<AdminSettingsPage />} />} />
             <Route path="admin/reservations" element={<AdminReservationPage />} />
           </Route>
 
