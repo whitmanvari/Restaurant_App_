@@ -42,6 +42,11 @@ const getCategoryCount = async (categoryName) => {
     return response.data;
 };
 
+const getById = async (id) => {
+    const response = await api.get(`/Product/GetById/${id}`);
+    return response.data;
+};
+
 // Ürün sil
 const remove = async (id) => {
     const response = await api.delete(`/Product/Delete/${id}`);
@@ -63,5 +68,6 @@ export const productService = {
     getProductsByFilter,
     getMostPopular, 
     getTopRated,    
-    getCategoryCount
+    getCategoryCount,
+    getById
 };

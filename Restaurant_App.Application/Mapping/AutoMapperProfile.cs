@@ -22,7 +22,8 @@ namespace Restaurant_App.Application.Mapping
                 .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Select(i => i.Url)))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
                 .ForMember(dest => dest.Allergic, opt => opt.MapFrom(src => (int)src.Allergic))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => (decimal)src.Price)); // FIX
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => (decimal)src.Price))
+                .ForMember(dest => dest.Ingredients, opt => opt.MapFrom(src => src.Ingredients));
 
             CreateMap<ProductDTO, Product>()
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
@@ -30,7 +31,8 @@ namespace Restaurant_App.Application.Mapping
                 ))
                 .ForMember(dest => dest.Category, opt => opt.Ignore())
                 .ForMember(dest => dest.Allergic, opt => opt.MapFrom(src => (Allergic)src.Allergic))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => (double)src.Price)); // FIX
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => (double)src.Price))
+                .ForMember(dest => dest.Ingredients, opt => opt.MapFrom(src => src.Ingredients));
 
             // User -> DTO
             CreateMap<ApplicationUser, UserRegisterDTO>()
