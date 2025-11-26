@@ -5,14 +5,14 @@ import { authService } from '../services/authService';
 import { reservationService } from '../services/reservationService';
 import { toast } from 'react-toastify';
 import UserOrderDetailModal from '../components/UserOrderDetailModal';
-import '../styles/home.scss'; 
+import '../styles/home.scss';
 
 function UserProfilePage() {
     const { user } = useSelector(state => state.auth);
 
     // State'ler
     const [orders, setOrders] = useState([]);
-    const [myReservations, setMyReservations] = useState([]); 
+    const [myReservations, setMyReservations] = useState([]);
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'reservations' | 'settings'
     const [loading, setLoading] = useState(true);
@@ -31,10 +31,10 @@ function UserProfilePage() {
                     authService.getProfile(),
                     reservationService.getMyReservations()
                 ]);
-                
-                setOrders(ordersData.sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate)));
-                setMyReservations(resData.sort((a,b) => new Date(b.reservationDate) - new Date(a.reservationDate)));
-                
+
+                setOrders(ordersData.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate)));
+                setMyReservations(resData.sort((a, b) => new Date(b.reservationDate) - new Date(a.reservationDate)));
+
                 setProfileData({
                     fullName: profileRes.fullName || '',
                     phoneNumber: profileRes.phoneNumber || '',
@@ -63,6 +63,23 @@ function UserProfilePage() {
         }
     };
 
+    const handleCancelReservation = async (reservation) => {
+        if (!window.confirm("Rezervasyonunuzu iptal etmek istediğinize emin misiniz?")) return;
+
+        try {
+            // Status 3 = Cancelled (User tarafından)
+            // Backend DTO beklediği için tüm objeyi güncellemeliyiz
+            const updatedRes = { ...reservation, status: 3, reservationDate: reservation.reservationDate };
+
+            await reservationService.update(reservation.id, updatedRes);
+            toast.success("Rezervasyonunuz iptal edildi.");
+
+            window.location.reload();
+        } catch (error) {
+            toast.error("İptal işlemi başarısız.");
+        }
+    };
+
     // Durum Rozeti Yardımcısı
     const getStatusBadge = (status) => {
         // Rezervasyon için status int gelebilir, sipariş için enum
@@ -77,7 +94,7 @@ function UserProfilePage() {
     return (
         <div className="container mt-5 pt-5 mb-5">
             <div className="row g-4">
-                
+
                 {/* SOL: PROFİL KARTI */}
                 <div className="col-lg-4">
                     <div className="card border-0 shadow-sm h-100" style={{ backgroundColor: 'var(--bg-card)' }}>
@@ -94,19 +111,19 @@ function UserProfilePage() {
                             <p className="text-muted small mb-4">{user?.email}</p>
 
                             <div className="d-grid gap-2">
-                                <button 
+                                <button
                                     className={`btn text-start py-3 px-4 ${activeTab === 'orders' ? 'btn-dark' : 'btn-light text-muted'}`}
                                     onClick={() => setActiveTab('orders')}
                                 >
                                     <i className="fas fa-receipt me-3"></i> Sipariş Geçmişi
                                 </button>
-                                <button 
+                                <button
                                     className={`btn text-start py-3 px-4 ${activeTab === 'reservations' ? 'btn-dark' : 'btn-light text-muted'}`}
                                     onClick={() => setActiveTab('reservations')}
                                 >
                                     <i className="fas fa-calendar-alt me-3"></i> Rezervasyonlarım
                                 </button>
-                                <button 
+                                <button
                                     className={`btn text-start py-3 px-4 ${activeTab === 'settings' ? 'btn-dark' : 'btn-light text-muted'}`}
                                     onClick={() => setActiveTab('settings')}
                                 >
@@ -176,33 +193,54 @@ function UserProfilePage() {
                                         </div>
                                     ) : (
                                         <div className="d-flex flex-column gap-3">
-                                            {myReservations.map(res => (
-                                                <div key={res.id} className="p-3 border rounded d-flex justify-content-between align-items-center flex-wrap gap-3" style={{ borderColor: 'var(--border-color)' }}>
-                                                    <div className="d-flex align-items-center gap-3">
-                                                        <div className="bg-light rounded p-3 text-center" style={{ minWidth: '80px' }}>
-                                                            <div className="fw-bold text-dark" style={{ fontSize: '1.2rem' }}>{new Date(res.reservationDate).getDate()}</div>
-                                                            <div className="small text-uppercase text-muted">{new Date(res.reservationDate).toLocaleString('tr-TR', { month: 'short' })}</div>
+                                            {myReservations.map(res => {
+                                                const isPast = new Date(res.reservationDate) < new Date();
+                                                const isCancellable = res.status !== 3 && res.status !== 2 && !isPast; // İptal/Red değilse ve geçmemişse
+
+                                                return (
+                                                    <div key={res.id} className="p-3 border rounded d-flex justify-content-between align-items-center flex-wrap gap-3" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-body)' }}>
+                                                        <div className="d-flex align-items-center gap-3">
+                                                            <div className="bg-light rounded p-3 text-center border" style={{ minWidth: '80px' }}>
+                                                                <div className="fw-bold text-dark" style={{ fontSize: '1.2rem' }}>{new Date(res.reservationDate).getDate()}</div>
+                                                                <div className="small text-uppercase text-muted">{new Date(res.reservationDate).toLocaleString('tr-TR', { month: 'short' })}</div>
+                                                            </div>
+                                                            <div>
+                                                                <h6 className="mb-1 fw-bold">Akşam Yemeği ({res.numberOfGuests} Kişi)</h6>
+                                                                <p className="mb-0 small text-muted">
+                                                                    <i className="far fa-clock me-1"></i> {new Date(res.reservationDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                                                    <span className="mx-2">|</span>
+                                                                    {/* Backend'den masa no gelmiyorsa sadece ID yazar */}
+                                                                    <i className="fas fa-chair me-1"></i> Masa {res.tableId ? res.tableId : 'Otomatik'}
+                                                                </p>
+                                                                {res.specialRequests && <small className="text-warning d-block mt-1"><i className="fas fa-info-circle me-1"></i> {res.specialRequests}</small>}
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <h6 className="mb-1 fw-bold">Akşam Yemeği ({res.numberOfGuests} Kişi)</h6>
-                                                            <p className="mb-0 small text-muted">
-                                                                <i className="far fa-clock me-1"></i> {new Date(res.reservationDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-                                                                <span className="mx-2">|</span>
-                                                                <i className="fas fa-chair me-1"></i> Masa {res.tableId ? res.tableId : 'Otomatik'}
-                                                            </p>
-                                                            {res.specialRequests && <small className="text-warning d-block mt-1"><i className="fas fa-info-circle me-1"></i> {res.specialRequests}</small>}
+
+                                                        <div className="d-flex flex-column align-items-end gap-2">
+                                                            {/* Durum Rozeti */}
+                                                            {res.status === 0 && <span className="badge bg-warning text-dark px-3">Onay Bekliyor</span>}
+                                                            {res.status === 1 && <span className="badge bg-success px-3">Onaylandı</span>}
+                                                            {res.status === 2 && <span className="badge bg-danger px-3">Reddedildi</span>}
+                                                            {res.status === 3 && <span className="badge bg-secondary px-3">İptal Edildi</span>}
+
+                                                            {/* İPTAL BUTONU (Kullanıcı Vazgeçebilir) */}
+                                                            {isCancellable && (
+                                                                <button
+                                                                    onClick={() => handleCancelReservation(res)}
+                                                                    className="btn btn-sm btn-outline-danger border-0 text-decoration-underline"
+                                                                    style={{ fontSize: '0.8rem' }}
+                                                                >
+                                                                    İptal Et
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <div>
-                                                        {getStatusBadge(res.status)}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
                             )}
-
                             {/* TAB 3: AYARLAR */}
                             {activeTab === 'settings' && (
                                 <div className="animate-fade-in">
@@ -211,7 +249,7 @@ function UserProfilePage() {
                                         <div className="row g-3 mb-3">
                                             <div className="col-md-6">
                                                 <label className="form-label small fw-bold">Ad Soyad</label>
-                                                <input type="text" className="form-control" value={profileData.fullName} onChange={e => setProfileData({...profileData, fullName: e.target.value})} />
+                                                <input type="text" className="form-control" value={profileData.fullName} onChange={e => setProfileData({ ...profileData, fullName: e.target.value })} />
                                             </div>
                                             <div className="col-md-6">
                                                 <label className="form-label small fw-bold">E-posta</label>
@@ -221,16 +259,16 @@ function UserProfilePage() {
                                         <div className="row g-3 mb-3">
                                             <div className="col-md-6">
                                                 <label className="form-label small fw-bold">Telefon</label>
-                                                <input type="text" className="form-control" value={profileData.phoneNumber} onChange={e => setProfileData({...profileData, phoneNumber: e.target.value})} />
+                                                <input type="text" className="form-control" value={profileData.phoneNumber} onChange={e => setProfileData({ ...profileData, phoneNumber: e.target.value })} />
                                             </div>
                                             <div className="col-md-6">
                                                 <label className="form-label small fw-bold">Şehir</label>
-                                                <input type="text" className="form-control" value={profileData.city} onChange={e => setProfileData({...profileData, city: e.target.value})} />
+                                                <input type="text" className="form-control" value={profileData.city} onChange={e => setProfileData({ ...profileData, city: e.target.value })} />
                                             </div>
                                         </div>
                                         <div className="mb-4">
                                             <label className="form-label small fw-bold">Adres</label>
-                                            <textarea className="form-control" rows="3" value={profileData.address} onChange={e => setProfileData({...profileData, address: e.target.value})}></textarea>
+                                            <textarea className="form-control" rows="3" value={profileData.address} onChange={e => setProfileData({ ...profileData, address: e.target.value })}></textarea>
                                         </div>
                                         <div className="text-end">
                                             <button type="submit" className="btn btn-dark px-4" disabled={updating}>
