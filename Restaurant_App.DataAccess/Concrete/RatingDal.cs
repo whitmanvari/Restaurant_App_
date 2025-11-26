@@ -13,11 +13,17 @@ namespace Restaurant_App.DataAccess.Concrete
 
         public async Task<double> GetAverageRatingForProduct(int productId)
         {
-            return await _context.Ratings
+            // Önce o ürüne ait puan var mı diye bakıyoruz.
+            var ratings = await _context.Ratings
                 .Where(r => r.ProductId == productId)
                 .Select(r => (int)r.Value)
-                .DefaultIfEmpty(0)
-                .AverageAsync();
+                .ToListAsync();
+
+            // Eğer liste boşsa 0 döndür (Hata vermez)
+            if (!ratings.Any()) return 0;
+
+            // Doluysa ortalamasını al
+            return ratings.Average();
         }
 
         public async Task<List<Rating>> GetRatingsByUserId(string userId)
