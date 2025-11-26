@@ -45,7 +45,8 @@ namespace Restaurant_App.Application.Validators.Abstract
         protected void DateCannotBePast(Expression<Func<TDto, DateTime>> expression)
         {
             RuleFor(expression)
-                .Must(date => date.ToUniversalTime() > DateTime.UtcNow)
+                // 15 dakikalık tolerans ekleniyor
+                .GreaterThan(DateTime.Now.AddMinutes(-15))
                 .WithMessage("Geçmiş bir zamana rezervasyon yapılamaz. Lütfen ileri bir tarih seçin.");
         }
         protected void MustBeValidPhone(Expression<Func<TDto, string>> expression)
