@@ -136,6 +136,7 @@ function AdminDashboard() {
                     </Link>
                     <Link to="/admin/orders" className="btn btn-outline-dark"><i className="fas fa-tasks me-2"></i> Siparişler</Link>
                     <Link to="/admin/analytics" className="btn btn-outline-dark"><i className="fas fa-chart-pie me-2"></i> Raporlar</Link>
+                    <Link to="/admin/users" className="btn btn-outline-dark"><i className="fas fa-users me-2"></i> Kullanıcılar</Link>
                     <Link to="/admin/settings" className="btn btn-outline-dark"><i className="fas fa-cog me-2"></i> Ayarlar</Link>
                 </div>
             </div>
