@@ -14,31 +14,50 @@ function CartPage() {
     const { items, totalAmount, status } = useSelector(state => state.cart);
     const { user } = useSelector(state => state.auth);
 
+    // UI State
     const [orderType, setOrderType] = useState('delivery'); // 'delivery' | 'dinein'
+    const [paymentMethod, setPaymentMethod] = useState('credit_card'); // 'credit_card' | 'cash'
     const [tables, setTables] = useState([]);
+    const [loadingTables, setLoadingTables] = useState(false);
 
-    // Form State
+    // Form Data
     const [address, setAddress] = useState(user?.address || '');
     const [selectedTableId, setSelectedTableId] = useState('');
     const [note, setNote] = useState('');
+    
+    // Fake Kredi Kartı State
+    const [cardInfo, setCardInfo] = useState({ holder: '', number: '', expiry: '', cvc: '' });
 
     useEffect(() => {
         dispatch(fetchCart());
-        api.get('/Table').then(res => setTables(res.data));
+        // Masaları çek (Sadece dine-in seçilirse de çekilebilir ama hazır olsun)
+        setLoadingTables(true);
+        api.get('/Table').then(res => {
+            setTables(res.data);
+            setLoadingTables(false);
+        });
     }, [dispatch]);
 
     const handleRemoveItem = (productId) => {
-        if(window.confirm("Bu ürünü sepetten çıkarmak istiyor musunuz?")){
-            dispatch(removeProductFromCart(productId));
-        }
+        dispatch(removeProductFromCart(productId));
+        toast.info("Ürün sepetten çıkarıldı.");
     };
 
     const handleCheckout = async () => {
         if (items.length === 0) { toast.warning("Sepetiniz boş."); return; }
 
+        // Kredi Kartı Validasyonu 
+        if (paymentMethod === 'credit_card') {
+            if (cardInfo.number.length < 16 || !cardInfo.holder || !cardInfo.cvc) {
+                toast.warning("Lütfen kart bilgilerinizi eksiksiz giriniz.");
+                return;
+            }
+        }
+
         try {
             if (orderType === 'delivery') {
-                if (!address) { toast.warning("Lütfen teslimat adresi girin."); return; }
+                // --- PAKET SİPARİŞ ---
+                if (!address) { toast.warning("Teslimat adresi zorunludur."); return; }
 
                 const orderPayload = {
                     userId: user.id,
@@ -47,28 +66,30 @@ function CartPage() {
                     email: user.email,
                     phone: user.phoneNumber || "5555555555",
                     orderNote: note,
-                    paymentId: "1",
+                    paymentId: paymentMethod === 'credit_card' ? "CC_PAID" : "CASH_ON_DELIVERY",
                     items: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price })),
                     totalAmount: totalAmount
                 };
 
                 await orderService.createOrder(orderPayload);
-                toast.success("Siparişiniz alındı! Yola çıkmak üzere.");
+                toast.success("Siparişiniz alındı! Hazırlanmaya başlıyor.");
 
             } else {
-                if (!selectedTableId) { toast.warning("Lütfen oturduğunuz masayı seçin."); return; }
+                // --- MASAYA SİPARİŞ ---
+                if (!selectedTableId) { toast.warning("Lütfen masa seçiniz."); return; }
 
                 const tablePayload = {
                     tableId: parseInt(selectedTableId),
                     totalAmount: totalAmount,
-                    status: "Pending",
+                    status: "Pending", // Admin onayı bekleyecek
                     orderItemsInRestaurant: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price }))
                 };
 
                 await orderService.createTableOrder(tablePayload);
                 toast.success("Siparişiniz mutfağa iletildi. Afiyet olsun!");
             }
-            navigate('/my-orders'); 
+            
+            navigate('/my-orders'); // Siparişlerim sayfasına yönlendir
 
         } catch (error) {
             toast.error("Sipariş oluşturulurken bir hata oluştu.");
@@ -79,58 +100,55 @@ function CartPage() {
 
     return (
         <div className="container mt-5 pt-5 mb-5">
-            <div className="text-center mb-5">
-                <h2 style={{ fontFamily: 'Playfair Display', fontSize: '3rem' }}>Sepetim</h2>
-                <p className="text-muted">Lezzet yolculuğunuzun son adımı</p>
-            </div>
-
             <div className="row g-5">
-                {/* SOL: ÜRÜN LİSTESİ */}
-                <div className="col-lg-8">
-                    <div className="card border-0 shadow-sm" style={{ backgroundColor: 'var(--bg-card)' }}>
-                        <div className="card-body p-4">
+                
+                {/* SOL: SEPET ÖZETİ */}
+                <div className="col-lg-7">
+                    <h4 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Sepetim ({items.length} Ürün)</h4>
+                    
+                    <div className="card border-0 shadow-sm mb-4">
+                        <div className="card-body p-0">
                             {items.length === 0 ? (
                                 <div className="text-center py-5">
-                                    <i className="fas fa-shopping-basket fa-3x text-muted mb-3 opacity-50"></i>
+                                    <i className="fas fa-shopping-basket fa-3x text-muted mb-3 opacity-25"></i>
                                     <p className="text-muted">Sepetinizde henüz ürün yok.</p>
                                     <Link to="/menu" className="btn btn-outline-dark mt-2">Menüye Göz At</Link>
                                 </div>
                             ) : (
                                 <div className="table-responsive">
-                                    <table className="table align-middle mb-0" style={{ color: 'var(--text-main)' }}>
-                                        <thead style={{ borderBottom: '2px solid var(--border-color)' }}>
+                                    <table className="table align-middle mb-0">
+                                        <thead className="bg-light">
                                             <tr>
-                                                <th scope="col" className="py-3 ps-0">Ürün</th>
-                                                <th scope="col" className="py-3 text-center">Adet</th>
-                                                <th scope="col" className="py-3 text-end">Fiyat</th>
-                                                <th scope="col" className="py-3 text-end">Toplam</th>
-                                                <th scope="col" className="py-3 text-end"></th>
+                                                <th className="ps-4">Ürün</th>
+                                                <th className="text-center">Adet</th>
+                                                <th className="text-end pe-4">Tutar</th>
+                                                <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {items.map(item => (
-                                                <tr key={item.productId} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                                    <td className="ps-0 py-3">
+                                                <tr key={item.productId}>
+                                                    <td className="ps-4 py-3">
                                                         <div className="d-flex align-items-center">
                                                             <img 
                                                                 src={getImageUrl(item.imageUrl)} 
                                                                 alt={item.productName} 
-                                                                style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '8px', marginRight: '15px' }}
+                                                                className="rounded"
+                                                                style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '15px' }}
                                                             />
                                                             <div>
                                                                 <h6 className="mb-0 fw-bold">{item.productName}</h6>
-                                                                <small className="text-muted">Kategori: Lezzetler</small>
+                                                                <small className="text-muted">{item.price} ₺</small>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="text-center py-3">
-                                                        <span className="badge bg-light text-dark border px-3 py-2 fs-6">{item.quantity}</span>
+                                                    <td className="text-center">
+                                                        <span className="badge bg-light text-dark border px-3 py-2">{item.quantity}</span>
                                                     </td>
-                                                    <td className="text-end py-3 text-muted">{item.price} ₺</td>
-                                                    <td className="text-end py-3 fw-bold" style={{ color: 'var(--accent-color)' }}>{item.totalPrice} ₺</td>
-                                                    <td className="text-end py-3">
-                                                        <button className="btn btn-sm text-danger p-0" onClick={() => handleRemoveItem(item.productId)} title="Sil">
-                                                            <i className="fas fa-trash-alt"></i>
+                                                    <td className="text-end pe-4 fw-bold">{item.totalPrice} ₺</td>
+                                                    <td className="text-end">
+                                                        <button className="btn btn-link text-danger p-0" onClick={() => handleRemoveItem(item.productId)}>
+                                                            <i className="fas fa-times"></i>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -142,83 +160,130 @@ function CartPage() {
                         </div>
                     </div>
                     
-                    {items.length > 0 && (
-                        <div className="mt-3">
-                            <Link to="/menu" className="text-decoration-none text-muted small">
-                                <i className="fas fa-arrow-left me-2"></i> Alışverişe Devam Et
-                            </Link>
-                        </div>
-                    )}
+                    <div className="d-flex justify-content-between align-items-center">
+                        <Link to="/menu" className="text-decoration-none text-muted">
+                            <i className="fas fa-arrow-left me-2"></i> Alışverişe Devam Et
+                        </Link>
+                        {items.length > 0 && (
+                             <div className="text-end">
+                                 <span className="text-muted me-3">Ara Toplam:</span>
+                                 <span className="fs-4 fw-bold text-dark">{totalAmount} ₺</span>
+                             </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* SAĞ: ÖZET & ÖDEME */}
-                <div className="col-lg-4">
-                    <div className="card border-0 shadow-sm p-4 sticky-top" style={{ top: '100px', backgroundColor: 'var(--bg-section-alt)' }}>
+                {/* SAĞ: ÖDEME VE SİPARİŞ BİLGİLERİ */}
+                <div className="col-lg-5">
+                    <div className="card border-0 shadow-lg p-4 bg-white sticky-top" style={{top: '100px'}}>
                         <h5 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Sipariş Detayları</h5>
 
-                        {/* SİPARİŞ TİPİ SEÇİMİ */}
-                        <div className="d-flex gap-2 mb-4 bg-white p-1 rounded border">
+                        {/* 1. SİPARİŞ TİPİ (TAB) */}
+                        <div className="bg-light p-1 rounded mb-4 d-flex">
                             <button 
-                                className={`btn flex-fill ${orderType === 'delivery' ? 'btn-dark' : 'btn-light text-muted'}`}
+                                className={`btn flex-fill ${orderType === 'delivery' ? 'btn-white shadow-sm fw-bold' : 'text-muted'}`} 
                                 onClick={() => setOrderType('delivery')}
                             >
-                                <i className="fas fa-motorcycle me-2"></i>Teslimat
+                                <i className="fas fa-motorcycle me-2"></i> Eve Teslim
                             </button>
                             <button 
-                                className={`btn flex-fill ${orderType === 'dinein' ? 'btn-dark' : 'btn-light text-muted'}`}
+                                className={`btn flex-fill ${orderType === 'dinein' ? 'btn-white shadow-sm fw-bold' : 'text-muted'}`} 
                                 onClick={() => setOrderType('dinein')}
                             >
-                                <i className="fas fa-utensils me-2"></i>Masaya
+                                <i className="fas fa-utensils me-2"></i> Restoranda
                             </button>
                         </div>
 
-                        {/* FORM ALANLARI */}
-                        {orderType === 'delivery' ? (
-                            <div className="mb-3 animate-fade-in">
-                                <label className="form-label small fw-bold text-uppercase">Teslimat Adresi</label>
-                                <textarea
-                                    className="form-control"
-                                    rows="3"
-                                    placeholder="Cadde, sokak, bina no..."
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                ></textarea>
-                            </div>
-                        ) : (
-                            <div className="mb-3 animate-fade-in">
-                                <label className="form-label small fw-bold text-uppercase">Masa Numarası</label>
-                                <select
-                                    className="form-select"
-                                    value={selectedTableId}
-                                    onChange={(e) => setSelectedTableId(e.target.value)}
-                                >
-                                    <option value="">Masa Seçiniz...</option>
-                                    {tables.filter(t => t.isAvailable).map(t => (
-                                        <option key={t.id} value={t.id}>Masa {t.tableNumber} ({t.capacity} Kişi)</option>
-                                    ))}
-                                </select>
-                                <div className="form-text small mt-1">* Restorandaysanız masanızı seçin.</div>
-                            </div>
-                        )}
+                        {/* 2. DETAY FORMU */}
+                        <div className="mb-4 animate-fade-in">
+                            {orderType === 'delivery' ? (
+                                <div>
+                                    <label className="form-label small fw-bold text-uppercase text-muted">Teslimat Adresi</label>
+                                    <textarea 
+                                        className="form-control bg-light border-0" 
+                                        rows="3" 
+                                        placeholder="Cadde, sokak, bina no..." 
+                                        value={address} 
+                                        onChange={(e) => setAddress(e.target.value)}
+                                    ></textarea>
+                                </div>
+                            ) : (
+                                <div>
+                                    <label className="form-label small fw-bold text-uppercase text-muted">Masa Seçimi</label>
+                                    <select 
+                                        className="form-select bg-light border-0 py-3" 
+                                        value={selectedTableId} 
+                                        onChange={(e) => setSelectedTableId(e.target.value)}
+                                    >
+                                        <option value="">Lütfen masanızı seçin...</option>
+                                        {tables.filter(t => t.isAvailable).map(t => (
+                                            <option key={t.id} value={t.id}>Masa {t.tableNumber} ({t.capacity} Kişilik)</option>
+                                        ))}
+                                    </select>
+                                    <div className="form-text small mt-1 text-warning">
+                                        <i className="fas fa-info-circle me-1"></i> Sadece boş masaları seçebilirsiniz.
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="mb-4">
-                            <label className="form-label small fw-bold text-uppercase">Sipariş Notu</label>
-                            <input
-                                type="text" className="form-control" placeholder="Örn: Zili çalmayın..."
+                            <label className="form-label small fw-bold text-uppercase text-muted">Sipariş Notu</label>
+                            <input 
+                                type="text" className="form-control bg-light border-0" 
+                                placeholder="Örn: Zili çalmayın, sos bol olsun..."
                                 value={note} onChange={(e) => setNote(e.target.value)}
                             />
                         </div>
 
-                        <hr className="my-4" style={{ borderColor: 'var(--border-color)' }} />
+                        <hr className="border-light my-4" />
 
-                        <div className="d-flex justify-content-between mb-2 text-muted">
-                            <span>Ara Toplam</span>
-                            <span>{totalAmount} ₺</span>
+                        {/* 3. ÖDEME YÖNTEMİ */}
+                        <h6 className="mb-3 small fw-bold text-uppercase text-muted">Ödeme Yöntemi</h6>
+                        
+                        <div className="d-flex gap-2 mb-3">
+                            <div 
+                                className={`border rounded p-3 flex-fill cursor-pointer text-center ${paymentMethod === 'credit_card' ? 'border-warning bg-warning bg-opacity-10' : ''}`}
+                                onClick={() => setPaymentMethod('credit_card')}
+                                style={{cursor:'pointer'}}
+                            >
+                                <i className="fas fa-credit-card fa-lg mb-2 d-block"></i>
+                                <small className="fw-bold">Kart ile Öde</small>
+                            </div>
+                            <div 
+                                className={`border rounded p-3 flex-fill cursor-pointer text-center ${paymentMethod === 'cash' ? 'border-success bg-success bg-opacity-10' : ''}`}
+                                onClick={() => setPaymentMethod('cash')}
+                                style={{cursor:'pointer'}}
+                            >
+                                <i className="fas fa-money-bill-wave fa-lg mb-2 d-block"></i>
+                                <small className="fw-bold">{orderType === 'delivery' ? 'Kapıda Nakit' : 'Kasada Öde'}</small>
+                            </div>
                         </div>
-                        <div className="d-flex justify-content-between mb-4">
-                            <span className="fw-bold fs-5">Genel Toplam</span>
-                            <span className="fw-bold fs-4" style={{ color: 'var(--accent-color)' }}>{totalAmount} ₺</span>
-                        </div>
+
+                        {/* KREDİ KARTI FORMU */}
+                        {paymentMethod === 'credit_card' && (
+                            <div className="bg-light p-3 rounded mb-4 animate-fade-in border">
+                                <div className="mb-3">
+                                    <input type="text" className="form-control form-control-sm" placeholder="Kart Üzerindeki İsim" value={cardInfo.holder} onChange={e => setCardInfo({...cardInfo, holder: e.target.value})} />
+                                </div>
+                                <div className="mb-3">
+                                    <input type="text" className="form-control form-control-sm" placeholder="Kart Numarası (0000 0000 0000 0000)" maxLength="19" value={cardInfo.number} onChange={e => setCardInfo({...cardInfo, number: e.target.value})} />
+                                </div>
+                                <div className="row g-2">
+                                    <div className="col-6">
+                                        <input type="text" className="form-control form-control-sm" placeholder="AA/YY" maxLength="5" value={cardInfo.expiry} onChange={e => setCardInfo({...cardInfo, expiry: e.target.value})} />
+                                    </div>
+                                    <div className="col-6">
+                                        <input type="text" className="form-control form-control-sm" placeholder="CVC" maxLength="3" value={cardInfo.cvc} onChange={e => setCardInfo({...cardInfo, cvc: e.target.value})} />
+                                    </div>
+                                </div>
+                                <div className="mt-2 text-center">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" height="20" className="mx-1" alt="Visa"/>
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" height="20" className="mx-1" alt="Mastercard"/>
+                                    <small className="d-block text-muted mt-2" style={{fontSize: '0.7rem'}}><i className="fas fa-lock me-1"></i> 256-bit SSL ile güvenli ödeme</small>
+                                </div>
+                            </div>
+                        )}
 
                         <button 
                             className="btn btn-dark w-100 py-3 text-uppercase fw-bold" 
@@ -226,7 +291,7 @@ function CartPage() {
                             onClick={handleCheckout}
                             disabled={items.length === 0}
                         >
-                            Siparişi Onayla
+                            {totalAmount} ₺ • Siparişi Onayla
                         </button>
                     </div>
                 </div>
