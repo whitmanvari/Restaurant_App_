@@ -17,21 +17,20 @@ namespace Restaurant_App.Business.Concrete
         {
             var cart = await _cartDal.GetCartByUserId(userId);
 
-            if (cart is null)
+            // Sepet yoksa oluştur (CartDal içinde bu logic var ama burada da double check)
+            if (cart == null)
             {
-                // Eğer kullanıcıya ait sepet yoksa, yeni bir tane oluştur
-                cart = new Cart
-                {
-                    UserId = userId,
-                    CartItems = new List<CartItem>()
-                };
-
-                await _cartDal.Create(cart);
+                await InitialCart(userId);
+                cart = await _cartDal.GetCartByUserId(userId);
             }
 
-            var cartIndex = cart.CartItems.FindIndex(x => x.ProductId == productId);
+            var existingItem = cart.CartItems.FirstOrDefault(x => x.ProductId == productId);
 
-            if (cartIndex < 0)
+            if (existingItem != null)
+            {
+                existingItem.Quantity += quantity;
+            }
+            else
             {
                 cart.CartItems.Add(new CartItem
                 {
@@ -39,10 +38,6 @@ namespace Restaurant_App.Business.Concrete
                     Quantity = quantity,
                     CartId = cart.Id
                 });
-            }
-            else
-            {
-                cart.CartItems[cartIndex].Quantity += quantity;
             }
 
             await _cartDal.Update(cart);
