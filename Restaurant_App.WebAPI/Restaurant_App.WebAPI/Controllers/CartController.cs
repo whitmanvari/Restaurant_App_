@@ -43,17 +43,18 @@ namespace Restaurant_App.WebAPI.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
-            // Validasyon 
+            // Validasyon: Sadece ProductId ve Quantity yeterli
             if (itemDto.ProductId <= 0 || itemDto.Quantity <= 0)
                 return BadRequest("Geçersiz ürün veya miktar.");
 
-            // Business katmanındaki 'AddToCart' mantığı (Mevcutsa artır, yoksa ekle)
             await _cartService.AddToCart(userId, itemDto.ProductId, itemDto.Quantity);
 
-            // Güncel sepeti dön
-            return await GetMyCart();
-        }
+            // GÜNCEL SEPETİ DÖN
+            var cart = await _cartService.GetCartByUserId(userId);
+            var cartDto = _mapper.Map<CartDTO>(cart);
 
+            return Ok(cartDto); // 200 OK ile güncel sepeti dönüyoruz
+        }
         // Sepetten ürün sil
         [HttpDelete("remove/{productId}")]
         public async Task<IActionResult> RemoveFromCart(int productId)
@@ -87,6 +88,20 @@ namespace Restaurant_App.WebAPI.Controllers
             await _cartService.ClearCart(cart.Id);
 
             // Güncel sepeti dön
+            return await GetMyCart();
+        }
+
+        // Miktar Güncelleme
+        [HttpPut("update-quantity")]
+        public async Task<IActionResult> UpdateQuantity([FromBody] CartItemDTO itemDto)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            // CartItemDTO içinde ProductId ve Quantity gelmesi yeterli
+            await _cartService.UpdateItemQuantity(userId, itemDto.ProductId, itemDto.Quantity);
+
+            // Güncel sepeti geri dön (UI anında güncellensin diye)
             return await GetMyCart();
         }
     }

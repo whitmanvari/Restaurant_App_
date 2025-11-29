@@ -33,8 +33,15 @@ const removeFromCart = async(productId) => {
     }
 }
 
+// Miktar Güncelleme
+const updateQuantity = async (productId, quantity) => {
+    const response = await api.put('/Cart/update-quantity', { productId, quantity });
+    return response.data;
+};
+
 export const cartService = {
     getCart,
     addToCart,
-    removeFromCart
+    removeFromCart,
+    updateQuantity
 }

@@ -2,9 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { cartService } from '../../services/cartService';
 
 const initialState = {
-  items: [], // Sepetteki ürünler
+  items: [], 
   totalAmount: 0,
-  status: 'idle', // 'idle','loading','succeeded','failed'
+  status: 'idle', 
   error: null,
 };
 
@@ -14,7 +14,7 @@ export const fetchCart = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await cartService.getCart();
-      return data; // CartDTO
+      return data; 
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -26,10 +26,11 @@ export const addProductToCart = createAsyncThunk(
   'cart/addProductToCart',
   async ({ productId, quantity }, { rejectWithValue }) => {
     try {
+      // Backend artık güncel sepeti (CartDTO) dönüyor
       const data = await cartService.addToCart(productId, quantity);
-      return data; // Güncel CartDTO
+      return data; 
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || "Ekleme hatası");
     }
   }
 );
@@ -39,7 +40,6 @@ export const removeProductFromCart = createAsyncThunk(
     'cart/removeProductFromCart',
     async (productId, { rejectWithValue }) => {
       try {
-        // Backend silme işleminden sonra güncel sepeti dönmeli (CartDTO)
         const data = await cartService.removeFromCart(productId);
         return data; 
       } catch (error) {
@@ -48,18 +48,40 @@ export const removeProductFromCart = createAsyncThunk(
     }
   );
 
+  // Miktar Güncelleme
+export const updateCartItemQuantity = createAsyncThunk(
+  'cart/updateCartItemQuantity',
+  async ({ productId, quantity }, { rejectWithValue }) => {
+    try {
+      const data = await cartService.updateQuantity(productId, quantity);
+      return data; // Güncel sepet döner
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
 export const cartSlice = createSlice({
   name: 'cart',
   initialState,
-  reducers: {},
-  // Asenkron eylemlerin sonuçlarını yönet
+  
+  reducers: {
+    clearCart: (state) => {
+      state.items = [];
+      state.totalAmount = 0;
+      state.status = 'idle';
+    }
+  },
+
   extraReducers: (builder) => {
-    // Hem 'fetchCart' hem 'addProductToCart' başarılı olduğunda
-    // state'i güncelleyen genel bir yardımcı
+    
+    // YARDIMCI FONKSİYON: State Güncelleme
     const updateCartState = (state, action) => {
       state.status = 'succeeded';
-      state.items = action.payload.items;
-      state.totalAmount = action.payload.totalAmount;
+      const cartData = action.payload;
+
+      state.items = cartData.items || cartData.Items || [];
+      state.totalAmount = cartData.totalAmount || cartData.TotalAmount || 0;
     };
 
     builder
@@ -83,8 +105,21 @@ export const cartSlice = createSlice({
       .addCase(removeProductFromCart.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+      })
+      //update quantity 
+      .addCase(updateCartItemQuantity.pending, (state) => { state.status = 'loading'; })
+      .addCase(updateCartItemQuantity.fulfilled, (state, action) => {
+          state.status = 'succeeded';
+          const cartData = action.payload;
+          state.items = cartData.items || cartData.Items || [];
+          state.totalAmount = cartData.totalAmount || cartData.TotalAmount || 0;
+      })
+      .addCase(updateCartItemQuantity.rejected, (state, action) => {
+          state.status = 'failed';
+          state.error = action.payload;
       });
   },
 });
 
+export const { clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

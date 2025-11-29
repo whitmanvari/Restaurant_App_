@@ -77,13 +77,20 @@ function ProductDetailModal({ product, onClose }) {
 
     const handleAddToCart = () => {
         if (!isAuthenticated) {
-            toast.info("Lütfen önce giriş yapın."); return;
+            toast.info("Lütfen önce giriş yapın."); 
+            navigate('/login');
+            return;
         }
-        dispatch(addProductToCart({ productId: product.id, quantity: 1 }));
+        
+        // payload: { productId: 5, quantity: 1 } -> CartItemDTO ile eşleşir
+        dispatch(addProductToCart({ 
+            productId: product.id, 
+            quantity: 1,
+            price: product.price
+        }));
+        
         toast.success(`${product.name} sepete eklendi.`);
-        onClose();
     };
-
     if (!product) return null;
 
     return (

@@ -107,5 +107,28 @@ namespace Restaurant_App.Business.Concrete
             await _cartDal.Update(entity);
         }
 
+        // Miktarı doğrudan günceller (Artırma/Azaltma için)
+        public async Task UpdateItemQuantity(string userId, int productId, int quantity)
+        {
+            var cart = await _cartDal.GetCartByUserId(userId);
+            if (cart == null) return;
+
+            var item = cart.CartItems.FirstOrDefault(x => x.ProductId == productId);
+
+            if (item != null)
+            {
+                if (quantity > 0)
+                {
+                    item.Quantity = quantity; // Miktarı direkt set et
+                }
+                else
+                {
+                    // Eğer miktar 0 veya altı gelirse ürünü sil
+                    cart.CartItems.Remove(item);
+                }
+                await _cartDal.Update(cart);
+            }
+        }
+
     }
 }
