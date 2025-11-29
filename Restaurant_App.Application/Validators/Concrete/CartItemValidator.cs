@@ -8,7 +8,6 @@ namespace Restaurant_App.Application.Validators.Concrete
         public CartItemValidator()
         {
             QuantityMustBePositive(x => x.Quantity);
-            PriceMustBePositive(x => x.Price);
         }
     }
 }

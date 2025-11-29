@@ -52,7 +52,9 @@ namespace Restaurant_App.Application.Mapping
 
             // CartItem->  DTO
             CreateMap<CartItem, CartItemDTO>()
-                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : string.Empty));
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : string.Empty))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product != null ? src.Product.Price : 0));
+
             CreateMap<CartItemDTO, CartItem>()
                 .ForMember(dest => dest.Product, opt => opt.Ignore());
 

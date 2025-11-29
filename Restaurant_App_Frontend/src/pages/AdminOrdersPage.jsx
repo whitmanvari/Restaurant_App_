@@ -6,11 +6,11 @@ function AdminOrdersPage() {
     const [onlineOrders, setOnlineOrders] = useState([]);
     const [tableOrders, setTableOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('online');
+    const [activeTab, setActiveTab] = useState('online'); // 'online' | 'table'
 
     useEffect(() => {
         fetchAllData();
-        const interval = setInterval(fetchAllData, 30000);
+        const interval = setInterval(fetchAllData, 15000); // 15 saniyede bir yenile
         return () => clearInterval(interval);
     }, []);
 
@@ -20,33 +20,34 @@ function AdminOrdersPage() {
                 orderService.getAllOnlineOrders(),
                 orderService.getAllTableOrders()
             ]);
+            // Tarihe göre sırala (En yeni en üstte)
             setOnlineOrders(online.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate)));
             setTableOrders(table.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate)));
             setLoading(false);
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
+    // ONLINE SİPARİŞ AKSİYONLARI
     const handleOnlineStatus = async (id, status) => {
-        try { await orderService.updateOnlineOrderStatus(id, status); toast.success("Güncellendi"); fetchAllData(); } 
-        catch { toast.error("Hata."); }
+        try {
+            await orderService.updateOnlineOrderStatus(id, status);
+            toast.success("Durum güncellendi.");
+            fetchAllData();
+        } catch (error) {
+            toast.error("Hata oluştu.");
+        }
     };
 
+    // MASA SİPARİŞ AKSİYONLARI
     const handleTableStatus = async (id, statusStr) => {
-        try { await orderService.updateTableOrderStatus(id, statusStr); toast.success("Güncellendi"); fetchAllData(); } 
-        catch { toast.error("Hata."); }
-    };
-
-    const getBadge = (status, type) => {
-        if (type === 'online') {
-            if(status === 0) return <span className="badge bg-warning text-dark">Bekliyor</span>;
-            if(status === 3) return <span className="badge bg-info text-dark">Hazırlanıyor</span>;
-            if(status === 1) return <span className="badge bg-success">Tamamlandı</span>;
-            return <span className="badge bg-danger">İptal</span>;
-        } else {
-            if(status === 'Pending') return <span className="badge bg-warning text-dark">Sipariş Alındı</span>;
-            if(status === 'InProgress') return <span className="badge bg-info text-dark">Hazırlanıyor</span>;
-            if(status === 'Served') return <span className="badge bg-primary">Servis Edildi</span>;
-            return <span className="badge bg-success">Kapatıldı</span>;
+        try {
+            await orderService.updateTableOrderStatus(id, statusStr);
+            toast.success("Masa durumu güncellendi.");
+            fetchAllData();
+        } catch (error) {
+            toast.error("Hata oluştu.");
         }
     };
 
@@ -55,29 +56,49 @@ function AdminOrdersPage() {
     return (
         <div className="container mt-5 pt-5 mb-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 style={{ fontFamily: 'Playfair Display', color: 'var(--text-main)' }}>Sipariş Takibi</h2>
+                <h2 style={{ fontFamily: 'Playfair Display' }}>Sipariş Yönetimi</h2>
                 <div className="btn-group">
-                    <button className={`btn ${activeTab === 'online' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('online')}><i className="fas fa-truck me-2"></i> Paket</button>
-                    <button className={`btn ${activeTab === 'table' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('table')}><i className="fas fa-utensils me-2"></i> Masa</button>
+                    <button className={`btn ${activeTab === 'online' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('online')}>
+                        <i className="fas fa-truck me-2"></i> Paket ({onlineOrders.filter(o => o.orderState === 0).length})
+                    </button>
+                    <button className={`btn ${activeTab === 'table' ? 'btn-dark' : 'btn-outline-dark'}`} onClick={() => setActiveTab('table')}>
+                        <i className="fas fa-utensils me-2"></i> Masa ({tableOrders.filter(o => o.status === 'Pending').length})
+                    </button>
                 </div>
             </div>
 
+            {/* ONLINE SİPARİŞ LİSTESİ */}
             {activeTab === 'online' && (
-                <div className="card border-0 shadow-sm" style={{backgroundColor: 'var(--bg-card)'}}>
+                <div className="card shadow-sm border-0">
                     <div className="table-responsive">
-                        <table className="table table-hover align-middle mb-0" style={{color: 'var(--text-main)'}}>
-                            <thead className="bg-light"><tr><th>ID</th><th>Müşteri</th><th>Tutar</th><th>Durum</th><th>İşlem</th></tr></thead>
+                        <table className="table table-hover align-middle mb-0">
+                            <thead className="bg-light">
+                                <tr>
+                                    <th>Sipariş No</th>
+                                    <th>Müşteri</th>
+                                    <th>Adres</th>
+                                    <th>Tutar</th>
+                                    <th>Durum</th>
+                                    <th className="text-end">İşlem</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 {onlineOrders.map(order => (
-                                    <tr key={order.id} style={{borderBottom: '1px solid var(--border-color)'}}>
+                                    <tr key={order.id} className={order.orderState === 0 ? 'table-warning' : ''}>
                                         <td className="fw-bold">#{order.orderNum || order.id}</td>
-                                        <td><div className="fw-bold">{order.email}</div><small className="text-muted">{order.address}</small></td>
+                                        <td>{order.email}</td>
+                                        <td>{order.city}, {order.address}</td>
                                         <td className="fw-bold">{order.totalAmount} ₺</td>
-                                        <td>{getBadge(order.orderState, 'online')}</td>
                                         <td>
+                                            {order.orderState === 0 && <span className="badge bg-warning text-dark">Bekliyor</span>}
+                                            {order.orderState === 3 && <span className="badge bg-info text-dark">Hazırlanıyor</span>}
+                                            {order.orderState === 1 && <span className="badge bg-success">Tamamlandı</span>}
+                                            {order.orderState === 2 && <span className="badge bg-danger">İptal</span>}
+                                        </td>
+                                        <td className="text-end">
                                             {order.orderState === 0 && <button onClick={() => handleOnlineStatus(order.id, 3)} className="btn btn-sm btn-info me-1">Hazırla</button>}
-                                            {order.orderState === 3 && <button onClick={() => handleOnlineStatus(order.id, 1)} className="btn btn-sm btn-success me-1">Bitir</button>}
-                                            {order.orderState < 1 && <button onClick={() => handleOnlineStatus(order.id, 2)} className="btn btn-sm btn-outline-danger">İptal</button>}
+                                            {order.orderState === 3 && <button onClick={() => handleOnlineStatus(order.id, 1)} className="btn btn-sm btn-success me-1">Yola Çıkar</button>}
+                                            {order.orderState < 1 && <button onClick={() => handleOnlineStatus(order.id, 2)} className="btn btn-sm btn-outline-danger">Reddet</button>}
                                         </td>
                                     </tr>
                                 ))}
@@ -87,30 +108,31 @@ function AdminOrdersPage() {
                 </div>
             )}
 
+            {/* MASA SİPARİŞ KARTLARI */}
             {activeTab === 'table' && (
                 <div className="row g-3">
                     {tableOrders.map(order => (
                         <div key={order.id} className="col-md-6 col-lg-4">
-                            <div className="card h-100 border-0 shadow-sm" style={{backgroundColor: 'var(--bg-card)', borderLeft: order.status === 'Pending' ? '4px solid #ffc107' : 'none'}}>
-                                <div className="card-header bg-transparent d-flex justify-content-between fw-bold" style={{color: 'var(--text-main)'}}>
-                                    <span>Masa {order.tableNumber}</span>
-                                    {getBadge(order.status, 'table')}
+                            <div className={`card h-100 shadow-sm border-${order.status === 'Pending' ? 'warning' : 'secondary'} border-2`}>
+                                <div className="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <span className="fw-bold fs-5">Masa {order.tableNumber}</span>
+                                    <span className="badge bg-light text-dark border">{order.status}</span>
                                 </div>
-                                <div className="card-body" style={{color: 'var(--text-main)'}}>
+                                <div className="card-body">
                                     <ul className="list-unstyled mb-3">
-                                        {order.orderItemsInRestaurant?.map((item, i) => (
-                                            <li key={i} className="d-flex justify-content-between border-bottom py-1 border-light">
+                                        {order.orderItemsInRestaurant?.map((item, idx) => (
+                                            <li key={idx} className="d-flex justify-content-between border-bottom py-1">
                                                 <span>{item.quantity}x {item.productName}</span>
                                                 <span>{item.totalPrice} ₺</span>
                                             </li>
                                         ))}
                                     </ul>
-                                    <h5 className="text-end text-success">{order.totalAmount} ₺</h5>
+                                    <h4 className="text-end text-success">{order.totalAmount} ₺</h4>
                                 </div>
-                                <div className="card-footer bg-transparent text-end">
-                                    {order.status === 'Pending' && <button onClick={() => handleTableStatus(order.id, 'InProgress')} className="btn btn-sm btn-info text-white">Başla</button>}
-                                    {order.status === 'InProgress' && <button onClick={() => handleTableStatus(order.id, 'Served')} className="btn btn-sm btn-primary">Servis</button>}
-                                    {order.status === 'Served' && <button onClick={() => handleTableStatus(order.id, 'Completed')} className="btn btn-sm btn-success">Kapat</button>}
+                                <div className="card-footer bg-white text-end">
+                                    {order.status === 'Pending' && <button onClick={() => handleTableStatus(order.id, 'InProgress')} className="btn btn-primary btn-sm">Siparişi Başlat</button>}
+                                    {order.status === 'InProgress' && <button onClick={() => handleTableStatus(order.id, 'Served')} className="btn btn-info btn-sm text-white">Servis Et</button>}
+                                    {order.status === 'Served' && <button onClick={() => handleTableStatus(order.id, 'Completed')} className="btn btn-success btn-sm">Hesabı Kapat</button>}
                                 </div>
                             </div>
                         </div>
@@ -120,4 +142,5 @@ function AdminOrdersPage() {
         </div>
     );
 }
+
 export default AdminOrdersPage;

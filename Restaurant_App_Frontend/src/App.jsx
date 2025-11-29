@@ -16,8 +16,11 @@ import AdminReservationPage from './pages/AdminReservationPage';
 import ProductDetailPage from './pages/ProductDetailPage'; 
 import AdminCategoriesPage from './pages/AdminCategoriesPage';
 import AdminTableConfigPage from './pages/AdminTableConfigPage';
-
+import CheckoutPage from './pages/CheckoutPage';
 import AdminUsersPage from './pages/AdminUsersPage'; 
+import SuccessPage from './components/StatusPages/SuccessPage';
+import ErrorPage from './components/StatusPages/ErrorPage';
+import NotFoundPage from './components/StatusPages/NotFoundPage';
 
 function App() {
     const { user } = useSelector(state => state.auth); 
@@ -38,6 +41,7 @@ function App() {
 
                     <Route path="login" element={<AuthPage />} />
                     <Route path="signup" element={<AuthPage />} />
+                    <Route path="checkout" element={<CheckoutPage />} />
 
                     {/* Kullanıcı Sayfaları */}
                     <Route path="menu" element={<MenuPage />} />
@@ -66,10 +70,12 @@ function App() {
 
                     {/* Ayarlar Linki gelirse Profile yönlendir */}
                     <Route path="admin/settings" element={<Navigate to="/profile" replace />} />
-
-                    {/* 404 - Hatalı URL */}
-                    <Route path="*" element={<HomePage />} />
                 </Route>
+                {/* --- STATUS SAYFALARI (Layout DIŞINDA - Tam Ekran Görünsün) --- */}
+                <Route path="/success" element={<SuccessPage />} />
+                <Route path="/error" element={<ErrorPage />} />
+                {/* 404 SAYFASI */}
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </div>
     );
