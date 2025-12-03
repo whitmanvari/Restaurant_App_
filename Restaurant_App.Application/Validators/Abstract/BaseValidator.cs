@@ -47,14 +47,33 @@ namespace Restaurant_App.Application.Validators.Abstract
             RuleFor(expression)
                 // 15 dakikalık tolerans ekleniyor
                 .GreaterThan(DateTime.Now.AddMinutes(-15))
-                .WithMessage("Geçmiş bir zamana rezervasyon yapılamaz. Lütfen ileri bir tarih seçin.");
+                  .WithMessage("Geçmiş bir zamana rezervasyon yapılamaz. Lütfen ileri bir tarih seçin.");
         }
         protected void MustBeValidPhone(Expression<Func<TDto, string>> expression)
         {
             RuleFor(expression)
                 .Matches(@"^\+?\d{10,15}$")
                 .When(x => !string.IsNullOrEmpty(expression.Compile()(x))) // boşsa atla
-                .WithMessage("Telefon formatı geçerli değil.");
+                 .WithMessage("Telefon formatı geçerli değil.");
         }
+        // Zorunlu Telefon (Boş geçilemez) 
+        protected void MustBeRequiredPhone(Expression<Func<TDto, string>> expression)
+        {
+            RuleFor(expression)
+                .NotEmpty()
+                    .WithMessage("Telefon numarası zorunludur.")
+                .Matches(@"^\+?\d{10,15}$")
+                    .WithMessage("Geçerli bir telefon numarası giriniz (Örn: 5551234567).");
+        }
+        protected void MustBeValidCity(Expression<Func<TDto, string>> expression)
+        {
+            RuleFor(expression)
+                .NotEmpty()
+                    .WithMessage("Şehir bilgisi zorunludur.")
+                .MinimumLength(2)
+                    .WithMessage("Şehir adı çok kısa.");
+        }
+        
+
     }
 }

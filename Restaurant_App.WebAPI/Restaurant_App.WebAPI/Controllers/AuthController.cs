@@ -19,9 +19,19 @@ namespace Restaurant_App.WebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDTO model)
         {
+            // 1. FluentValidation Otomatik Kontrolü
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                // Hataları topla ve Frontend'in beklediği formatta dön
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
 
+                return BadRequest(new { Errors = errors });
+            }
+
+            // 2. Identity (Veritabanı) Kontrolü
             var result = await _authService.Register(model);
             if (!result.Succeeded)
             {

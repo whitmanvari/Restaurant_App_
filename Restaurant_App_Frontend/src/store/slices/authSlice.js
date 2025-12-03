@@ -80,7 +80,8 @@ export const registerUser = createAsyncThunk(
         try {
             await authService.register(registerData);
         } catch (error) {
-            return rejectWithValue(error.response?.data || "Kayıt başarısız");
+            // Servisten gelen string hatayı direkt payload'a koy
+            return rejectWithValue(error); 
         }
     }
 );

@@ -52,69 +52,60 @@ function AdminDashboard() {
     // --- MASA DURUMU KONTROLÜ ---
     const getTableStatus = (table) => {
         // 0. Masa Kapalı mı?
-        if (!table.isAvailable) return { status: 'closed', text: 'KAPALI', color: 'secondary', icon: 'fa-ban' };
+        if (!table.isAvailable) return { status: 'closed', text: 'KAPALI', color: 'secondary', icon: 'fa-ban', opacity: '0.5' };
 
-        // 1. Sipariş Var mı?
+        // 1. Sipariş Kontrolü
         const activeOrder = activeOrders.find(o => o.tableId === table.id);
-        if (activeOrder) return { status: 'occupied', text: 'DOLU', color: 'danger', subText: `${activeOrder.totalAmount} ₺`, icon: 'fa-utensils', data: activeOrder };
-
-        // 2. Rezervasyon Kontrolü
-        const now = new Date();
-        
-        // BUGÜNKÜ REZERVASYONLARI BUL
-        const todaysReservations = reservations.filter(r => {
-            // Masa ID kontrolü
-            if (r.tableId !== table.id) return false;
-            // Statü kontrolü (Bekleyen veya Onaylı)
-            if (r.status !== 0 && r.status !== 1) return false;
-
-            const rDate = new Date(r.reservationDate);
-            // Sadece bugünün rezervasyonları
-            return rDate.toDateString() === now.toDateString();
-        });
-
-        // En yakın rezervasyonu bul
-        if (todaysReservations.length > 0) {
-            // Tarihe göre sırala (en yakın en üstte)
-            todaysReservations.sort((a, b) => new Date(a.reservationDate) - new Date(b.reservationDate));
-            
-            const nextRes = todaysReservations[0];
-            const resDate = new Date(nextRes.reservationDate);
-            
-            // Zaman farkını hesapla (Dakika)
-            const diffMs = resDate - now;
-            const diffMinutes = Math.floor(diffMs / 1000 / 60);
-            const resTimeStr = resDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-            // LOGLAMA (Sadece T-2 gibi belirli masalar için konsola bas)
-            if (table.tableNumber === "T-2" || table.tableNumber === "A1") {
-                console.log(`Masa ${table.tableNumber} Kontrol:`, {
-                    RezervasyonSaati: resTimeStr,
-                    ŞuAn: now.toLocaleTimeString(),
-                    FarkDakika: diffMinutes,
-                    Statü: nextRes.status
-                });
-            }
-
-            // DURUM 1: Rezervasyon saati içindeyiz (Başlamasına 2 saat kalmış veya geçeli 2 saat olmamış)
-            // Örnek: Rezervasyon 14:00. Şu an 12:00 (120dk) ile 16:00 (-120dk) arası ise "REZERVE" göster.
-            if (diffMinutes <= 120 && diffMinutes >= -120) {
-                const isPending = nextRes.status === 0;
-                return { 
-                    status: 'reserved', 
-                    text: isPending ? 'TALEP' : 'REZERVE', 
-                    color: isPending ? 'info' : 'warning', 
-                    subText: `Saat: ${resTimeStr}`,
-                    icon: 'fa-clock',
-                    data: nextRes 
+        if (activeOrder) {
+            // EĞER SİPARİŞ ONAY BEKLİYORSA -> TURUNCU
+            if (activeOrder.status === 'Pending') {
+                 return { 
+                    status: 'occupied', // Tıklayınca modal açılsın diye occupied bırakıyoruz
+                    text: 'ONAY BEK.', 
+                    color: 'warning', // Sarı/Turuncu
+                    subText: 'Sipariş Geldi', 
+                    icon: 'fa-bell', 
+                    data: activeOrder 
                 };
             }
-            
-            // DURUM 2: Rezervasyon bugün ama daha saati gelmedi (2 saatten fazla var)
-            // Bu durumda masa şu an "MÜSAİT" görünmeli ama "Akşama Dolu" ipucu verebiliriz.
+            // EĞER ONAYLANMIŞSA (Hazırlanıyor/Servis Edildi) -> KIRMIZI
+            return { 
+                status: 'occupied', 
+                text: 'DOLU', 
+                color: 'danger', 
+                subText: `${activeOrder.totalAmount} ₺`, 
+                icon: 'fa-utensils',
+                data: activeOrder 
+            };
         }
 
-        // 3. Hiçbiri yoksa Müsait
+        // 2. Rezervasyon Kontrolü 
+        const now = new Date();
+        const activeReservation = reservations.find(r => {
+            if (r.tableId !== table.id) return false;
+            if (r.status !== 1 && r.status !== 0) return false;
+            const resDate = new Date(r.reservationDate);
+            const isSameDay = resDate.toDateString() === now.toDateString();
+            if (!isSameDay) return false;
+            const diffMs = resDate.getTime() - now.getTime();
+            const diffMinutes = diffMs / (1000 * 60);
+            return diffMinutes > -120 && diffMinutes < 120;
+        });
+        
+        if (activeReservation) {
+            const isPending = activeReservation.status === 0;
+            const timeStr = new Date(activeReservation.reservationDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            return { 
+                status: 'reserved', 
+                text: isPending ? 'TALEP' : 'REZERVE', 
+                color: isPending ? 'info' : 'primary', // Renkleri ayırdık
+                subText: `Saat: ${timeStr}`,
+                icon: 'fa-clock',
+                data: activeReservation 
+            };
+        }
+
+        // 3. Müsait
         return { status: 'empty', text: 'MÜSAİT', color: 'success', subText: `${table.capacity} Kişilik`, icon: 'fa-chair' };
     };
 
