@@ -5,6 +5,7 @@ using Restaurant_App.Application.Dto;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
+using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -26,14 +27,21 @@ namespace Restaurant_App.WebAPI.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] OrderInRestaurantDTO dto)
         {
+            // Model validasyonu başarısızsa detayları dön
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var order = _mapper.Map<OrderInRestaurant>(dto);
-            // Not: Status ve OrderDate gibi varsayılan değerler Entity'nin constructor'ında ayarlanmıştı.
+
+            // Eksik bilgileri tamamla
+            order.UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Kullanıcı ID
+            order.OrderDate = DateTime.Now;
+            order.Status = OrderStatusInRestaurant.Pending; // Onay Bekliyor
+            order.TotalAmount = dto.TotalAmount; // DTO'dan gelen tutarı al (veya backend'de tekrar hesapla)
 
             await _orderService.Create(order);
 
+            // Oluşan siparişin detayını dön
             var responseDto = _mapper.Map<OrderInRestaurantDTO>(await _orderService.GetOrderWithDetails(order.Id));
             return CreatedAtAction(nameof(GetOrderDetails), new { id = responseDto.Id }, responseDto);
         }
@@ -71,10 +79,10 @@ namespace Restaurant_App.WebAPI.Controllers
 
         // Sipariş durumunu güncelle (Pending -> InProgress -> Served vb.)
         [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] OrderInRestaurantDTO dto)
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusUpdateModel model)
         {
-            // DTO'dan gelen string'i Enum'a çevirmeye çalış
-            if (!Enum.TryParse<OrderStatusInRestaurant>(dto.Status, true, out var statusEnum))
+            // Model DTO değil, basit sınıf olduğu için Validator devreye girmez.
+            if (!Enum.TryParse<OrderStatusInRestaurant>(model.Status, true, out var statusEnum))
                 return BadRequest("Geçersiz status değeri.");
 
             var order = await _orderService.GetById(id);

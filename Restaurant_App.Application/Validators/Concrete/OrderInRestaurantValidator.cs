@@ -8,7 +8,6 @@ namespace Restaurant_App.Application.Validators.Concrete
         public OrderInRestaurantValidator()
         {
             ListMustNotBeEmpty(x => x.OrderItems, "Sipariş kalemleri listesi boş olamaz!");
-            NotEmptyString(x => x.TableNumber, "Masa numarası boş olamaz!", 50);
             RuleForEach(x => x.OrderItems)
                 .SetValidator(new OrderItemInRestaurantValidator());
         }

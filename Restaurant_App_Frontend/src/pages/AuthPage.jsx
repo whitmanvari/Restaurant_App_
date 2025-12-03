@@ -10,15 +10,18 @@ const AuthPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Redux state'inden verileri al
     const { status, error, isAuthenticated } = useSelector((state) => state.auth);
+    
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
 
     // Form States
     const [loginData, setLoginData] = useState({ email: '', password: '' });
     const [registerData, setRegisterData] = useState({
-        fullName: '', email: '', password: '', confirmPassword: '', phoneNumber: '', city: ''
+        fullName: '', email: '', password: '', confirmPassword: '', phoneNumber: '', city: '', address: ''
     });
 
+    // Sayfa URL'ine göre panel seçimi
     useEffect(() => {
         if (location.pathname === '/signup') {
             setIsRightPanelActive(true);
@@ -27,32 +30,58 @@ const AuthPage = () => {
         }
     }, [location]);
 
+    // Auth durumu ve Hata mesajlarını izle
     useEffect(() => {
         if (isAuthenticated) {
             navigate('/');
         }
+
+        // HATA YAKALAMA VE TOAST
         if (status === 'failed' && error) {
-            toast.error(typeof error === 'string' ? error : 'İşlem başarısız.');
+            console.log("🔔 TOAST İÇİN GELEN MESAJ:", error);
+            
+            // Error bir obje ise stringe çevir, yoksa direkt bas
+            const messageToShow = typeof error === 'object' 
+                ? JSON.stringify(error) 
+                : error;
+
+            // react-toastify ile göster
+            toast.error(messageToShow, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         }
     }, [isAuthenticated, status, error, navigate]);
 
-    const handleLoginSubmit = async (e) => {
+    const handleLoginSubmit = (e) => {
         e.preventDefault();
         dispatch(loginUser(loginData));
     };
 
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
+        
+        // Basit Validasyon
         if (registerData.password !== registerData.confirmPassword) {
-            toast.error('Şifreler eşleşmiyor.');
+            toast.error("Şifreler eşleşmiyor!");
             return;
         }
+
+        // Kayıt işlemini başlat
         const result = await dispatch(registerUser(registerData));
+
+        // İşlem başarılıysa
         if (registerUser.fulfilled.match(result)) {
-            toast.success('Kayıt başarılı! Giriş yapabilirsiniz.');
-            setIsRightPanelActive(false);
+            toast.success("Kayıt başarılı! Giriş yapabilirsiniz.");
+            setIsRightPanelActive(false); // Login ekranına dön
             navigate('/login');
         }
+        // İşlem başarısızsa, yukarıdaki useEffect hatayı yakalayıp gösterecek.
     };
 
     return (
@@ -67,10 +96,14 @@ const AuthPage = () => {
                         
                         <input type="text" placeholder="Ad Soyad" value={registerData.fullName} onChange={(e) => setRegisterData({...registerData, fullName: e.target.value})} required />
                         <input type="email" placeholder="Email" value={registerData.email} onChange={(e) => setRegisterData({...registerData, email: e.target.value})} required />
+                        
                         <div className="d-flex gap-2 w-100">
-                             <input type="text" placeholder="Telefon" value={registerData.phoneNumber} onChange={(e) => setRegisterData({...registerData, phoneNumber: e.target.value})} />
-                             <input type="text" placeholder="Şehir" value={registerData.city} onChange={(e) => setRegisterData({...registerData, city: e.target.value})} />
+                             <input type="text" placeholder="Telefon" value={registerData.phoneNumber} onChange={(e) => setRegisterData({...registerData, phoneNumber: e.target.value})} required />
+                             <input type="text" placeholder="Şehir" value={registerData.city} onChange={(e) => setRegisterData({...registerData, city: e.target.value})} required />
                         </div>
+                        
+                        <input type="text" placeholder="Adres" value={registerData.address} onChange={(e) => setRegisterData({...registerData, address: e.target.value})} />
+
                         <input type="password" placeholder="Şifre" value={registerData.password} onChange={(e) => setRegisterData({...registerData, password: e.target.value})} required />
                         <input type="password" placeholder="Şifre Tekrar" value={registerData.confirmPassword} onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})} required />
 
@@ -97,12 +130,12 @@ const AuthPage = () => {
                     </form>
                 </div>
 
-                {/* OVERLAY */}
+                {/* OVERLAY (Geçiş Paneli) */}
                 <div className="overlay-container">
                     <div className="overlay">
                         <div className="overlay-panel overlay-left">
                             <h1>Tekrar Merhaba!</h1>
-                            <p>Zaten bir hesabınız var mı? Giriş yaparak rezervasyonlarınıza ulaşın.</p>
+                            <p>Zaten bir hesabınız var mı? Giriş yaparak lezzetlere ulaşın.</p>
                             <button className="ghost" onClick={() => navigate('/login')}>Giriş Yap</button>
                         </div>
                         <div className="overlay-panel overlay-right">

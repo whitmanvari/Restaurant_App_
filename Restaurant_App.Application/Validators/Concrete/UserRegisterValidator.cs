@@ -14,6 +14,11 @@ namespace Restaurant_App.Application.Validators.Concrete
             RuleFor(x => x.ConfirmPassword)
                 .Equal(x => x.Password)
                     .WithMessage("Şifreler eşleşmiyor!");
+            // Telefon metodu
+            MustBeRequiredPhone(x => x.PhoneNumber);
+
+            // Şehir metodu
+            MustBeValidCity(x => x.City);
         }
     }
 }

@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import api from '../api/axiosInstance';
 import { orderService } from '../services/orderService';
 import { clearCart } from '../store/slices/cartSlice';
+import OrderSuccessModal from '../components/StatusPages/OrderSuccessModal'; 
 
 export default function CheckoutPage() {
     const dispatch = useDispatch();
@@ -12,23 +13,21 @@ export default function CheckoutPage() {
     const { items, totalAmount } = useSelector(state => state.cart);
     const { user } = useSelector(state => state.auth);
 
-    // UI States
-    const [orderType, setOrderType] = useState('delivery'); // 'delivery' | 'dinein'
+    const [orderType, setOrderType] = useState('delivery');
     const [tables, setTables] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Form Data
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+
     const [address, setAddress] = useState(user?.address || '');
-    const [selectedTable, setSelectedTable] = useState(null);
+    const [selectedTableId, setSelectedTableId] = useState('');
     const [note, setNote] = useState('');
     const [contactPhone, setContactPhone] = useState(user?.phoneNumber || '');
-
-    // Payment Data 
     const [cardInfo, setCardInfo] = useState({ holder: '', number: '', expiry: '', cvc: '' });
 
     useEffect(() => {
         if (items.length === 0) navigate('/cart');
-        // Masaları çek
         api.get('/Table').then(res => setTables(res.data));
     }, [items, navigate]);
 
@@ -36,12 +35,9 @@ export default function CheckoutPage() {
         setIsSubmitting(true);
         try {
             if (orderType === 'delivery') {
-                // --- EVE TESLİM SİPARİŞ ---
                 if (!address || !contactPhone) {
                     toast.warning("Adres ve Telefon zorunludur."); setIsSubmitting(false); return;
                 }
-
-                // Iyzico veya Ödeme Kontrolü 
                 if (cardInfo.number.length < 16) {
                     toast.warning("Geçersiz kart numarası."); setIsSubmitting(false); return;
                 }
@@ -53,54 +49,39 @@ export default function CheckoutPage() {
                     email: user.email,
                     phone: contactPhone,
                     orderNote: note,
-                    paymentId: "IYZICO_TOKEN_123", // Backend'de Iyzico entegre edilecek
+                    paymentId: "IYZICO_TOKEN_123",
                     items: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price })),
                     totalAmount: totalAmount
                 };
 
-
                 await orderService.createOrder(orderPayload);
-
-                navigate('/success', {
-                    state: {
-                        message: "Paket siparişiniz alındı.",
-                        subMessage: "Siparişiniz hazırlanmaya başlandığında bildirim alacaksınız."
-                    }
-                });
+                setSuccessMessage("Paket siparişiniz alındı. Hazırlanıyor...");
 
             } else {
-                // --- RESTORANDA (MASA) SİPARİŞ ---
-                if (!selectedTable) {
+                if (!selectedTableId) {
                     toast.warning("Lütfen oturduğunuz masayı seçin."); setIsSubmitting(false); return;
                 }
 
                 const tablePayload = {
-                    tableId: selectedTable.id,
+                    tableId: parseInt(selectedTableId),
                     totalAmount: totalAmount,
-                    status: "Pending", // Admin onayı için bekleyen statüsü
-                    userId: user.id, // Hangi kullanıcı sipariş verdi
-                    orderItemsInRestaurant: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price }))
+                    status: "Pending",
+                    userId: user.id,
+                    orderItems: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price }))
                 };
 
                 await orderService.createTableOrder(tablePayload);
-                // BAŞARILI -> ONAY SAYFASINA GİT
-                navigate('/success', {
-                    state: {
-                        message: "Masa siparişiniz mutfağa iletildi.",
-                        subMessage: "Garsonumuz siparişinizi onayladığında hazırlanmaya başlayacaktır. Lütfen bekleyiniz."
-                    }
-                });
+                setSuccessMessage("Siparişiniz mutfağa iletildi. Onay bekleniyor.");
             }
 
             dispatch(clearCart());
-
+            setShowSuccessModal(true); // MODALI AÇ
 
         } catch (error) {
             console.error("Sipariş Hatası:", error);
-            // Hata detayını göster
             const errorMsg = error.response?.data?.errors
-                ? Object.values(error.response.data.errors).join(', ')
-                : "Sipariş oluşturulamadı.";
+                ? Object.values(error.response.data.errors).flat().join(', ')
+                : (error.response?.data?.message || "Sipariş oluşturulurken bir hata oluştu.");
             toast.error(errorMsg);
         } finally {
             setIsSubmitting(false);
@@ -109,12 +90,17 @@ export default function CheckoutPage() {
 
     return (
         <div className="container mt-5 pt-5 mb-5">
+            
+            {/* MODAL EKLENDİ */}
+            <OrderSuccessModal 
+                show={showSuccessModal} 
+                onClose={() => setShowSuccessModal(false)} 
+                customMessage={successMessage} // Opsiyonel prop
+            />
+
             <div className="row">
-                {/* SOL: SİPARİŞ DETAYLARI */}
                 <div className="col-lg-8">
                     <h3 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Siparişi Tamamla</h3>
-
-                    {/* 1. SEKMELER */}
                     <div className="card border-0 shadow-sm mb-4">
                         <div className="card-header bg-white p-0 border-bottom-0">
                             <ul className="nav nav-tabs nav-fill" id="orderTabs">
@@ -136,7 +122,6 @@ export default function CheckoutPage() {
                                 </li>
                             </ul>
                         </div>
-
                         <div className="card-body p-4">
                             {orderType === 'delivery' ? (
                                 <div className="fade-in">
@@ -155,57 +140,42 @@ export default function CheckoutPage() {
                                             <input type="text" className="form-control" value={note} onChange={e => setNote(e.target.value)} placeholder="Zili çalmayın, temassız teslimat vb." />
                                         </div>
                                     </div>
-
                                     <hr className="my-4" />
-
-                                    {/* KREDİ KARTI FORMU */}
-                                    <h5 className="mb-3">Ödeme Bilgileri (Iyzico Güvencesiyle)</h5>
+                                    <h5 className="mb-3">Ödeme Bilgileri</h5>
                                     <div className="bg-light p-4 rounded border">
                                         <div className="mb-3">
-                                            <label className="form-label small fw-bold">Kart Üzerindeki İsim</label>
+                                            <label className="form-label small fw-bold">Kart Sahibi</label>
                                             <input type="text" className="form-control" value={cardInfo.holder} onChange={e => setCardInfo({ ...cardInfo, holder: e.target.value })} />
                                         </div>
                                         <div className="mb-3">
                                             <label className="form-label small fw-bold">Kart Numarası</label>
-                                            <div className="input-group">
-                                                <span className="input-group-text bg-white"><i className="far fa-credit-card"></i></span>
-                                                <input type="text" className="form-control" maxLength="16" placeholder="0000 0000 0000 0000" value={cardInfo.number} onChange={e => setCardInfo({ ...cardInfo, number: e.target.value })} />
-                                            </div>
+                                            <input type="text" className="form-control" maxLength="16" placeholder="0000 0000 0000 0000" value={cardInfo.number} onChange={e => setCardInfo({ ...cardInfo, number: e.target.value })} />
                                         </div>
                                         <div className="row g-3">
-                                            <div className="col-6">
-                                                <label className="form-label small fw-bold">Son Kullanma (AA/YY)</label>
-                                                <input type="text" className="form-control" maxLength="5" placeholder="MM/YY" value={cardInfo.expiry} onChange={e => setCardInfo({ ...cardInfo, expiry: e.target.value })} />
-                                            </div>
-                                            <div className="col-6">
-                                                <label className="form-label small fw-bold">CVV / CVC</label>
-                                                <input type="text" className="form-control" maxLength="3" placeholder="123" value={cardInfo.cvc} onChange={e => setCardInfo({ ...cardInfo, cvc: e.target.value })} />
-                                            </div>
+                                            <div className="col-6"><input type="text" className="form-control" maxLength="5" placeholder="MM/YY" value={cardInfo.expiry} onChange={e => setCardInfo({ ...cardInfo, expiry: e.target.value })} /></div>
+                                            <div className="col-6"><input type="text" className="form-control" maxLength="3" placeholder="CVC" value={cardInfo.cvc} onChange={e => setCardInfo({ ...cardInfo, cvc: e.target.value })} /></div>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="fade-in">
                                     <h5 className="mb-3">Masa Seçimi</h5>
-                                    <p className="text-muted small mb-4">Lütfen şu an oturduğunuz masayı seçiniz. Siparişiniz onaylandıktan sonra masanıza getirilecektir.</p>
-
-                                    {/* GÖRSEL MASA SEÇİMİ */}
+                                    <p className="text-muted small mb-4">Lütfen şu an oturduğunuz masayı seçiniz.</p>
                                     <div className="row g-3">
                                         {tables.map(table => (
                                             <div key={table.id} className="col-6 col-md-4 col-lg-3">
                                                 <div
-                                                    className={`card text-center p-3 border ${selectedTable?.id === table.id ? 'border-warning bg-warning bg-opacity-10' : ''} ${!table.isAvailable ? 'opacity-50' : ''}`}
+                                                    className={`card text-center p-3 border ${parseInt(selectedTableId) === table.id ? 'border-warning bg-warning bg-opacity-10' : ''} ${!table.isAvailable ? 'opacity-50' : ''}`}
                                                     style={{ cursor: table.isAvailable ? 'pointer' : 'not-allowed' }}
-                                                    onClick={() => table.isAvailable && setSelectedTable(table)}
+                                                    onClick={() => table.isAvailable && setSelectedTableId(table.id)}
                                                 >
-                                                    <i className={`fas fa-chair fa-2x mb-2 ${selectedTable?.id === table.id ? 'text-warning' : 'text-secondary'}`}></i>
+                                                    <i className={`fas fa-chair fa-2x mb-2 ${parseInt(selectedTableId) === table.id ? 'text-warning' : 'text-secondary'}`}></i>
                                                     <h6 className="mb-0 fw-bold">{table.tableNumber}</h6>
                                                     <small className="text-muted">{table.capacity} Kişilik</small>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-
                                     <div className="mt-4">
                                         <label className="form-label small text-muted">Masa Notu</label>
                                         <input type="text" className="form-control" value={note} onChange={e => setNote(e.target.value)} placeholder="Örn: Ketçap mayonez lütfen..." />
@@ -216,41 +186,25 @@ export default function CheckoutPage() {
                     </div>
                 </div>
 
-                {/* SAĞ: ÖZET */}
                 <div className="col-lg-4">
                     <div className="card border-0 shadow-lg p-4 sticky-top" style={{ top: '100px' }}>
                         <h5 className="mb-3" style={{ fontFamily: 'Playfair Display' }}>Sipariş Özeti</h5>
-
                         <div className="d-flex justify-content-between mb-2">
                             <span className="text-muted">Ürünler Toplamı</span>
                             <span>{totalAmount} ₺</span>
                         </div>
-                        {orderType === 'delivery' && (
-                            <div className="d-flex justify-content-between mb-2">
-                                <span className="text-muted">Teslimat Ücreti</span>
-                                <span className="text-success fw-bold">Ücretsiz</span>
-                            </div>
-                        )}
-
                         <hr />
-
                         <div className="d-flex justify-content-between mb-4 align-items-center">
                             <span className="fw-bold fs-5">Toplam Tutar</span>
                             <span className="fw-bold fs-3 text-success">{totalAmount} ₺</span>
                         </div>
-
                         <button
-                            className="btn btn-dark w-100 py-3 text-uppercase fw-bold"
+                            className={`btn w-100 py-3 text-uppercase fw-bold ${orderType === 'delivery' ? 'btn-success' : 'btn-dark'}`}
                             onClick={handleCheckout}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? 'İşleniyor...' : 'Ödemeyi Tamamla'}
+                            {isSubmitting ? 'İşleniyor...' : (orderType === 'delivery' ? 'Ödemeyi Tamamla' : 'Siparişi Mutfağa Gönder')}
                         </button>
-
-                        <div className="text-center mt-3">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" height="20" className="mx-2 opacity-50" alt="Visa" />
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" height="20" className="mx-2 opacity-50" alt="Mastercard" />
-                        </div>
                     </div>
                 </div>
             </div>

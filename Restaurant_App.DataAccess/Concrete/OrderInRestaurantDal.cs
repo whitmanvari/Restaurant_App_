@@ -16,11 +16,15 @@ namespace Restaurant_App.DataAccess.Concrete
             var order = await _context.OrdersInRestaurant
                 .Include(o => o.OrderItemsInRestaurant)
                 .FirstOrDefaultAsync(o => o.Id == orderInRestaurantId);
+
             if (order != null)
             {
                 order.OrderItemsInRestaurant.Add(orderItem);
                 await _context.SaveChangesAsync();
+                return; 
             }
+
+            // Eğer order null ise buraya düşer
             throw new Exception("Sipariş bulunamadı!");
         }
         public async Task ClearOrderItems(int orderInRestaurantId)

@@ -40,7 +40,12 @@ const getAllTableOrders = async () => {
 // ADMIN: Masa Sipariş Durumu Güncelle
 const updateTableOrderStatus = async (id, statusString) => {
     // statusString: "Pending", "InProgress", "Served", "Completed"
-    const response = await api.put(`/OrderInRestaurant/${id}/status`, { id, status: statusString });
+    
+    // Backend'deki StatusUpdateModel { Id, Status } bekliyor.
+    const response = await api.put(`/OrderInRestaurant/${id}/status`, { 
+        id: id, 
+        status: statusString 
+    });
     return response.data;
 };
 
