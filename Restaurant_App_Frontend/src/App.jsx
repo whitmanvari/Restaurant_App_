@@ -63,7 +63,7 @@ function App() {
                     {/* Yönetim */}
                     <Route path="menu" element={<AdminMenuPage />} />
                     <Route path="categories" element={<AdminCategoriesPage />} />
-                    <Route path="comments" element={<AdminCommentsPage />} /> {/* YENİ ROTA */}
+                    <Route path="comments" element={<AdminCommentsPage />} /> 
                     <Route path="table-config" element={<AdminTableConfigPage />} />
                     <Route path="users" element={<AdminUsersPage />} />
                     

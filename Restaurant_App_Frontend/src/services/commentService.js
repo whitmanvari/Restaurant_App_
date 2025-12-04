@@ -13,6 +13,11 @@ const create = async (commentData) => {
     return response.data;
 };
 
+const getAll = async () => {
+    const response = await api.get('/Comment/all');
+    return response.data;
+};
+
 // Yorum sil (Kendi yorumuysa)
 const remove = async (id) => {
     const response = await api.delete(`/Comment/Delete/${id}`);
@@ -22,5 +27,6 @@ const remove = async (id) => {
 export const commentService = {
     getByProduct,
     create,
-    remove
+    remove,
+    getAll
 };
