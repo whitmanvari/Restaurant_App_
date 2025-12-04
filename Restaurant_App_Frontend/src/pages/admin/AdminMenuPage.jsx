@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { productService } from '../services/productService';
-import { categoryService } from '../services/categoryService';
+import { productService } from '../../services/productService';
+import { categoryService } from '../../services/categoryService';
 
 function AdminMenuPage() {
     const [products, setProducts] = useState([]);

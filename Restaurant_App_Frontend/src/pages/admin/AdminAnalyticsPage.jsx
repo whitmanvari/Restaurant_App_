@@ -3,9 +3,9 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
-import { productService } from '../services/productService';
-import { orderService } from '../services/orderService';
-import { categoryService } from '../services/categoryService';
+import { productService } from '../../services/productService';
+import { orderService } from '../../services/orderService';
+import { categoryService } from '../../services/categoryService';
 import { toast } from 'react-toastify';
 
 const AdminAnalyticsPage = () => {

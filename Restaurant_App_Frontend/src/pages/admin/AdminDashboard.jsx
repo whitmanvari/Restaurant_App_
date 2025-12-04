@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { reservationService } from '../services/reservationService';
-import { tableService } from '../services/tableService';
-import api from '../api/axiosInstance';
-import TableDetailModal from '../components/TableDetailModal';
-import ReservationEditModal from '../components/ReservationEditModal';
-import { Link, useNavigate } from 'react-router-dom';
+import { reservationService } from '../../services/reservationService';
+import { tableService } from '../../services/tableService';
+import api from '../../api/axiosInstance';
+import TableDetailModal from '../../components/TableDetailModal';
+import ReservationEditModal from '../../components/ReservationEditModal'; 
+import { Link } from 'react-router-dom';
 
 function AdminDashboard() {
     const { user } = useSelector(state => state.auth);
-    const navigate = useNavigate();
 
+    // State'ler
     const [reservations, setReservations] = useState([]);
     const [tables, setTables] = useState([]);
     const [activeOrders, setActiveOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    const [selectedTableData, setSelectedTableData] = useState(null); 
-    const [selectedReservation, setSelectedReservation] = useState(null);
+    // MODAL STATE'LERİ
+    const [selectedTableData, setSelectedTableData] = useState(null); // Sipariş Detayı
+    const [selectedReservation, setSelectedReservation] = useState(null); // Rezervasyon Düzenleme
 
     useEffect(() => {
         fetchData();
@@ -34,10 +35,6 @@ function AdminDashboard() {
                 api.get('/OrderInRestaurant/all/details')
             ]);
             
-            console.log("--- VERİLER GELDİ ---");
-            console.log("Masalar:", tableRes);
-            console.log("Rezervasyonlar:", resData);
-
             setReservations(resData);
             setTables(tableRes.sort((a, b) => a.tableNumber.localeCompare(b.tableNumber, undefined, { numeric: true })));
             
@@ -49,46 +46,32 @@ function AdminDashboard() {
         }
     };
 
-    // --- MASA DURUMU KONTROLÜ ---
+    // Masa Durumu Hesaplama
     const getTableStatus = (table) => {
-        // 0. Masa Kapalı mı?
-        if (!table.isAvailable) return { status: 'closed', text: 'KAPALI', color: 'secondary', icon: 'fa-ban', opacity: '0.5' };
+        if (!table.isAvailable) return { status: 'closed', text: 'KAPALI', color: 'secondary', icon: 'fa-ban' };
 
         // 1. Sipariş Kontrolü
         const activeOrder = activeOrders.find(o => o.tableId === table.id);
         if (activeOrder) {
-            // EĞER SİPARİŞ ONAY BEKLİYORSA -> TURUNCU
             if (activeOrder.status === 'Pending') {
-                 return { 
-                    status: 'occupied', // Tıklayınca modal açılsın diye occupied bırakıyoruz
-                    text: 'ONAY BEK.', 
-                    color: 'warning', // Sarı/Turuncu
-                    subText: 'Sipariş Geldi', 
-                    icon: 'fa-bell', 
-                    data: activeOrder 
-                };
+                 return { status: 'occupied', text: 'ONAY BEK.', color: 'warning', subText: 'Sipariş Geldi', icon: 'fa-bell', data: activeOrder };
             }
-            // EĞER ONAYLANMIŞSA (Hazırlanıyor/Servis Edildi) -> KIRMIZI
-            return { 
-                status: 'occupied', 
-                text: 'DOLU', 
-                color: 'danger', 
-                subText: `${activeOrder.totalAmount} ₺`, 
-                icon: 'fa-utensils',
-                data: activeOrder 
-            };
+            return { status: 'occupied', text: 'DOLU', color: 'danger', subText: `${activeOrder.totalAmount} ₺`, icon: 'fa-utensils', data: activeOrder };
         }
 
-        // 2. Rezervasyon Kontrolü 
+        // 2. Rezervasyon Kontrolü
         const now = new Date();
         const activeReservation = reservations.find(r => {
             if (r.tableId !== table.id) return false;
             if (r.status !== 1 && r.status !== 0) return false;
+
             const resDate = new Date(r.reservationDate);
             const isSameDay = resDate.toDateString() === now.toDateString();
             if (!isSameDay) return false;
+
             const diffMs = resDate.getTime() - now.getTime();
             const diffMinutes = diffMs / (1000 * 60);
+
             return diffMinutes > -120 && diffMinutes < 120;
         });
         
@@ -98,23 +81,27 @@ function AdminDashboard() {
             return { 
                 status: 'reserved', 
                 text: isPending ? 'TALEP' : 'REZERVE', 
-                color: isPending ? 'info' : 'primary', // Renkleri ayırdık
+                color: isPending ? 'info' : 'primary', 
                 subText: `Saat: ${timeStr}`,
                 icon: 'fa-clock',
                 data: activeReservation 
             };
         }
 
-        // 3. Müsait
         return { status: 'empty', text: 'MÜSAİT', color: 'success', subText: `${table.capacity} Kişilik`, icon: 'fa-chair' };
     };
 
+    // Masaya Tıklama Olayı
     const handleTableClick = (table, statusObj) => {
+        // Eğer Doluysa veya Onay Bekliyorsa -> Sipariş Detayını Aç
         if (statusObj.status === 'occupied') {
             setSelectedTableData({ table: table, order: statusObj.data });
-        } else if (statusObj.status === 'reserved') {
+        } 
+        // Eğer Rezerveyse -> Rezervasyon Düzenleme Modalını Aç
+        else if (statusObj.status === 'reserved') {
             setSelectedReservation(statusObj.data);
-        } else {
+        } 
+        else {
             toast.info(`Masa ${table.tableNumber}: ${statusObj.text}`);
         }
     };
@@ -123,6 +110,7 @@ function AdminDashboard() {
 
     return (
         <div className="container mt-5 pt-4">
+            {/* ... Başlık ve Butonlar ... */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 className="display-6" style={{ fontFamily: 'Playfair Display' }}>Yönetim Paneli</h1>
@@ -130,12 +118,7 @@ function AdminDashboard() {
                 </div>
                 <div className="d-flex gap-2 flex-wrap">
                     <Link to="/admin/menu" className="btn btn-outline-dark"><i className="fas fa-utensils me-2"></i> Menü</Link>
-                    <Link to="/admin/reservations" className="btn btn-outline-dark">
-                        <i className="fas fa-calendar-check me-2"></i> Rezervasyonlar
-                        {reservations.filter(r => r.status === 0).length > 0 &&
-                            <span className="badge bg-danger ms-2">{reservations.filter(r => r.status === 0).length}</span>
-                        }
-                    </Link>
+                    <Link to="/admin/reservations" className="btn btn-outline-dark"><i className="fas fa-calendar-check me-2"></i> Rezervasyonlar</Link>
                     <Link to="/admin/orders" className="btn btn-outline-dark"><i className="fas fa-tasks me-2"></i> Siparişler</Link>
                     <Link to="/admin/settings" className="btn btn-outline-dark"><i className="fas fa-cog me-2"></i> Ayarlar</Link>
                 </div>
@@ -171,6 +154,7 @@ function AdminDashboard() {
                 })}
             </div>
             
+            {/* 1. SİPARİŞ DETAY MODALI */}
             {selectedTableData && (
                 <TableDetailModal
                     table={selectedTableData.table}
@@ -180,11 +164,15 @@ function AdminDashboard() {
                 />
             )}
 
+            {/* 2. REZERVASYON DÜZENLEME MODALI  */}
             {selectedReservation && (
                 <ReservationEditModal
                     reservation={selectedReservation}
                     onClose={() => setSelectedReservation(null)}
-                    onUpdate={fetchData}
+                    onUpdate={() => {
+                        fetchData(); // Listeyi ve haritayı yenile
+                        setSelectedReservation(null);
+                    }}
                 />
             )}
         </div>

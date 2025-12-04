@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { categoryService } from '../services/categoryService';
+import { categoryService } from '../../services/categoryService';
 
 export default function AdminCategoriesPage() {
     const [categories, setCategories] = useState([]);

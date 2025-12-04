@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { reservationService } from '../services/reservationService';
-import { tableService } from '../services/tableService';
+import { reservationService } from '../../services/reservationService';
+import { tableService } from '../../services/tableService';
 import { useSelector } from 'react-redux';
 // YENİ IMPORT
-import ReservationDetailModal from '../components/ReservationDetailModal'; 
+import ReservationDetailModal from '../../components/ReservationDetailModal'; 
 
 export default function AdminReservationPage() {
     const { user } = useSelector(state => state.auth);
