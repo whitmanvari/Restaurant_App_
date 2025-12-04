@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { tableService } from '../services/tableService';
+import { tableService } from '../../services/tableService';
 
 export default function AdminTableConfigPage() {
     const [tables, setTables] = useState([]);

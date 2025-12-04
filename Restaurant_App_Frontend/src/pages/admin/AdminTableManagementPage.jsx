@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { tableService } from '../services/tableService';
-import { reservationService } from '../services/reservationService';
-import api from '../api/axiosInstance';
+import { tableService } from '../../services/tableService';
+import { reservationService } from '../../services/reservationService';
+import api from '../../api/axiosInstance';
 
 export default function AdminTableManagementPage() {
     const [tables, setTables] = useState([]);

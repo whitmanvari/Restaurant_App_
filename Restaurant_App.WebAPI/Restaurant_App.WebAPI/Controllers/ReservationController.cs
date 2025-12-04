@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Restaurant_App.Application.Dto; 
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
-using Restaurant_App.Application.Dto; 
-using System.Security.Claims;
 using Restaurant_App.Entities.Enums;
+using Restaurant_App.Entities.Identity;
+using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -16,11 +18,13 @@ namespace Restaurant_App.WebAPI.Controllers
     {
         private readonly IReservationService _reservationService;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ReservationController(IReservationService reservationService, IMapper mapper)
+        public ReservationController(IReservationService reservationService, IMapper mapper, UserManager<ApplicationUser> userManager)
         {
             _reservationService = reservationService;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -28,8 +32,21 @@ namespace Restaurant_App.WebAPI.Controllers
         public async Task<IActionResult> GetAll()
         {
             var reservations = await _reservationService.GetAll();
-            var dto = _mapper.Map<List<ReservationDTO>>(reservations);
-            return Ok(dto);
+            var dtoList = _mapper.Map<List<ReservationDTO>>(reservations);
+            // ID'leri İsme Çevirme Döngüsü
+            foreach (var dto in dtoList)
+            {
+                if (!string.IsNullOrEmpty(dto.CreatedBy))
+                {
+                    var user = await _userManager.FindByIdAsync(dto.CreatedBy);
+                    dto.CreatedByName = user != null ? user.FullName : "Bilinmiyor";
+                }
+                else
+                {
+                    dto.CreatedByName = "Misafir / Sistem";
+                }
+            }
+            return Ok(dtoList);
         }
 
         [HttpGet("{id}")]

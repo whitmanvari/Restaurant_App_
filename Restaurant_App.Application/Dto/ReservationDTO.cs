@@ -5,6 +5,7 @@
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerPhone { get; set; } = string.Empty;
         public string? CreatedBy { get; set; }
+        public string? CreatedByName { get; set; }
         public DateTime ReservationDate { get; set; }
         public int NumberOfGuests { get; set; }
         public int? TableId { get; set; }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { userService } from '../services/userService';
+import { userService } from '../../services/userService';
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState([]);
