@@ -6,6 +6,8 @@ using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity; 
+using Restaurant_App.Entities.Identity; 
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -16,11 +18,13 @@ namespace Restaurant_App.WebAPI.Controllers
     {
         private readonly IOrderInRestaurantService _orderService;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager; 
 
-        public OrderInRestaurantController(IOrderInRestaurantService orderService, IMapper mapper)
+        public OrderInRestaurantController(IOrderInRestaurantService orderService, IMapper mapper, UserManager<ApplicationUser> userManager)
         {
             _orderService = orderService;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         // Yeni masa siparişi oluştur
@@ -60,12 +64,26 @@ namespace Restaurant_App.WebAPI.Controllers
 
         // Tüm masa siparişlerini detaylı getir (Admin için)
         [HttpGet("all/details")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllOrders()
+        public async Task<IActionResult> GetAllWithDetails()
         {
             var orders = await _orderService.GetOrdersWithDetails();
-            var dto = _mapper.Map<List<OrderInRestaurantDTO>>(orders);
-            return Ok(dto);
+            var dtoList = _mapper.Map<List<OrderInRestaurantDTO>>(orders);
+
+            // Kullanıcı İsimlerini Doldur
+            foreach (var dto in dtoList)
+            {
+                if (!string.IsNullOrEmpty(dto.UserId))
+                {
+                    var user = await _userManager.FindByIdAsync(dto.UserId);
+                    dto.UserName = user != null ? user.FullName : "Bilinmiyor";
+                }
+                else
+                {
+                    dto.UserName = "Misafir / Garson";
+                }
+            }
+
+            return Ok(dtoList);
         }
 
         // Masaya göre siparişleri getir
