@@ -7,6 +7,7 @@ export default function ResetPasswordPage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     
+    // URL'den token ve email parametrelerini al
     const token = searchParams.get('token');
     const email = searchParams.get('email');
 
@@ -36,21 +37,42 @@ export default function ResetPasswordPage() {
         }
     };
 
-    if(!token || !email) return <div className="text-center mt-5">Geçersiz bağlantı.</div>;
+    if(!token || !email) return (
+        <div className="d-flex justify-content-center align-items-center vh-100">
+            <div className="alert alert-danger">Geçersiz veya eksik bağlantı.</div>
+        </div>
+    );
 
     return (
         <div className="container d-flex justify-content-center align-items-center vh-100">
-            <div className="card p-4 shadow-lg" style={{maxWidth:'400px', width:'100%'}}>
-                <h3 className="text-center mb-3" style={{fontFamily:'Playfair Display'}}>Yeni Şifre Belirle</h3>
+            <div className="card p-4 shadow-lg border-0" style={{maxWidth:'400px', width:'100%'}}>
+                <div className="text-center mb-4">
+                    <h3 style={{fontFamily:'Playfair Display'}}>Yeni Şifre Belirle</h3>
+                    <p className="text-muted small">Lütfen güçlü bir şifre seçin.</p>
+                </div>
                 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
-                        <input type="password" class="form-control" placeholder="Yeni Şifre" value={password} onChange={e => setPassword(e.target.value)} required />
+                        <input 
+                            type="password" 
+                            className="form-control py-2" 
+                            placeholder="Yeni Şifre" 
+                            value={password} 
+                            onChange={e => setPassword(e.target.value)} 
+                            required 
+                        />
                     </div>
                     <div className="mb-4">
-                        <input type="password" class="form-control" placeholder="Şifre Tekrar" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                        <input 
+                            type="password" 
+                            className="form-control py-2" 
+                            placeholder="Şifre Tekrar" 
+                            value={confirmPassword} 
+                            onChange={e => setConfirmPassword(e.target.value)} 
+                            required 
+                        />
                     </div>
-                    <button type="submit" className="btn btn-success w-100" disabled={loading}>
+                    <button type="submit" className="btn btn-success w-100 py-2" disabled={loading}>
                         {loading ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
                     </button>
                 </form>

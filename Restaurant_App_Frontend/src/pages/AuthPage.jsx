@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom'; // Link eklendi
 import { toast } from 'react-toastify';
 import { loginUser, registerUser } from '../store/slices/authSlice';
-import '../styles/auth.scss'; 
+import '../styles/auth.scss';
 
 const AuthPage = () => {
     const dispatch = useDispatch();
@@ -12,7 +12,7 @@ const AuthPage = () => {
 
     const { status, error, isAuthenticated } = useSelector((state) => state.auth);
     
-    // Kayan panel state'i
+    // Kayan panel state'i (Sağa/Sola geçiş için)
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
 
     // Form Verileri
@@ -30,27 +30,29 @@ const AuthPage = () => {
         }
     }, [location]);
 
-    // Auth ve Hata Kontrolü (TEK BİR USEEFFECT)
+    // Auth ve Hata Kontrolü
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/');
+             // Zaten giriş yapmışsa yönlendir 
+             navigate('/'); 
         }
 
-        // Hata varsa göster
+        // HATA VARSA GÖSTER
         if (status === 'failed' && error) {
-            console.log("Gelen Hata:", error); // Konsolda görelim
+            console.log("Gelen Hata:", error);
             
             let errorMessage = "Bir hata oluştu.";
             
             if (typeof error === 'string') {
                 errorMessage = error;
             } else if (typeof error === 'object') {
-                // Eğer backend'den obje geliyorsa stringe çevir veya mesajı al
                 errorMessage = error.message || error.title || JSON.stringify(error);
             }
 
-            // Toast ID kullanarak aynı hatanın üst üste binmesini engelliyoruz
-            toast.error(errorMessage, { toastId: 'auth-error' });
+            toast.error(errorMessage, { 
+                toastId: 'auth-error',
+                autoClose: 5000 
+            });
         }
     }, [isAuthenticated, status, error, navigate]);
 
@@ -61,18 +63,15 @@ const AuthPage = () => {
         const result = await dispatch(loginUser(loginData));
 
         if (loginUser.fulfilled.match(result)) {
-            // Token'dan gelen rolü kontrol et
             const role = result.payload.user?.role;
             
             if (role === 'Admin') {
                 toast.success("Yönetim paneline yönlendiriliyorsunuz...");
-                navigate('/admin'); // Admin ise Panele
+                navigate('/admin'); 
             } else {
                 toast.success("Giriş başarılı, hoşgeldiniz!");
-                navigate('/'); // User ise Anasayfaya
+                navigate('/'); 
             }
-        } else {
-            // Hata durumunu useEffect zaten yakalıyor
         }
     };
 
@@ -84,22 +83,31 @@ const AuthPage = () => {
             return;
         }
         
-        // Register thunk zaten rejectWithValue ile string hata dönüyor (authService sayesinde)
+        // Dispatch işlemini yap
         const result = await dispatch(registerUser(registerData));
         
+        // HATA KONTROLÜ 
         if (registerUser.fulfilled.match(result)) {
-            toast.success('Kayıt başarılı! Lütfen giriş yapın.');
-            setIsRightPanelActive(false); // Login tarafına kaydır
+            // Sadece işlem başarılıysa (200 OK) buraya girer
+            toast.success('Kayıt başarılı! Lütfen e-postanızı kontrol edip giriş yapın.');
+            setIsRightPanelActive(false);
             navigate('/login');
+            
+            // Formu temizle
+            setRegisterData({ fullName: '', email: '', password: '', confirmPassword: '', phoneNumber: '', city: '', address: '' });
+        } else {
+            // Hata durumunda (400, 500 vb.) buraya düşer.
+            console.log("Kayıt Başarısız:", result.payload);
         }
-        // Hata durumunda yukarıdaki useEffect çalışacak
     };
+
+    // -- RENDER --
 
     return (
         <div className="auth-page-wrapper">
             <div className={`auth-container ${isRightPanelActive ? 'right-panel-active' : ''}`}>
                 
-                {/* --- KAYIT OL FORMU --- */}
+                {/* --- KAYIT OL FORMU (Sol Tarafta Gizli/Açık) --- */}
                 <div className="form-container sign-up-container">
                     <form onSubmit={handleRegisterSubmit}>
                         <h1>Hesap Oluştur</h1>
@@ -124,7 +132,7 @@ const AuthPage = () => {
                     </form>
                 </div>
 
-                {/* --- GİRİŞ YAP FORMU --- */}
+                {/* --- GİRİŞ YAP FORMU (Sağ Tarafta Gizli/Açık) --- */}
                 <div className="form-container sign-in-container">
                     <form onSubmit={handleLoginSubmit}>
                         <h1 className="mb-2">Hoşgeldiniz</h1>
@@ -133,7 +141,10 @@ const AuthPage = () => {
                         <input type="email" placeholder="E-Posta" value={loginData.email} onChange={(e) => setLoginData({...loginData, email: e.target.value})} required />
                         <input type="password" placeholder="Şifre" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} required />
                         
-                        <a href="#" className="small text-muted my-2">Şifremi unuttum</a>
+                        {/* --- ŞİFREMİ UNUTTUM LİNKİ --- */}
+                        <Link to="/forgot-password" className="small text-muted my-2 text-decoration-none hover-link">
+                            Şifremi unuttum?
+                        </Link>
                         
                         <button type="submit" disabled={status === 'loading'}>
                             {status === 'loading' ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
@@ -141,7 +152,7 @@ const AuthPage = () => {
                     </form>
                 </div>
 
-                {/* --- KAYAN OVERLAY --- */}
+                {/* --- KAYAN OVERLAY  --- */}
                 <div className="overlay-container">
                     <div className="overlay">
                         <div className="overlay-panel overlay-left">

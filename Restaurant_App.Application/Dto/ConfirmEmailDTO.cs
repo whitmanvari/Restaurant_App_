@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Restaurant_App.Application.Dto
 {
-    public class ResetPasswordDTO
+    public class ConfirmEmailDTO
     {
-        public string Email { get; set; }
+        public string UserId { get; set; }
         public string Token { get; set; }
-        public string NewPassword { get; set; }
     }
 }

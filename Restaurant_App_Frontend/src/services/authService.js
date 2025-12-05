@@ -1,65 +1,66 @@
 import api from '../api/axiosInstance';
 import { jwtDecode } from 'jwt-decode';
 
-//Login
-const login = async (loginData) => {
-    try {
+// Login 
+const login = async(loginData) => {
+    try{
         const response = await api.post('Auth/login', loginData);
-        const { token } = response.data;
+        const {token} = response.data;
         localStorage.setItem('token', token);
 
-        //tokenı çöz ve user objesine döndür.
         const decoded = jwtDecode(token);
         const user = {
             email: decoded.email,
-            role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+            role: decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decoded['role'] || 'User'
         };
-        return { token, user };
-    } catch (error) {
+        return {token, user};
+    } catch(error) {
         if (error.response) {
-            // Sunucudan 401 gibi bir hata gelirse
             return Promise.reject(error.response.data || 'Giriş başarısız!');
         } else {
-            // Network hatası (CORS, ERR_FAILED vb.) gelirse
             return Promise.reject(error.message || 'Sunucuya bağlanılamadı.');
         }
     }
 };
 
-//register
-const register = async (registerData) => {
+// REGISTER 
+const register = async(registerData) => {
     try {
         await api.post('Auth/register', registerData);
         return true;
-    } catch (error) {
-        console.log("🛑 REGISTER API ERROR:", error);
+    } catch(error) {
+        console.log("🛑 REGISTER HATASI:", error);
 
         if (error.response && error.response.data) {
             const data = error.response.data;
             console.log("📦 HATA İÇERİĞİ:", data);
 
-            // 1. ASP.NET Core Standart Validasyon ({ errors: { Key: [Msg] } })
-            // Konsol çıktına göre senin durumun bu!
-            if (data.errors && typeof data.errors === 'object' && !Array.isArray(data.errors)) {
-                // Nesnenin içindeki değerleri al, düzleştir ve birleştir.
-                // Örn: { PhoneNumber: ["Hata"] } -> "Hata"
+            // SENARYO 1: Identity Hataları 
+            // { "errors": ["Kullanıcı zaten var", "Email kullanımda"] }
+            if (data.errors && Array.isArray(data.errors)) {
+                return Promise.reject(data.errors.join('\n'));
+            }
+
+            // SENARYO 2: ASP.NET Core Standart Validasyon 
+            // { "errors": { "Password": ["Hata1"] } }
+            if (data.errors && typeof data.errors === 'object') {
                 const messages = Object.values(data.errors).flat().join('\n');
                 return Promise.reject(messages);
             }
 
-            // 2. Identity Hataları ({ Errors: ["Msg"] })
+            // SENARYO 3: "Errors" Dizi ise
             if (data.Errors && Array.isArray(data.Errors)) {
                 return Promise.reject(data.Errors.join('\n'));
             }
-
-            // 3. Tekil Mesaj
+            
+            // SENARYO 4: Tekil Mesaj
             if (typeof data === 'string') return Promise.reject(data);
             if (data.message) return Promise.reject(data.message);
 
-            // 4. Bilinmeyen Format
-            return Promise.reject("Kayıt işlemi başarısız. Lütfen bilgileri kontrol edin.");
+            // Hiçbiri değilse
+            return Promise.reject("Kayıt işlemi başarısız.");
         }
-
+        
         return Promise.reject(error.message || "Sunucu hatası.");
     }
 }
@@ -85,7 +86,7 @@ const getProfile = async () => {
 const logout = () => {
     localStorage.removeItem('token');
 }
-// Tüm auth fonksiyonlarını tek bir nesne olarak export et
+
 export const authService = {
     login,
     register,

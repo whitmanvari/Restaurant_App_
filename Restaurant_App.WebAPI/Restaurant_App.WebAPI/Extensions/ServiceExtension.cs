@@ -39,6 +39,8 @@ namespace Restaurant_App.WebAPI.Extensions
             services.AddScoped<ICartDal, CartDal>();
             services.AddScoped<ICartService, CartManager>();
             services.AddScoped<IAuthService, AuthManager>();
+            services.AddScoped<IEmailService, SmtpEmailManager>();
+
         }
 
         // Identity ve JWT servisleri
@@ -61,11 +63,13 @@ namespace Restaurant_App.WebAPI.Extensions
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequiredLength = 6;
+                options.SignIn.RequireConfirmedEmail = true;
                 options.User.RequireUniqueEmail = true;
             })
             .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
             .AddDefaultTokenProviders()
             .AddErrorDescriber <TurkishIdentityErrorDescriber>();
+
 
             // JWT ayarları 
             var key = config["DataAccess:Jwt:Key"];
