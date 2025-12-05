@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Application.Dto;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Identity;
 using System.Security.Claims;
 
 namespace Restaurant_App.WebAPI.Controllers
@@ -16,12 +18,14 @@ namespace Restaurant_App.WebAPI.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
         // Not: Sepeti siparişe çevirme mantığı için ICartService de eklenebilir.
 
-        public OrderController(IOrderService orderService, IMapper mapper)
+        public OrderController(IOrderService orderService, IMapper mapper, UserManager<ApplicationUser> userManager)
         {
             _orderService = orderService;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         // Yeni online sipariş oluştur
@@ -94,8 +98,18 @@ namespace Restaurant_App.WebAPI.Controllers
         public async Task<IActionResult> GetAllOrders()
         {
             var orders = await _orderService.GetAll();
-            var dto = _mapper.Map<List<OrderDTO>>(orders);
-            return Ok(dto);
+            var dtoList = _mapper.Map<List<OrderDTO>>(orders);
+
+            foreach (var dto in dtoList)
+            {
+                if (!string.IsNullOrEmpty(dto.UserId))
+                {
+                    var user = await _userManager.FindByIdAsync(dto.UserId);
+                    dto.UserName = user?.FullName ?? dto.Email; // İsim yoksa email yaz
+                }
+            }
+
+            return Ok(dtoList);
         }
 
         // Admin: Sipariş Durumunu Güncelle (Hazırlanıyor, Yola Çıktı vb.)

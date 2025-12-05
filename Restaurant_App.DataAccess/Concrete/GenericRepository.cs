@@ -34,7 +34,8 @@ namespace Restaurant_App.DataAccess.Concrete
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<T>> GetAll(Expression<Func<T, bool>>? filter = null)
+        //Comment tarafında getAll'u eziyorum
+        public virtual async Task<List<T>> GetAll(Expression<Func<T, bool>>? filter = null)
         {
             return filter == null
                 ? await _context.Set<T>().ToListAsync()

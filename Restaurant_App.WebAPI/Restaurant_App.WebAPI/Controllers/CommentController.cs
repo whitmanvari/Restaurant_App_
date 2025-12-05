@@ -107,5 +107,39 @@ namespace Restaurant_App.WebAPI.Controllers
             await _commentService.Delete(comment);
             return NoContent();
         }
+
+        // ADMIN: Tüm yorumları detaylarıyla getir
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllComments()
+        {
+            var comments = await _commentService.GetAll(); // Tüm yorumlar
+            var dtoList = new List<CommentDTO>();
+
+            foreach (var c in comments)
+            {
+                // 1. Kullanıcıyı Bul
+                var user = await _userManager.FindByIdAsync(c.UserId);
+
+                // 2. Ürünü Bul (Rating üzerinden)
+                // Comment -> Rating -> Product ilişkisi var.        
+                var prodName = c.Rating?.Product?.Name ?? "Bilinmeyen Ürün";
+                var score = c.Rating?.Value ?? 0;
+
+                dtoList.Add(new CommentDTO
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    ProductId = c.Rating?.ProductId ?? 0,
+                    ProductName = prodName,
+                    UserId = c.UserId,
+                    UserName = user != null ? user.FullName : "Misafir",
+                    RatingValue = (int)score,
+                    CreatedDate = c.CreatedDate
+                });
+            }
+
+            return Ok(dtoList.OrderByDescending(x => x.CreatedDate));
+        }
     }
 }

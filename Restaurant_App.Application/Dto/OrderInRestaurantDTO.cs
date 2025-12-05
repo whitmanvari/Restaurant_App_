@@ -9,5 +9,6 @@
         public List<OrderItemInRestaurantDTO> OrderItems { get; set; } = new List<OrderItemInRestaurantDTO>();
         public string? UserId { get; set; }
         public string? UserName { get; set; } // Admin panelinde ismini göstermek için
+        public DateTime OrderDate { get; set; }
     }
 }
