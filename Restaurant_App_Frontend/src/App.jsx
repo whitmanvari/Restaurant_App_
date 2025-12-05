@@ -34,6 +34,7 @@ import ErrorPage from './components/StatusPages/ErrorPage';
 import NotFoundPage from './components/StatusPages/NotFoundPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import EmailConfirmationPage from './pages/EmailConfirmationPage';
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/confirm-email" element={<EmailConfirmationPage />} />
       </Routes>
     </div>
   );
