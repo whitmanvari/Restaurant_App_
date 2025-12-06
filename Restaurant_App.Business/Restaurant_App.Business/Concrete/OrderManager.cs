@@ -17,9 +17,9 @@ namespace Restaurant_App.Business.Concrete
             await _orderDal.Create(order);
         }
 
-        public async Task Delete(Order order)
+        public async Task<List<Order>> GetOrdersByUserId(string userId)
         {
-            await _orderDal.Delete(order);
+            return await _orderDal.GetOrdersByUserId(userId);
         }
 
         public async Task<List<Order>> GetAll(Expression<Func<Order, bool>>? filter = null)
@@ -42,14 +42,14 @@ namespace Restaurant_App.Business.Concrete
             return await _orderDal.GetOrderDetails(orderId);
         }
 
-        public async Task<List<Order>> GetOrdersByUserId(string userId)
-        {
-            return await _orderDal.GetOrdersByUserId(userId);
-        }
-
         public async Task Update(Order order)
         {
             await _orderDal.Update(order);
+        }
+
+        public async Task Delete(Order entity)
+        {
+            await _orderDal.Delete(entity);
         }
     }
 }

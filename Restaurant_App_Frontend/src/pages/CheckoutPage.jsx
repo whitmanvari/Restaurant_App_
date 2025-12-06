@@ -4,78 +4,115 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../api/axiosInstance';
 import { orderService } from '../services/orderService';
+import { paymentService } from '../services/paymentService';
 import { clearCart } from '../store/slices/cartSlice';
 import OrderSuccessModal from '../components/StatusPages/OrderSuccessModal';
 
 export default function CheckoutPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    
     const { items, totalAmount } = useSelector(state => state.cart);
     const { user, isAuthenticated } = useSelector(state => state.auth);
 
-    // UI States
-    const [orderType, setOrderType] = useState('delivery'); // 'delivery' | 'dinein'
-    const [tables, setTables] = useState([]); // Başlangıçta boş dizi
+    const [orderType, setOrderType] = useState('delivery');
+    const [paymentMethod, setPaymentMethod] = useState('credit_card');
+    const [tables, setTables] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Modal
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
 
-    // Form Data
     const [address, setAddress] = useState(user?.address || '');
-    const [selectedTableId, setSelectedTableId] = useState('');
-    const [note, setNote] = useState('');
     const [contactPhone, setContactPhone] = useState(user?.phoneNumber || '');
+    const [note, setNote] = useState('');
+    const [selectedTableId, setSelectedTableId] = useState(''); 
     const [cardInfo, setCardInfo] = useState({ holder: '', number: '', expiry: '', cvc: '' });
 
     useEffect(() => {
-        // 1. Güvenlik Kontrolü
         if (!isAuthenticated) {
-             toast.warning("Oturum açmalısınız.");
-             navigate('/login');
-             return;
+            toast.warning("Lütfen giriş yapın.");
+            navigate('/login');
+            return;
         }
-        
-        // 2. Sepet Kontrolü
         if (items.length === 0) {
             navigate('/cart');
             return;
         }
-        
-        // 3. Masaları Çek (DEBUG EKLENDİ)
-        const fetchTables = async () => {
-            try {
-                const res = await api.get('/Table');
-                console.log("MASALAR GELDİ:", res.data); 
-                
-                if (Array.isArray(res.data)) {
-                    // Sadece Müsait ve Kapasitesi olanları alabiliriz
-                    setTables(res.data);
-                } else {
-                    console.error("Masalar dizi formatında gelmedi!", res.data);
-                    toast.error("Masa bilgisi yüklenemedi.");
-                }
-            } catch (error) {
-                console.error("Masa çekme hatası:", error);
-            }
-        };
+        api.get('/Table').then(res => setTables(res.data)).catch(console.error);
+    }, [items, isAuthenticated, navigate]);
 
-        fetchTables();
+    const fillTestCard = () => {
+        setCardInfo({ holder: 'TEST USER', number: '4609713665715202', expiry: '12/30', cvc: '123' });
+        toast.info("Test kartı bilgileri dolduruldu.");
+    };
 
-    }, [items, navigate, isAuthenticated]);
+    const handleExpiryChange = (e) => {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length > 4) val = val.slice(0, 4);
+        if (val.length > 2) val = val.slice(0, 2) + '/' + val.slice(2);
+        setCardInfo({ ...cardInfo, expiry: val });
+    };
 
     const handleCheckout = async () => {
         setIsSubmitting(true);
+        console.log("Sipariş işlemi başladı..."); // DEBUG
+
         try {
             if (orderType === 'delivery') {
-                // --- EVE TESLİM ---
                 if (!address || !contactPhone) {
                     toast.warning("Adres ve Telefon zorunludur."); setIsSubmitting(false); return;
                 }
-                // Basit Kart Kontrolü
-                if (cardInfo.number.length < 16) {
-                    toast.warning("Geçersiz kart numarası."); setIsSubmitting(false); return;
+
+                let transactionId = "CASH_ON_DELIVERY";
+
+                if (paymentMethod === 'credit_card') {
+                    if (cardInfo.number.length < 16) {
+                        toast.warning("Geçersiz kart numarası."); setIsSubmitting(false); return;
+                    }
+                    if (!cardInfo.expiry.includes('/')) {
+                        toast.warning("Son kullanma tarihi hatalı (AA/YY)."); setIsSubmitting(false); return;
+                    }
+                    
+                    const [expMonth, expYear] = cardInfo.expiry.split('/');
+                    const paymentData = {
+                        cardHolderName: cardInfo.holder,
+                        cardNumber: cardInfo.number,
+                        expireMonth: expMonth,
+                        expireYear: "20" + expYear,
+                        cvc: cardInfo.cvc,
+                        price: totalAmount,
+                        basketId: "B" + Date.now(),
+                        buyerId: user.id,
+                        buyerName: user.fullName || "Misafir",
+                        buyerSurname: "Müşteri",
+                        buyerEmail: user.email,
+                        buyerAddress: address,
+                        buyerCity: user.city || "Istanbul",
+                        buyerCountry: "Turkey"
+                    };
+
+                    console.log("Ödeme İsteği Gönderiliyor...", paymentData); // DEBUG
+
+                    try {
+                        const paymentResult = await paymentService.processPayment(paymentData);
+                        if (paymentResult.status === "Success") {
+                            transactionId = paymentResult.transactionId;
+                            toast.info("Ödeme Başarılı! Sipariş oluşturuluyor...");
+                        } else {
+                            toast.error("Ödeme Hatası: " + (paymentResult.errorMessage || "İşlem reddedildi."));
+                            setIsSubmitting(false);
+                            return;
+                        }
+                    } catch (payError) {
+                        console.error("Ödeme Bağlantı Hatası:", payError);
+                        const errorMsg = payError.response?.data?.ErrorMessage || 
+                                         payError.response?.data?.errorMessage || 
+                                         "Ödeme servisine ulaşılamadı.";
+                        toast.error(errorMsg);
+                        setIsSubmitting(false);
+                        return;
+                    }
                 }
 
                 const orderPayload = {
@@ -85,18 +122,18 @@ export default function CheckoutPage() {
                     email: user.email,
                     phone: contactPhone,
                     orderNote: note,
-                    paymentId: "CC_IYZICO_PAID", 
+                    paymentId: transactionId,
                     items: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price })),
                     totalAmount: totalAmount
                 };
 
+                console.log("Sipariş Oluşturuluyor...", orderPayload); // DEBUG
                 await orderService.createOrder(orderPayload);
                 setSuccessMessage("Paket siparişiniz alındı. Hazırlanıyor...");
 
             } else {
-                // --- MASA SİPARİŞİ ---
                 if (!selectedTableId) {
-                    toast.warning("Lütfen oturduğunuz masayı seçin."); setIsSubmitting(false); return;
+                    toast.warning("Lütfen masa seçin."); setIsSubmitting(false); return;
                 }
 
                 const tablePayload = {
@@ -107,173 +144,108 @@ export default function CheckoutPage() {
                     orderItems: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price }))
                 };
 
+                console.log("Masa Siparişi Oluşturuluyor...", tablePayload);
                 await orderService.createTableOrder(tablePayload);
                 setSuccessMessage("Siparişiniz mutfağa iletildi. Onay bekleniyor.");
             }
 
+            console.log("Sipariş BAŞARILI! Sepet temizleniyor ve modal açılıyor."); 
             dispatch(clearCart());
             setShowSuccessModal(true);
 
         } catch (error) {
-            console.error("Sipariş Hatası:", error);
+            console.error("Sipariş Hatası (Catch Bloğu):", error); 
             const errorMsg = error.response?.data?.errors
                 ? Object.values(error.response.data.errors).flat().join(', ')
-                : (error.response?.data?.message || "Sipariş oluşturulurken bir hata oluştu.");
+                : (error.message || "Sipariş oluşturulamadı.");
             toast.error(errorMsg);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // MASA DURUMUNA GÖRE STİL (Helper)
-    const getTableCardStyle = (table) => {
-        const isSelected = parseInt(selectedTableId) === table.id;
-        const isAvailable = table.isAvailable !== false; 
-        
-        if (!isAvailable) return { border: 'border-secondary', bg: 'bg-secondary bg-opacity-10', cursor: 'not-allowed', icon: 'text-secondary' };
-        if (isSelected) return { border: 'border-warning', bg: 'bg-warning bg-opacity-10', cursor: 'pointer', icon: 'text-warning' };
-        return { border: 'border-secondary', bg: 'bg-white', cursor: 'pointer', icon: 'text-dark' };
+    const getButtonText = () => {
+        if (isSubmitting) return 'İşleniyor...';
+        if (orderType === 'dinein') return 'Siparişi Mutfağa Gönder';
+        return paymentMethod === 'credit_card' ? `Kart ile Öde (${totalAmount} ₺)` : 'Siparişi Onayla (Nakit)';
     };
 
     return (
         <div className="container mt-5 pt-5 mb-5">
             <OrderSuccessModal show={showSuccessModal} onClose={() => setShowSuccessModal(false)} customMessage={successMessage} />
-
+            {/* ... Kalan HTML aynı ... */}
             <div className="row">
                 <div className="col-lg-8">
                     <h3 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Siparişi Tamamla</h3>
-                    
                     <div className="card border-0 shadow-sm mb-4">
                         <div className="card-header bg-white p-0 border-bottom-0">
                             <ul className="nav nav-tabs nav-fill">
                                 <li className="nav-item">
-                                    <button
-                                        className={`nav-link py-3 fw-bold ${orderType === 'delivery' ? 'active text-dark border-bottom-0' : 'text-muted bg-light'}`}
-                                        onClick={() => setOrderType('delivery')}
-                                    >
+                                    <button className={`nav-link py-3 fw-bold ${orderType === 'delivery' ? 'active text-dark border-bottom-0' : 'text-muted bg-light'}`} onClick={() => setOrderType('delivery')}>
                                         <i className="fas fa-motorcycle me-2"></i> Eve Teslim
                                     </button>
                                 </li>
                                 <li className="nav-item">
-                                    <button
-                                        className={`nav-link py-3 fw-bold ${orderType === 'dinein' ? 'active text-dark border-bottom-0' : 'text-muted bg-light'}`}
-                                        onClick={() => setOrderType('dinein')}
-                                    >
+                                    <button className={`nav-link py-3 fw-bold ${orderType === 'dinein' ? 'active text-dark border-bottom-0' : 'text-muted bg-light'}`} onClick={() => setOrderType('dinein')}>
                                         <i className="fas fa-utensils me-2"></i> Restoranda
                                     </button>
                                 </li>
                             </ul>
                         </div>
-
                         <div className="card-body p-4">
                             {orderType === 'delivery' ? (
                                 <div className="fade-in">
                                     <h5 className="mb-3">Teslimat Bilgileri</h5>
                                     <div className="row g-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label text-muted small">İletişim Numarası</label>
-                                            <input type="text" className="form-control" value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="05XX..." />
-                                        </div>
-                                        <div className="col-12">
-                                            <label className="form-label text-muted small">Teslimat Adresi</label>
-                                            <textarea className="form-control" rows="3" value={address} onChange={e => setAddress(e.target.value)} placeholder="Açık adres..."></textarea>
-                                        </div>
-                                        <div className="col-12">
-                                            <label className="form-label text-muted small">Sipariş Notu</label>
-                                            <input type="text" className="form-control" value={note} onChange={e => setNote(e.target.value)} placeholder="Zili çalmayın vb." />
-                                        </div>
+                                        <div className="col-md-6"><label className="form-label small">Telefon</label><input type="text" className="form-control" value={contactPhone} onChange={e=>setContactPhone(e.target.value)} placeholder="05XX..." /></div>
+                                        <div className="col-12"><label className="form-label small">Adres</label><textarea className="form-control" rows="2" value={address} onChange={e=>setAddress(e.target.value)} placeholder="Mahalle, Cadde, Sokak..."></textarea></div>
+                                        <div className="col-12"><label className="form-label small">Not</label><input type="text" className="form-control" value={note} onChange={e=>setNote(e.target.value)} placeholder="Zili çalmayın..." /></div>
                                     </div>
-
-                                    <hr className="my-4" />
-                                    
-                                    <h5 className="mb-3">Ödeme Bilgileri</h5>
-                                    <div className="bg-light p-4 rounded border">
-                                        <div className="mb-3">
-                                            <label className="form-label small fw-bold">Kart Sahibi</label>
-                                            <input type="text" className="form-control" value={cardInfo.holder} onChange={e => setCardInfo({ ...cardInfo, holder: e.target.value })} />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label className="form-label small fw-bold">Kart Numarası</label>
-                                            <input type="text" className="form-control" maxLength="16" value={cardInfo.number} onChange={e => setCardInfo({ ...cardInfo, number: e.target.value })} placeholder="0000 0000 0000 0000" />
-                                        </div>
-                                        <div className="row g-3">
-                                            <div className="col-6">
-                                                <label className="form-label small fw-bold">SKT</label>
-                                                <input type="text" className="form-control" maxLength="5" placeholder="MM/YY" value={cardInfo.expiry} onChange={e => setCardInfo({ ...cardInfo, expiry: e.target.value })} />
-                                            </div>
-                                            <div className="col-6">
-                                                <label className="form-label small fw-bold">CVC</label>
-                                                <input type="text" className="form-control" maxLength="3" placeholder="123" value={cardInfo.cvc} onChange={e => setCardInfo({ ...cardInfo, cvc: e.target.value })} />
+                                    <hr className="my-4"/>
+                                    <h5 className="mb-3">Ödeme</h5>
+                                    <div className="d-flex gap-3 mb-4">
+                                        <div className={`border rounded p-3 flex-fill text-center cursor-pointer ${paymentMethod==='credit_card'?'border-warning bg-warning bg-opacity-10':''}`} onClick={()=>setPaymentMethod('credit_card')}>Kredi Kartı</div>
+                                        <div className={`border rounded p-3 flex-fill text-center cursor-pointer ${paymentMethod==='cash'?'border-success bg-success bg-opacity-10':''}`} onClick={()=>setPaymentMethod('cash')}>Nakit</div>
+                                    </div>
+                                    {paymentMethod === 'credit_card' && (
+                                        <div className="bg-light p-4 rounded border position-relative">
+                                            <button className="btn btn-sm btn-link position-absolute top-0 end-0 text-decoration-none" onClick={fillTestCard}>Test Kartı</button>
+                                            <div className="mb-3"><label className="form-label small fw-bold">Kart Sahibi</label><input type="text" className="form-control" value={cardInfo.holder} onChange={e=>setCardInfo({...cardInfo, holder:e.target.value})}/></div>
+                                            <div className="mb-3"><label className="form-label small fw-bold">Kart Numarası</label><input type="text" className="form-control" maxLength="16" value={cardInfo.number} onChange={e=>setCardInfo({...cardInfo, number:e.target.value})}/></div>
+                                            <div className="row g-3">
+                                                <div className="col-6"><label className="form-label small fw-bold">SKT</label><input type="text" className="form-control" maxLength="5" placeholder="AA/YY" value={cardInfo.expiry} onChange={handleExpiryChange}/></div>
+                                                <div className="col-6"><label className="form-label small fw-bold">CVC</label><input type="text" className="form-control" maxLength="3" value={cardInfo.cvc} onChange={e=>setCardInfo({...cardInfo, cvc:e.target.value})}/></div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="fade-in">
                                     <h5 className="mb-3">Masa Seçimi</h5>
-                                    <p className="text-muted small mb-4">Lütfen şu an oturduğunuz masayı seçiniz.</p>
-
-                                    {/* MASA IZGARASI */}
-                                    {tables.length > 0 ? (
-                                        <div className="row g-3">
-                                            {tables.map(table => {
-                                                const style = getTableCardStyle(table);
-                                                const tNumber = table.tableNumber || table.TableNumber || `Masa ${table.id}`;
-                                                const tCapacity = table.capacity || table.Capacity;
-                                                const isAvailable = table.isAvailable !== false; 
-
-                                                return (
-                                                    <div key={table.id} className="col-6 col-md-4 col-lg-3">
-                                                        <div
-                                                            className={`card text-center p-3 border ${style.border} ${style.bg}`}
-                                                            style={{ cursor: style.cursor }}
-                                                            onClick={() => isAvailable && setSelectedTableId(table.id)}
-                                                        >
-                                                            <i className={`fas fa-chair fa-2x mb-2 ${style.icon}`}></i>
-                                                            <h6 className="mb-0 fw-bold">{tNumber}</h6>
-                                                            <small className="text-muted">{tCapacity} Kişilik</small>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <div className="alert alert-warning">
-                                            Masa bilgileri yüklenemedi veya uygun masa yok.
-                                        </div>
-                                    )}
-
-                                    <div className="mt-4">
-                                        <label className="form-label small text-muted">Masa Notu</label>
-                                        <input type="text" className="form-control" value={note} onChange={e => setNote(e.target.value)} placeholder="Örn: Ketçap mayonez lütfen..." />
+                                    <div className="row g-3 mb-4">
+                                        {tables.length > 0 ? tables.map(table => (
+                                            <div key={table.id} className="col-6 col-md-4 col-lg-3">
+                                                <div className={`card text-center p-3 border ${parseInt(selectedTableId)===table.id ? 'border-warning bg-warning bg-opacity-10':''} ${!table.isAvailable ? 'opacity-50 bg-light':''}`} style={{cursor: table.isAvailable?'pointer':'not-allowed'}} onClick={()=>table.isAvailable && setSelectedTableId(table.id)}>
+                                                    <i className="fas fa-chair fa-2x mb-2 text-secondary"></i>
+                                                    <h6 className="mb-0">{table.tableNumber}</h6>
+                                                    <small className="text-muted">{table.capacity} Kişilik</small>
+                                                </div>
+                                            </div>
+                                        )) : <div className="alert alert-warning">Müsait masa yok.</div>}
                                     </div>
+                                    <div className="mt-4"><label className="form-label small">Not</label><input type="text" className="form-control" value={note} onChange={e=>setNote(e.target.value)}/></div>
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
-
-                {/* SAĞ: ÖZET */}
                 <div className="col-lg-4">
-                    <div className="card border-0 shadow-lg p-4 sticky-top" style={{ top: '100px' }}>
-                        <h5 className="mb-3" style={{ fontFamily: 'Playfair Display' }}>Sipariş Özeti</h5>
-                        <div className="d-flex justify-content-between mb-2">
-                            <span className="text-muted">Ürünler Toplamı</span>
-                            <span>{totalAmount} ₺</span>
-                        </div>
-                        <hr />
-                        <div className="d-flex justify-content-between mb-4 align-items-center">
-                            <span className="fw-bold fs-5">Toplam Tutar</span>
-                            <span className="fw-bold fs-3 text-success">{totalAmount} ₺</span>
-                        </div>
-                        
-                        <button
-                            className={`btn w-100 py-3 text-uppercase fw-bold ${orderType === 'delivery' ? 'btn-success' : 'btn-dark'}`}
-                            onClick={handleCheckout}
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? 'İşleniyor...' : (orderType === 'delivery' ? 'Ödemeyi Tamamla' : 'Siparişi Mutfağa Gönder')}
-                        </button>
+                    <div className="card border-0 shadow-lg p-4 sticky-top" style={{top:'100px'}}>
+                        <h5 className="mb-3">Özet</h5>
+                        <div className="d-flex justify-content-between mb-2"><span>Ürünler</span><span>{totalAmount} ₺</span></div>
+                        <hr/>
+                        <div className="d-flex justify-content-between mb-4"><span className="fw-bold">Toplam</span><span className="fw-bold fs-4 text-success">{totalAmount} ₺</span></div>
+                        <button className="btn btn-dark w-100 py-3 fw-bold" onClick={handleCheckout} disabled={isSubmitting}>{getButtonText()}</button>
                     </div>
                 </div>
             </div>

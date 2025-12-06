@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Restaurant_App.Application.Dto;
 using Restaurant_App.Business.Abstract;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enums;
 using Restaurant_App.Entities.Identity;
 using System.Security.Claims;
 
@@ -28,7 +29,7 @@ namespace Restaurant_App.WebAPI.Controllers
             _userManager = userManager;
         }
 
-        // Yeni online sipariş oluştur
+        // Yeni online sipariş oluştur (Eve Teslim)
         [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] OrderDTO dto)
         {
@@ -40,14 +41,30 @@ namespace Restaurant_App.WebAPI.Controllers
                 return BadRequest(ModelState);
 
             var order = _mapper.Map<Order>(dto);
-            order.UserId = userId; // Siparişi mevcut kullanıcıya ata
-            order.OrderDate = DateTime.Now; // Sipariş tarihini sunucu saatiyle ayarla
+            order.UserId = userId;
+            order.OrderDate = DateTime.Now;
+
+            // Statü varsayılan olarak Waiting
+            if (order.OrderState == 0) order.OrderState = OrderState.Waiting;
+
+            if (order.OrderItems != null)
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    // 1. Yeni kayıt olduğu için ID'leri sıfırla
+                    item.Id = 0;
+                    item.OrderId = 0;
+
+                    item.Product = null;
+                }
+            }
 
             await _orderService.Create(order);
 
             var responseDto = _mapper.Map<OrderDTO>(order);
-            return CreatedAtAction(nameof(GetOrderDetails), new { id = responseDto.Id }, responseDto);
+            return Ok(responseDto);
         }
+        
 
         // Kullanıcının KENDİ geçmiş siparişlerini getir
         [HttpGet("my-orders")]

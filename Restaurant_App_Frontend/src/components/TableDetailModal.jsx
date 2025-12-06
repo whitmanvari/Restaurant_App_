@@ -7,6 +7,7 @@ function TableDetailModal({ table, activeOrder, onClose, onUpdate }) {
     const [orderDetails, setOrderDetails] = useState(null);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    
     const [showAddProduct, setShowAddProduct] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -25,7 +26,7 @@ function TableDetailModal({ table, activeOrder, onClose, onUpdate }) {
             setProducts(productsData);
             setLoading(false);
         } catch (error) {
-            toast.error("Masa detayları yüklenemedi.");
+            toast.error("Detaylar yüklenemedi.");
             onClose();
         }
     };
@@ -39,27 +40,29 @@ function TableDetailModal({ table, activeOrder, onClose, onUpdate }) {
             await orderInRestaurantService.addOrderItem(activeOrder.id, {
                 productId: product.id,
                 quantity: parseInt(quantity),
-                price: product.price,
-                productName: product.name 
+                price: product.price
             });
             toast.success("Ürün eklendi.");
             setShowAddProduct(false);
-            loadData();
-            onUpdate();
+            
+            //Hem modal içindeki veriyi hem de dashboard'u yenile
+            await loadData(); 
+            if (onUpdate) onUpdate(); 
+            
         } catch (error) {
-            toast.error("Ürün eklenemedi.");
+            toast.error("Ürün eklenirken hata oluştu.");
         }
     };
 
     const handleRemoveItem = async (itemId) => {
-        if (!window.confirm("Bu ürünü silmek istiyor musunuz?")) return;
+        if (!window.confirm("Silmek istediğinize emin misiniz?")) return;
         try {
             await orderInRestaurantService.removeOrderItem(activeOrder.id, itemId);
             toast.success("Ürün silindi.");
-            loadData();
-            onUpdate();
+            await loadData();
+            if (onUpdate) onUpdate();
         } catch (error) {
-            toast.error("Silme işlemi başarısız.");
+            toast.error("Silme hatası.");
         }
     };
 
@@ -67,9 +70,9 @@ function TableDetailModal({ table, activeOrder, onClose, onUpdate }) {
         if (!window.confirm(`Toplam ${orderDetails?.totalAmount} ₺ tahsil edildi mi?`)) return;
         try {
             await orderInRestaurantService.closeOrder(activeOrder.id);
-            toast.success("Masa hesabı kapatıldı.");
+            toast.success("Masa kapatıldı.");
             onClose();
-            onUpdate();
+            if (onUpdate) onUpdate();
         } catch (error) {
             toast.error("İşlem başarısız.");
         }
@@ -83,55 +86,50 @@ function TableDetailModal({ table, activeOrder, onClose, onUpdate }) {
                 <div className="modal-content">
                     <div className="modal-header bg-dark text-white">
                         <h5 className="modal-title">Masa {table.tableNumber} Adisyonu</h5>
-                        <button className="btn-close btn-close-white" onClick={onClose}></button>
+                        <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
                     </div>
                     <div className="modal-body">
-                        <div className="table-responsive mb-4">
-                            <table className="table table-hover align-middle">
-                                <thead className="table-light">
-                                    <tr><th>Ürün</th><th className="text-center">Adet</th><th className="text-end">Fiyat</th><th className="text-end">Toplam</th><th style={{ width: '50px' }}></th></tr>
-                                </thead>
-                                <tbody>
-                                    {/* DTO'daki alan ismine dikkat: 'orderItems' */}
-                                    {orderDetails?.orderItems?.map(item => ( 
-                                        <tr key={item.id}>
-                                            <td>{item.productName}</td>
-                                            <td className="text-center">{item.quantity}</td>
-                                            <td className="text-end">{item.price} ₺</td>
-                                            <td className="text-end fw-bold">{item.totalPrice} ₺</td>
-                                            <td><button className="btn btn-sm btn-outline-danger border-0" onClick={() => handleRemoveItem(item.id)}><i className="fas fa-times"></i></button></td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot className="table-group-divider">
-                                    <tr><td colSpan="3" className="text-end fw-bold">GENEL TOPLAM:</td><td className="text-end fw-bold fs-5 text-success">{orderDetails?.totalAmount} ₺</td><td></td></tr>
-                                </tfoot>
-                            </table>
-                        </div>
+                        {/* Ürün Listesi */}
+                        <table className="table table-hover align-middle mb-3">
+                            <thead className="table-light">
+                                <tr><th>Ürün</th><th className="text-center">Adet</th><th className="text-end">Fiyat</th><th className="text-end">Toplam</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                {orderDetails?.orderItems?.map(item => (
+                                    <tr key={item.id}>
+                                        <td>{item.productName}</td>
+                                        <td className="text-center">{item.quantity}</td>
+                                        <td className="text-end">{item.price} ₺</td>
+                                        <td className="text-end fw-bold">{item.totalPrice} ₺</td>
+                                        <td className="text-end">
+                                            <button className="btn btn-sm btn-outline-danger border-0" onClick={() => handleRemoveItem(item.id)}><i className="fas fa-times"></i></button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot className="table-group-divider">
+                                <tr><td colSpan="3" className="text-end fw-bold">GENEL TOPLAM:</td><td className="text-end fw-bold fs-5 text-success">{orderDetails?.totalAmount} ₺</td><td></td></tr>
+                            </tfoot>
+                        </table>
 
+                        {/* Ekleme Formu */}
                         {showAddProduct ? (
-                            <div className="card bg-light border-0 p-3 mb-3">
-                                <h6 className="mb-2">Hızlı Ürün Ekle</h6>
+                            <div className="card bg-light border-0 p-3">
                                 <div className="d-flex gap-2">
                                     <select className="form-select" value={selectedProductId} onChange={e => setSelectedProductId(e.target.value)}>
                                         <option value="">Ürün Seçiniz...</option>
-                                        {products.map(p => (<option key={p.id} value={p.id}>{p.name} ({p.price} ₺)</option>))}
+                                        {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.price} ₺)</option>)}
                                     </select>
-                                    <input type="number" className="form-control" style={{ width: '80px' }} value={quantity} min="1" onChange={e => setQuantity(e.target.value)} />
+                                    <input type="number" className="form-control" style={{width:'80px'}} value={quantity} min="1" onChange={e => setQuantity(e.target.value)} />
                                     <button className="btn btn-success" onClick={handleAddItem}>Ekle</button>
                                     <button className="btn btn-outline-secondary" onClick={() => setShowAddProduct(false)}>İptal</button>
                                 </div>
                             </div>
                         ) : (
-                            <button className="btn btn-outline-dark w-100 mb-3 dashed-border" onClick={() => setShowAddProduct(true)}><i className="fas fa-plus me-2"></i> Sipariş Ekle</button>
+                            <button className="btn btn-outline-dark w-100 dashed-border" onClick={() => setShowAddProduct(true)}>+ Ürün Ekle</button>
                         )}
                     </div>
-                    <div className="modal-footer justify-content-between">
-                        <div className="text-muted small">
-                            <i className="fas fa-info-circle me-1"></i>
-                            {/* TARİH DÜZELTMESİ */}
-                            Sipariş: #{activeOrder.id} | {new Date(activeOrder.orderDate).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}
-                        </div>
+                    <div className="modal-footer">
                         <button className="btn btn-success px-4" onClick={handleCloseAccount}>Hesabı Kapat</button>
                     </div>
                 </div>

@@ -40,6 +40,7 @@ namespace Restaurant_App.WebAPI.Extensions
             services.AddScoped<ICartService, CartManager>();
             services.AddScoped<IAuthService, AuthManager>();
             services.AddScoped<IEmailService, SmtpEmailManager>();
+            services.AddScoped<IPaymentService, PaymentManager>();
 
         }
 

@@ -7,7 +7,8 @@ using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity; 
-using Restaurant_App.Entities.Identity; 
+using Restaurant_App.Entities.Identity;
+using System.Threading.Tasks;
 
 namespace Restaurant_App.WebAPI.Controllers
 {
@@ -29,24 +30,34 @@ namespace Restaurant_App.WebAPI.Controllers
 
         // Yeni masa siparişi oluştur
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] OrderInRestaurantDTO dto)
+        public async Task<IActionResult> Create([FromBody] OrderInRestaurantDTO createOrderDto)
         {
-            // Model validasyonu başarısızsa detayları dön
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var order = _mapper.Map<OrderInRestaurant>(dto);
+            // Map hedefi OrderInRestaurant
+            var order = _mapper.Map<OrderInRestaurant>(createOrderDto);
 
-            // Eksik bilgileri tamamla
-            order.UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Kullanıcı ID
+            order.UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             order.OrderDate = DateTime.Now;
             order.Status = OrderStatusInRestaurant.Pending; // Onay Bekliyor
-            order.TotalAmount = dto.TotalAmount; // DTO'dan gelen tutarı al (veya backend'de tekrar hesapla)
+
+            // İlişkili öğelerin ID'lerini sıfırla (Yeni kayıt oldukları için)
+            if (order.OrderItemsInRestaurant != null)
+            {
+                foreach (var item in order.OrderItemsInRestaurant)
+                {
+                    item.Id = 0;
+                    item.OrderInRestaurantId = 0;
+                }
+            }
 
             await _orderService.Create(order);
 
-            // Oluşan siparişin detayını dön
-            var responseDto = _mapper.Map<OrderInRestaurantDTO>(await _orderService.GetOrderWithDetails(order.Id));
+            // Geri dönüş için detaylı veriyi çekip map'le
+            var createdOrder = await _orderService.GetOrderWithDetails(order.Id);
+            var responseDto = _mapper.Map<OrderInRestaurantDTO>(createdOrder);
+
             return CreatedAtAction(nameof(GetOrderDetails), new { id = responseDto.Id }, responseDto);
         }
 
@@ -69,7 +80,6 @@ namespace Restaurant_App.WebAPI.Controllers
             var orders = await _orderService.GetOrdersWithDetails();
             var dtoList = _mapper.Map<List<OrderInRestaurantDTO>>(orders);
 
-            // Kullanıcı İsimlerini Doldur
             foreach (var dto in dtoList)
             {
                 if (!string.IsNullOrEmpty(dto.UserId))
@@ -82,7 +92,6 @@ namespace Restaurant_App.WebAPI.Controllers
                     dto.UserName = "Misafir / Garson";
                 }
             }
-
             return Ok(dtoList);
         }
 
