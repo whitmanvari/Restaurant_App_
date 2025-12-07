@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { orderInRestaurantService } from '../services/orderInRestaurantService';
-import { productService } from '../services/productService';
+import { orderInRestaurantService } from '../../../services/orderInRestaurantService';
+import { productService } from '../../../services/productService';
 import { toast } from 'react-toastify';
 
 function TableDetailModal({ table, activeOrder, onClose, onUpdate }) {

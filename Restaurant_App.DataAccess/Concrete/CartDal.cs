@@ -15,20 +15,27 @@ namespace Restaurant_App.DataAccess.Concrete
         {
             var cart = await _context.Carts
                 .Include(c => c.CartItems)
-                .FirstOrDefaultAsync(c => c.Id == cartId)
-                ?? throw new ArgumentNullException("Böyle bir sepet yok!");
-            _context.CartItems.RemoveRange(cart.CartItems);
-            await _context.SaveChangesAsync();
-            return cart;
+                .FirstOrDefaultAsync(c => c.Id == cartId);
+
+            if (cart != null && cart.CartItems != null)
+            {
+                _context.CartItems.RemoveRange(cart.CartItems);
+                await _context.SaveChangesAsync();
+                return cart;
+            }
+            throw new Exception("Sepet bulunamadı.");
         }
 
         public async Task DeleteFromCart(int cartId, int productId)
         {
             var cartItem = await _context.CartItems
-                .FirstOrDefaultAsync(ci => ci.CartId == cartId && ci.ProductId == productId)
-                ?? throw new ArgumentNullException("Böyle bir ürüne sahip sepet bulunamadı!");
-            _context.CartItems.Remove(cartItem);
-            await _context.SaveChangesAsync();
+                .FirstOrDefaultAsync(ci => ci.CartId == cartId && ci.ProductId == productId);
+
+            if (cartItem != null)
+            {
+                _context.CartItems.Remove(cartItem);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<Cart> GetCartById(int cartId)
@@ -36,8 +43,11 @@ namespace Restaurant_App.DataAccess.Concrete
             var cart = await _context.Carts
                 .Include(c => c.CartItems)
                     .ThenInclude(ci => ci.Product)
+                        .ThenInclude(p => p.Images) // Resimleri Çek
+                .AsSplitQuery() // Performans ve Hata Önleyici
                 .FirstOrDefaultAsync(c => c.Id == cartId);
-            return cart ?? throw new ArgumentNullException("Böyle bir sepet yok!");
+
+            return cart ?? throw new Exception("Sepet bulunamadı!");
         }
 
         public async Task<Cart> GetCartByUserId(string userId)
@@ -45,6 +55,8 @@ namespace Restaurant_App.DataAccess.Concrete
             var cart = await _context.Carts
                 .Include(c => c.CartItems)
                     .ThenInclude(ci => ci.Product)
+                        .ThenInclude(p => p.Images) // Resimleri Çek
+                .AsSplitQuery() // Performans ve Hata Önleyici
                 .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (cart == null)

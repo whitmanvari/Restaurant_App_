@@ -21,15 +21,12 @@ export default function AdminSidebar() {
             </div>
 
             <ul className="sidebar-menu">
-                <li className="menu-label">Genel Bakış</li>
+                <li className="menu-label">Yönetim</li>
+                
+                {/* TEK VE GÜÇLÜ LINK */}
                 <li>
-                    <NavLink to="/admin" end>
-                        <i className="fas fa-th-large"></i> Panel (Canlı Masa)
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink to="/admin/analytics">
-                        <i className="fas fa-chart-pie"></i> Analitik & Rapor
+                    <NavLink to="/admin/tables" className={({ isActive }) => isActive ? 'active' : ''}>
+                        <i className="fas fa-th-large"></i> Masa Yönetimi
                     </NavLink>
                 </li>
 
@@ -45,26 +42,30 @@ export default function AdminSidebar() {
                     </NavLink>
                 </li>
 
-                <li className="menu-label">Veri Yönetimi</li>
+                <li className="menu-label">Veri & Rapor</li>
                 <li>
                     <NavLink to="/admin/menu">
-                        <i className="fas fa-utensils"></i> Ürünler
+                        <i className="fas fa-utensils"></i> Menü
                     </NavLink>
                 </li>
-                {/* YENİ LİNK */}
+                <li>
+                    <NavLink to="/admin/categories">
+                        <i className="fas fa-tags"></i> Kategoriler
+                    </NavLink>
+                </li>
                 <li>
                     <NavLink to="/admin/comments">
                         <i className="fas fa-comments"></i> Yorumlar
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to="/admin/table-config">
-                        <i className="fas fa-chair"></i> Masa Düzeni
+                    <NavLink to="/admin/users">
+                        <i className="fas fa-users"></i> Kullanıcılar
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to="/admin/users">
-                        <i className="fas fa-users"></i> Kullanıcılar
+                    <NavLink to="/admin/analytics">
+                        <i className="fas fa-chart-pie"></i> Analitik
                     </NavLink>
                 </li>
             </ul>

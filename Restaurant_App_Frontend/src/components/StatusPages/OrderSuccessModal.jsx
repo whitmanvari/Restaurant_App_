@@ -6,15 +6,13 @@ export default function OrderSuccessModal({ show, onClose, customMessage }) {
 
     useEffect(() => {
         if (show) {
-            // 3.5 saniye sonra otomatik yönlendirme
             const timer = setTimeout(() => {
                 onClose();
                 navigate('/my-orders'); 
-            }, 3500);
+            }, 6000); 
             return () => clearTimeout(timer);
         }
     }, [show, navigate, onClose]);
-
     if (!show) return null;
 
     return (

@@ -141,20 +141,30 @@ export default function AdminOrdersPage() {
         return Object.keys(data).map(k => ({ name: k, count: data[k] })).slice(0, 10);
     };
 
-    const renderStatusBadge = (status, type) => {
+    const renderStatusBadge = (status) => {
         const map = {
             'Pending': { color: 'warning', text: 'Onay Bekliyor' },
+            0: { color: 'warning', text: 'Onay Bekliyor' }, // Waiting
+
             'InProgress': { color: 'info', text: 'Hazırlanıyor' },
+            3: { color: 'info', text: 'Hazırlanıyor' }, // Preparing
+
             'Served': { color: 'primary', text: 'Servis Edildi' },
+            
             'Completed': { color: 'success', text: 'Tamamlandı' },
+            1: { color: 'success', text: 'Tamamlandı' }, // Completed
+
             'Canceled': { color: 'danger', text: 'İptal' },
-            0: { color: 'warning', text: 'Bekliyor' },
-            3: { color: 'info', text: 'Hazırlanıyor' },
-            1: { color: 'success', text: 'Tamamlandı' },
-            2: { color: 'danger', text: 'İptal' }
+            2: { color: 'danger', text: 'İptal' } // Canceled
         };
-        const s = map[status] || { color: 'secondary', text: status };
-        return <span className={`badge bg-${s.color} bg-opacity-75 text-white px-3 py-2`}>{s.text}</span>;
+
+        const s = map[status] || { color: 'secondary', text: 'Bilinmiyor' };
+        
+        return (
+            <span className={`badge bg-${s.color} bg-opacity-75 text-white px-3 py-2`}>
+                {s.text}
+            </span>
+        );
     };
 
     if (loading) return <div className="text-center mt-5"><div className="spinner-border text-warning"></div></div>;

@@ -12,6 +12,7 @@
         public string Phone { get; set; } = string.Empty;
         public string OrderNote { get; set; } = string.Empty;
         public string PaymentId { get; set; } = string.Empty;
+        public int OrderState { get; set; } // 0:Waiting, 1:Completed, 2:Canceled, 3:Preparing
         public decimal TotalAmount { get; set; }
         public List<OrderItemDTO> Items { get; set; } = new List<OrderItemDTO>();
     }

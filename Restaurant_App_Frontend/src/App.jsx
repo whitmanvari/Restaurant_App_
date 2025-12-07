@@ -1,8 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 
-// Ana Sayfalar (Klasik yollar)
+// Ana Sayfalar
 import HomePage from './pages/HomePage';
 import AuthPage from './pages/AuthPage';
 import MenuPage from './pages/MenuPage';
@@ -12,16 +11,15 @@ import UserProfilePage from './pages/UserProfilePage';
 import ReservationPage from './pages/ReservationPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 
-// --- ADMIN SAYFALARI 
-import AdminDashboard from './pages/admin/AdminDashboard';
+// --- ADMIN SAYFALARI ---
 import AdminMenuPage from './pages/admin/AdminMenuPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 import AdminReservationPage from './pages/admin/AdminReservationPage';
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
-import AdminTableConfigPage from './pages/admin/AdminTableConfigPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminCommentsPage from './pages/admin/AdminCommentsPage';
+import AdminTablesPage from './pages/admin/AdminTablesPage'; // YENİ SAYFA
 
 // Layouts
 import MainLayout from './components/Layouts/MainLayout';
@@ -35,7 +33,6 @@ import NotFoundPage from './components/StatusPages/NotFoundPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import EmailConfirmationPage from './pages/EmailConfirmationPage';
-import OrderSuccessModal from './components/StatusPages/OrderSuccessModal';
 
 function App() {
   return (
@@ -59,29 +56,27 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="orders" element={<AdminOrdersPage />} />
-          <Route path="reservations" element={<AdminReservationPage />} />
-          <Route path="analytics" element={<AdminAnalyticsPage />} />
+            {/* Admin anasayfası artık direkt Masa Yönetimine gidiyor */}
+            <Route index element={<Navigate to="tables" replace />} />
+            <Route path="tables" element={<AdminTablesPage />} />
 
-          {/* Yönetim */}
-          <Route path="menu" element={<AdminMenuPage />} />
-          <Route path="categories" element={<AdminCategoriesPage />} />
-          <Route path="comments" element={<AdminCommentsPage />} />
-          <Route path="table-config" element={<AdminTableConfigPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-
-          <Route path="tables" element={<AdminDashboard />} />
-          <Route path="settings" element={<Navigate to="/profile" replace />} />
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="reservations" element={<AdminReservationPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="menu" element={<AdminMenuPage />} />
+            <Route path="categories" element={<AdminCategoriesPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="comments" element={<AdminCommentsPage />} />
+            
+            <Route path="settings" element={<UserProfilePage isAdminView={true} />} />
         </Route>
 
         <Route path="/success" element={<SuccessPage />} />
         <Route path="/error" element={<ErrorPage />} />
-        <Route path="*" element={<NotFoundPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/confirm-email" element={<EmailConfirmationPage />} />
-        <Route path="/order-success" element={< OrderSuccessModal/>} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
   );
