@@ -51,9 +51,16 @@ namespace Restaurant_App.Application.Mapping
                 .ForMember(dest => dest.CartItems, opt => opt.MapFrom(src => src.Items));
 
             // CartItem->  DTO
+            // CartItem -> DTO Mapping 
             CreateMap<CartItem, CartItemDTO>()
-                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : string.Empty))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product != null ? src.Product.Price : 0));
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : "Bilinmeyen Ürün"))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product != null ? src.Product.Price : 0))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src =>
+                    // Resim var mı kontrolü (Zincirleme null check)
+                    (src.Product != null && src.Product.Images != null && src.Product.Images.Count > 0)
+                    ? src.Product.Images.First().Url
+                    : "" 
+                ));
 
             CreateMap<CartItemDTO, CartItem>()
                 .ForMember(dest => dest.Product, opt => opt.Ignore());

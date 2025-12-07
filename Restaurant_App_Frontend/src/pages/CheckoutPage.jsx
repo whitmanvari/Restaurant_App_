@@ -23,6 +23,9 @@ export default function CheckoutPage() {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
 
+    // Siparişin başarıyla bittiğini takip eden state 
+    const [orderCompleted, setOrderCompleted] = useState(false);
+
     const [address, setAddress] = useState(user?.address || '');
     const [contactPhone, setContactPhone] = useState(user?.phoneNumber || '');
     const [note, setNote] = useState('');
@@ -35,16 +38,25 @@ export default function CheckoutPage() {
             navigate('/login');
             return;
         }
-        if (items.length === 0) {
+
+        if (items.length === 0 && !orderCompleted) {
             navigate('/cart');
             return;
         }
-        api.get('/Table').then(res => setTables(res.data)).catch(console.error);
-    }, [items, isAuthenticated, navigate]);
+        
+        const fetchTables = async () => {
+            try {
+                const res = await api.get('/Table');
+                if (res.data && Array.isArray(res.data)) setTables(res.data);
+            } catch (error) { console.error("Masa hatası", error); }
+        };
+        fetchTables();
+
+    }, [items, isAuthenticated, navigate, orderCompleted]); 
 
     const fillTestCard = () => {
-        setCardInfo({ holder: 'TEST USER', number: '4609713665715202', expiry: '12/30', cvc: '123' });
-        toast.info("Test kartı bilgileri dolduruldu.");
+        setCardInfo({ holder: 'IYZICO TEST USER', number: '4609713665715202', expiry: '12/30', cvc: '123' });
+        toast.info("Geçerli test kartı dolduruldu.");
     };
 
     const handleExpiryChange = (e) => {
@@ -56,7 +68,7 @@ export default function CheckoutPage() {
 
     const handleCheckout = async () => {
         setIsSubmitting(true);
-        console.log("Sipariş işlemi başladı..."); // DEBUG
+        console.log("Sipariş işlemi başladı...");
 
         try {
             if (orderType === 'delivery') {
@@ -66,12 +78,10 @@ export default function CheckoutPage() {
 
                 let transactionId = "CASH_ON_DELIVERY";
 
+                // KREDİ KARTI İŞLEMİ
                 if (paymentMethod === 'credit_card') {
                     if (cardInfo.number.length < 16) {
                         toast.warning("Geçersiz kart numarası."); setIsSubmitting(false); return;
-                    }
-                    if (!cardInfo.expiry.includes('/')) {
-                        toast.warning("Son kullanma tarihi hatalı (AA/YY)."); setIsSubmitting(false); return;
                     }
                     
                     const [expMonth, expYear] = cardInfo.expiry.split('/');
@@ -92,8 +102,6 @@ export default function CheckoutPage() {
                         buyerCountry: "Turkey"
                     };
 
-                    console.log("Ödeme İsteği Gönderiliyor...", paymentData); // DEBUG
-
                     try {
                         const paymentResult = await paymentService.processPayment(paymentData);
                         if (paymentResult.status === "Success") {
@@ -105,10 +113,8 @@ export default function CheckoutPage() {
                             return;
                         }
                     } catch (payError) {
-                        console.error("Ödeme Bağlantı Hatası:", payError);
-                        const errorMsg = payError.response?.data?.ErrorMessage || 
-                                         payError.response?.data?.errorMessage || 
-                                         "Ödeme servisine ulaşılamadı.";
+                        console.error("Ödeme Hatası:", payError);
+                        const errorMsg = payError.response?.data?.ErrorMessage || "Ödeme servisine ulaşılamadı.";
                         toast.error(errorMsg);
                         setIsSubmitting(false);
                         return;
@@ -127,11 +133,11 @@ export default function CheckoutPage() {
                     totalAmount: totalAmount
                 };
 
-                console.log("Sipariş Oluşturuluyor...", orderPayload); // DEBUG
                 await orderService.createOrder(orderPayload);
-                setSuccessMessage("Paket siparişiniz alındı. Hazırlanıyor...");
+                setSuccessMessage("Paket siparişiniz başarıyla alındı.");
 
             } else {
+                // MASA SİPARİŞİ
                 if (!selectedTableId) {
                     toast.warning("Lütfen masa seçin."); setIsSubmitting(false); return;
                 }
@@ -144,17 +150,31 @@ export default function CheckoutPage() {
                     orderItems: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price }))
                 };
 
-                console.log("Masa Siparişi Oluşturuluyor...", tablePayload);
                 await orderService.createTableOrder(tablePayload);
-                setSuccessMessage("Siparişiniz mutfağa iletildi. Onay bekleniyor.");
+                setSuccessMessage("Siparişiniz mutfağa iletildi.");
             }
 
-            console.log("Sipariş BAŞARILI! Sepet temizleniyor ve modal açılıyor."); 
+            //SİPARİŞ TAMAMLANMA AKIŞI
+            console.log("Sipariş BAŞARILI! Veritabanı sepeti temizleniyor...");
+            
+            // 1. Bayrağı kaldır (Sepete geri yönlendirmeyi engellemek için)
+            setOrderCompleted(true);
+
+            // 2. Veritabanındaki sepeti temizle
+            try {
+                await api.delete('/Cart/clear'); 
+            } catch (err) {
+                console.warn("DB sepeti temizlenirken hata (önemsiz):", err);
+            }
+
+            // 3. Redux sepetini temizle
             dispatch(clearCart());
+
+            // 4. Modalı aç
             setShowSuccessModal(true);
 
         } catch (error) {
-            console.error("Sipariş Hatası (Catch Bloğu):", error); 
+            console.error("Sipariş Hatası:", error);
             const errorMsg = error.response?.data?.errors
                 ? Object.values(error.response.data.errors).flat().join(', ')
                 : (error.message || "Sipariş oluşturulamadı.");
@@ -173,10 +193,11 @@ export default function CheckoutPage() {
     return (
         <div className="container mt-5 pt-5 mb-5">
             <OrderSuccessModal show={showSuccessModal} onClose={() => setShowSuccessModal(false)} customMessage={successMessage} />
-            {/* ... Kalan HTML aynı ... */}
-            <div className="row">
+
+            <div className="row g-5">
                 <div className="col-lg-8">
                     <h3 className="mb-4" style={{ fontFamily: 'Playfair Display' }}>Siparişi Tamamla</h3>
+                    
                     <div className="card border-0 shadow-sm mb-4">
                         <div className="card-header bg-white p-0 border-bottom-0">
                             <ul className="nav nav-tabs nav-fill">
@@ -192,6 +213,7 @@ export default function CheckoutPage() {
                                 </li>
                             </ul>
                         </div>
+                        
                         <div className="card-body p-4">
                             {orderType === 'delivery' ? (
                                 <div className="fade-in">

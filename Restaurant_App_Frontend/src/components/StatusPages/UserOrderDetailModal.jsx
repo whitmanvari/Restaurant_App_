@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { orderService } from '../services/orderService';
+import { orderService } from '../../services/orderService'; 
 import { toast } from 'react-toastify';
 
 function UserOrderDetailModal({ orderId, onClose }) {
@@ -13,21 +13,22 @@ function UserOrderDetailModal({ orderId, onClose }) {
                 setOrder(data);
                 setLoading(false);
             } catch (error) {
+                console.error(error);
                 toast.error("Sipariş detayları yüklenemedi.");
                 onClose();
             }
         };
-        loadData();
+        if (orderId) loadData();
     }, [orderId, onClose]);
 
-    if (loading) return null;
+    if (loading || !order) return null;
 
     return (
         <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
                     <div className="modal-header bg-dark text-white">
-                        <h5 className="modal-title">Sipariş Detayı #{order.orderNum || order.id}</h5>
+                        <h5 className="modal-title">Sipariş Detayı #{order.orderNum ? order.orderNum.substring(0, 8) : order.id}</h5>
                         <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
                     </div>
                     <div className="modal-body">
@@ -60,7 +61,7 @@ function UserOrderDetailModal({ orderId, onClose }) {
                                     <div>
                                         <span className="fw-bold">{item.quantity}x</span> {item.productName}
                                     </div>
-                                    <span className="text-muted">{item.totalPrice} ₺</span>
+                                    <span className="text-muted">{(item.price * item.quantity).toFixed(2)} ₺</span>
                                 </li>
                             ))}
                         </ul>

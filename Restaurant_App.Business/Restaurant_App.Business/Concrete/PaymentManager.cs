@@ -19,25 +19,24 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task<Payment> PayWithIyzico(PaymentRequestDTO model)
         {
-            // --- DEBUG LOGLARI ---
-            Console.WriteLine("--- IYZICO BAĞLANTISI BAŞLIYOR ---");
-
-            // GEÇİCİ OLARAK ELLE YAZIYORUZ (Test bitince sileceğiz)
+            // --- SANDBOX AYARLARI ---
             var options = new Options
             {
-                ApiKey = "sandbox-8ap79vMKaKa4j6YgnJoXkAgw5E8zthR0",    
-                SecretKey = "EybI3wJlTntT3tfL4OePeBew7e5WQhX0", 
-                BaseUrl = "https://sandbox-api.iyzipay.com" 
+                ApiKey = "sandbox-8ap79vMKaKa4j6YgnJoXkAgw5E8zthR0",
+                SecretKey = "EybI3wJlTntT3tfL4OePeBew7e5WQhX0",
+                BaseUrl = "https://sandbox-api.iyzipay.com"
             };
 
-            Console.WriteLine($"Kullanılan URL: {options.BaseUrl}");
+            // Fiyat Formatı: Nokta ile ayrılmalı (Örn: "150.50")
+            // InvariantCulture bunu garanti eder.
+            string priceStr = model.Price.ToString(CultureInfo.InvariantCulture);
 
             var request = new CreatePaymentRequest
             {
                 Locale = Locale.TR.ToString(),
                 ConversationId = Guid.NewGuid().ToString(),
-                Price = model.Price.ToString("F2", new CultureInfo("en-US")), // "450.00" formatı
-                PaidPrice = model.Price.ToString("F2", new CultureInfo("en-US")),
+                Price = priceStr,
+                PaidPrice = priceStr,
                 Currency = Currency.TRY.ToString(),
                 Installment = 1,
                 BasketId = string.IsNullOrEmpty(model.BasketId) ? Guid.NewGuid().ToString() : model.BasketId,
@@ -47,48 +46,46 @@ namespace Restaurant_App.Business.Concrete
                 PaymentCard = new PaymentCard
                 {
                     CardHolderName = model.CardHolderName,
-                    CardNumber = model.CardNumber?.Trim().Replace(" ", ""), // Ekstra güvenlik: Boşlukları temizle
+                    CardNumber = model.CardNumber?.Replace(" ", "").Trim(),
                     ExpireMonth = model.ExpireMonth,
                     ExpireYear = model.ExpireYear,
                     Cvc = model.Cvc,
                     RegisterCard = 0
                 },
 
+                // Dummy Müşteri Bilgileri (Sandbox için zorunlu alanlar)
                 Buyer = new Buyer
                 {
-                    Id = string.IsNullOrEmpty(model.BuyerId) ? "Guest" : model.BuyerId,
-                    Name = string.IsNullOrEmpty(model.BuyerName) ? "Misafir" : model.BuyerName,
-                    Surname = string.IsNullOrEmpty(model.BuyerSurname) ? "Müşteri" : model.BuyerSurname,
+                    Id = "BY789",
+                    Name = "Sandbox",
+                    Surname = "User",
                     GsmNumber = "+905350000000",
-                    Email = string.IsNullOrEmpty(model.BuyerEmail) ? "guest@luna.com" : model.BuyerEmail,
-                    IdentityNumber = "11111111110",
-                    LastLoginDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    RegistrationDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    RegistrationAddress = "Nispetiye Mah. Aytar Cad. No:24",
+                    Email = "email@email.com",
+                    IdentityNumber = "74300864791",
+                    LastLoginDate = "2015-10-05 12:43:35",
+                    RegistrationDate = "2013-04-21 15:12:09",
+                    RegistrationAddress = "Nispetiye Cad",
                     Ip = "85.34.78.112",
                     City = "Istanbul",
                     Country = "Turkey",
                     ZipCode = "34732"
                 },
-
                 BillingAddress = new Address
                 {
-                    ContactName = "Test User",
+                    ContactName = "Jane Doe",
                     City = "Istanbul",
                     Country = "Turkey",
-                    Description = "Nispetiye Mah. Aytar Cad. No:24",
+                    Description = "Nispetiye Cad",
                     ZipCode = "34732"
                 },
-
                 ShippingAddress = new Address
                 {
-                    ContactName = "Test User",
+                    ContactName = "Jane Doe",
                     City = "Istanbul",
                     Country = "Turkey",
-                    Description = "Nispetiye Mah. Aytar Cad. No:24",
+                    Description = "Nispetiye Cad",
                     ZipCode = "34732"
                 },
-
                 BasketItems = new List<BasketItem>
                 {
                     new BasketItem
@@ -97,7 +94,7 @@ namespace Restaurant_App.Business.Concrete
                         Name = "Sipariş Toplamı",
                         Category1 = "Gıda",
                         ItemType = BasketItemType.PHYSICAL.ToString(),
-                        Price = model.Price.ToString(new CultureInfo("en-US"))
+                        Price = priceStr 
                     }
                 }
             };

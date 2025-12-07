@@ -17,11 +17,35 @@ namespace Restaurant_App.Business.Concrete
         public async Task AddOrderItem(int orderInRestaurantId, OrderItemInRestaurant orderItem)
         {
             await _orderInRestaurantDal.AddOrderItem(orderInRestaurantId, orderItem);
+
+            //  Fiyatı yeniden hesapla
+            await RecalculateTotalAmount(orderInRestaurantId);
         }
 
-        public async Task ClearOrderItems(int orderInRestaurantId)
+        public async Task RemoveOrderItem(int orderInRestaurantId, int orderItemId)
         {
-            await _orderInRestaurantDal.ClearOrderItems(orderInRestaurantId);
+            await _orderInRestaurantDal.RemoveOrderItem(orderInRestaurantId, orderItemId);
+
+            await RecalculateTotalAmount(orderInRestaurantId);
+        }
+
+        // Yardımcı Metod: Veritabanından son hali çekip toplar ve günceller
+        private async Task RecalculateTotalAmount(int orderId)
+        {
+            var order = await _orderInRestaurantDal.GetOrderWithDetails(orderId);
+            if (order != null)
+            {
+                // İlişkili ürünlerin fiyatlarını topla
+                double total = 0;
+                foreach (var item in order.OrderItemsInRestaurant)
+                {
+                    // OrderItem içinde Price saklıyoruz
+                    total += (double)(item.Price * item.Quantity);
+                }
+
+                order.TotalAmount = total;
+                await _orderInRestaurantDal.Update(order);
+            }
         }
 
         public async Task Create(OrderInRestaurant entity)
@@ -69,10 +93,6 @@ namespace Restaurant_App.Business.Concrete
             return await _orderInRestaurantDal.GetOrderWithDetails(orderInRestaurantId);
         }
 
-        public async Task RemoveOrderItem(int orderInRestaurantId, int orderItemId)
-        {
-            await _orderInRestaurantDal.RemoveOrderItem(orderInRestaurantId, orderItemId);
-        }
 
         public async Task Update(OrderInRestaurant entity)
         {
@@ -82,6 +102,15 @@ namespace Restaurant_App.Business.Concrete
         public async Task UpdateOrderStatus(int orderInRestaurantId, OrderStatusInRestaurant status)
         {
             await _orderInRestaurantDal.UpdateOrderStatus(orderInRestaurantId, status);
+        }
+
+        public async Task ClearOrderItems(int orderInRestaurantId)
+        {
+            // 1. Veritabanından kalemleri sil
+            await _orderInRestaurantDal.ClearOrderItems(orderInRestaurantId);
+
+            // 2. Toplam tutarı yeniden hesapla (0 olacak ve DB güncellenecek)
+            await RecalculateTotalAmount(orderInRestaurantId);
         }
     }
 }

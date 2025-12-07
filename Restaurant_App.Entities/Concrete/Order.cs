@@ -22,6 +22,7 @@ namespace Restaurant_App.Entities.Concrete
         public string ConversionId { get; set; } = string.Empty;
         public OrderState OrderState { get; set; } = OrderState.Waiting;
         public PaymentTypes PaymentTypes { get; set; }
+        public decimal TotalAmount { get; set; }
         public List<OrderItem> OrderItems { get; set; }
         public Order()
         {

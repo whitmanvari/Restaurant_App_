@@ -72,7 +72,7 @@ function App() {
           <Route path="users" element={<AdminUsersPage />} />
 
           <Route path="tables" element={<AdminDashboard />} />
-          <Route path="settings" element={<Navigate to="/profile" replace />} />
+          <Route path="settings" element={<UserProfilePage isAdminView={true} />} />
         </Route>
 
         <Route path="/success" element={<SuccessPage />} />
@@ -81,7 +81,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/confirm-email" element={<EmailConfirmationPage />} />
-        <Route path="/order-success" element={< OrderSuccessModal/>} />
+        <Route path="/confirm-email" element={<EmailConfirmationPage />} />
       </Routes>
     </div>
   );
