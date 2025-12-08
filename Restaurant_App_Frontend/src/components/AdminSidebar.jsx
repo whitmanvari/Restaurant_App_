@@ -22,8 +22,6 @@ export default function AdminSidebar() {
 
             <ul className="sidebar-menu">
                 <li className="menu-label">Yönetim</li>
-                
-                {/* TEK VE GÜÇLÜ LINK */}
                 <li>
                     <NavLink to="/admin/tables" className={({ isActive }) => isActive ? 'active' : ''}>
                         <i className="fas fa-th-large"></i> Masa Yönetimi
@@ -66,6 +64,13 @@ export default function AdminSidebar() {
                 <li>
                     <NavLink to="/admin/analytics">
                         <i className="fas fa-chart-pie"></i> Analitik
+                    </NavLink>
+                </li>
+
+                <li className="menu-label">Sistem</li>
+                <li>
+                    <NavLink to="/admin/settings">
+                        <i className="fas fa-cog"></i> Ayarlar
                     </NavLink>
                 </li>
             </ul>

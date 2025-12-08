@@ -19,7 +19,8 @@ import AdminReservationPage from './pages/admin/AdminReservationPage';
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminCommentsPage from './pages/admin/AdminCommentsPage';
-import AdminTablesPage from './pages/admin/AdminTablesPage'; // YENİ SAYFA
+// YENİ: Tek Merkezli Masa Yönetimi
+import AdminTablesPage from './pages/admin/AdminTablesPage'; 
 
 // Layouts
 import MainLayout from './components/Layouts/MainLayout';
@@ -39,7 +40,7 @@ function App() {
     <div>
       <NotificationManager />
       <Routes>
-        {/* User Routes */}
+        {/* --- USER ROUTES --- */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="login" element={<AuthPage />} />
@@ -54,30 +55,36 @@ function App() {
           <Route path="reservations" element={<ReservationPage />} />
         </Route>
 
-        {/* Admin Routes */}
+        {/* --- ADMIN ROUTES --- */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="orders" element={<AdminOrdersPage />} />
-          <Route path="reservations" element={<AdminReservationPage />} />
-          <Route path="analytics" element={<AdminAnalyticsPage />} />
+            {/* 1. Admin anasayfası (/admin) girilince direkt Masalar sayfasına yönlendir */}
+            <Route index element={<Navigate to="tables" replace />} />
+            
+            {/* 2. Masa Yönetimi*/}
+            <Route path="tables" element={<AdminTablesPage />} />
 
-          {/* Yönetim */}
-          <Route path="menu" element={<AdminMenuPage />} />
-          <Route path="categories" element={<AdminCategoriesPage />} />
-          <Route path="comments" element={<AdminCommentsPage />} />
-          <Route path="table-config" element={<AdminTableConfigPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-
-          <Route path="tables" element={<AdminDashboard />} />
-          <Route path="settings" element={<Navigate to="/profile" replace />} />
+            {/* Diğer Admin Sayfaları */}
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="reservations" element={<AdminReservationPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="menu" element={<AdminMenuPage />} />
+            <Route path="categories" element={<AdminCategoriesPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="comments" element={<AdminCommentsPage />} />
+            
+            {/* Ayarlar (User Profile'ın Admin Görünümü) */}
+            <Route path="settings" element={<UserProfilePage isAdminView={true} />} />
         </Route>
 
+        {/* --- STATUS ROUTES --- */}
         <Route path="/success" element={<SuccessPage />} />
         <Route path="/error" element={<ErrorPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/confirm-email" element={<EmailConfirmationPage />} />
-        <Route path="/order-success" element={< OrderSuccessModal/>} />
+        
+        {/* --- 404 NOT FOUND  --- */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
   );

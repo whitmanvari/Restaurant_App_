@@ -3,6 +3,8 @@ import { toast } from 'react-toastify';
 import { tableService } from '../../services/tableService';
 import { reservationService } from '../../services/reservationService';
 import api from '../../api/axiosInstance';
+
+// Bileşenler
 import TableFormModal from '../../components/Admin/Table/TableFormModal';
 import TableStatusCard from '../../components/Admin/Table/TableStatusCard';
 import TableDetailModal from '../../components/TableDetailModal';
@@ -17,21 +19,21 @@ export default function AdminTablesPage() {
     const [loading, setLoading] = useState(true);
 
     // Filtreleme
-    const [filterStatus, setFilterStatus] = useState('all'); // all, occupied, empty, reserved, closed
+    const [filterStatus, setFilterStatus] = useState('all'); 
     const [searchTerm, setSearchTerm] = useState('');
 
     // Modallar
     const [showFormModal, setShowFormModal] = useState(false);
     const [editingTable, setEditingTable] = useState(null);
-    const [selectedTableData, setSelectedTableData] = useState(null); // Order Detail
-    const [selectedReservation, setSelectedReservation] = useState(null); // Reservation Detail
+    const [selectedTableData, setSelectedTableData] = useState(null); 
+    const [selectedReservation, setSelectedReservation] = useState(null); 
 
     // Chart Renkleri
     const COLORS = { occupied: '#dc3545', empty: '#198754', reserved: '#0dcaf0', closed: '#6c757d' };
 
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 15000); // 15 sn'de bir yenile
+        const interval = setInterval(fetchData, 15000); 
         return () => clearInterval(interval);
     }, []);
 
@@ -43,12 +45,10 @@ export default function AdminTablesPage() {
                 api.get('/OrderInRestaurant/all/details')
             ]);
 
-            // Masaları Sırala (A1, A2...)
             const sortedTables = tableRes.sort((a, b) => a.tableNumber.localeCompare(b.tableNumber, undefined, { numeric: true }));
             
             setTables(sortedTables);
             setReservations(resData);
-            // Sadece aktif siparişleri al
             setActiveOrders(orderRes.data.filter(o => o.status !== 'Completed' && o.status !== 'Canceled'));
             setLoading(false);
         } catch (error) {
@@ -57,12 +57,11 @@ export default function AdminTablesPage() {
         }
     };
 
-    // --- MASA DURUMU BELİRLEME MANTIĞI ---
+    // --- MASA DURUMU BELİRLEME ---
     const getTableStatusObj = (table) => {
         if (!table.isAvailable) 
             return { status: 'closed', text: 'KAPALI', color: 'secondary', icon: 'fa-ban', subText: 'Servis Dışı' };
 
-        // 1. Sipariş Var mı?
         const activeOrder = activeOrders.find(o => o.tableId === table.id);
         if (activeOrder) {
             if (activeOrder.status === 'Pending') 
@@ -71,16 +70,12 @@ export default function AdminTablesPage() {
             return { status: 'occupied', text: 'DOLU', color: 'danger', subText: `${activeOrder.totalAmount} ₺`, icon: 'fa-utensils', data: activeOrder };
         }
 
-        // 2. Rezervasyon Var mı? (Bugün ve saati yakın mı?)
         const now = new Date();
         const activeRes = reservations.find(r => {
             if (r.tableId !== table.id || (r.status !== 1 && r.status !== 0)) return false;
             const resDate = new Date(r.reservationDate);
-            // Sadece bugünü kontrol et
             if (resDate.toDateString() !== now.toDateString()) return false;
-            
             const diffMinutes = (resDate - now) / (1000 * 60);
-            // Rezervasyona 90 dk kala veya rezervasyon başlayalı 90 dk geçmediyse "Rezerve" göster
             return diffMinutes > -90 && diffMinutes < 90;
         });
 
@@ -96,11 +91,10 @@ export default function AdminTablesPage() {
             };
         }
 
-        // 3. Boş
         return { status: 'empty', text: 'MÜSAİT', color: 'success', subText: `${table.capacity} Kişilik`, icon: 'fa-chair' };
     };
 
-    // --- CHART VERİSİ HAZIRLA ---
+    // --- CHART DATA ---
     const getChartData = () => {
         const counts = { occupied: 0, empty: 0, reserved: 0, closed: 0 };
         tables.forEach(t => {
@@ -140,14 +134,8 @@ export default function AdminTablesPage() {
     const handleCardClick = (table, statusObj) => {
         if (statusObj.status === 'occupied') setSelectedTableData({ table, order: statusObj.data });
         else if (statusObj.status === 'reserved') setSelectedReservation(statusObj.data);
-        else if (statusObj.status === 'empty') {
-             // Boş masaya tıklandığında düzenleme açılabilir veya "Hızlı Rezervasyon" yapılabilir.
-             // Şimdilik düzenleme modunu açalım:
-             // setEditingTable(table); setShowFormModal(true);
-        }
     };
 
-    // --- RENDER ---
     const filteredTables = tables.filter(t => {
         const status = getTableStatusObj(t).status;
         const matchesSearch = t.tableNumber.toLowerCase().includes(searchTerm.toLowerCase());
@@ -160,12 +148,13 @@ export default function AdminTablesPage() {
     return (
         <div className="container-fluid p-4">
             
-            {/* ÜST BAŞLIK */}
+            {/* ÜST BAŞLIK (BUTONLAR KALDIRILDI) */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 style={{ fontFamily: 'Playfair Display' }}>Masa Yönetimi</h2>
                     <p className="text-muted">Salon durumunu izleyin ve düzenleyin.</p>
                 </div>
+                {/* SADECE YENİ MASA BUTONU KALDI */}
                 <button className="btn btn-dark" onClick={() => { setEditingTable(null); setShowFormModal(true); }}>
                     <i className="fas fa-plus me-2"></i> Yeni Masa Ekle
                 </button>
@@ -241,9 +230,7 @@ export default function AdminTablesPage() {
                 {filteredTables.length === 0 && <div className="text-center py-5 text-muted w-100">Kriterlere uygun masa bulunamadı.</div>}
             </div>
 
-            {/* --- MODALLAR --- */}
-            
-            {/* 1. Masa Ekle/Düzenle */}
+            {/* MODALLAR */}
             <TableFormModal 
                 show={showFormModal} 
                 onClose={() => setShowFormModal(false)} 
@@ -251,7 +238,6 @@ export default function AdminTablesPage() {
                 initialData={editingTable}
             />
 
-            {/* 2. Sipariş Detay (Dolu Masa için) */}
             {selectedTableData && (
                 <TableDetailModal
                     table={selectedTableData.table}
@@ -261,7 +247,6 @@ export default function AdminTablesPage() {
                 />
             )}
 
-            {/* 3. Rezervasyon Düzenle (Rezerve Masa için) */}
             {selectedReservation && (
                 <ReservationEditModal
                     reservation={selectedReservation}
