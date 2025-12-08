@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { productService } from '../../services/productService';
 import { categoryService } from '../../services/categoryService';
-import { getImageUrl } from '../../utils/imageHelper';
+import { getImageUrl } from '../../utils/imageHelper'; 
 import { 
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
@@ -40,11 +40,10 @@ export default function AdminMenuPage() {
             setCategories(catData);
 
             // --- GRAFİK VERİSİ HAZIRLA ---
-            // Her kategoride kaç ürün var?
             const stats = catData.map(cat => {
                 const count = prodData.filter(p => p.categoryId === cat.id).length;
                 return { name: cat.name, count: count };
-            }).filter(i => i.count > 0); // 0 olanları gösterme
+            }).filter(i => i.count > 0); 
             
             setChartData(stats);
             setLoading(false);
@@ -59,11 +58,10 @@ export default function AdminMenuPage() {
         ? products 
         : products.filter(p => p.categoryName === filterCategory || categories.find(c => c.id === p.categoryId)?.name === filterCategory);
 
-    // --- DOSYA SEÇME İŞLEMİ (File -> Base64 URL) ---
+    // --- DOSYA SEÇME İŞLEMİ ---
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Dosya boyutu kontrolü (Örn: 2MB limit)
             if (file.size > 2 * 1024 * 1024) {
                 toast.warning("Dosya boyutu çok büyük! Lütfen 2MB altı bir resim seçin.");
                 return;
@@ -71,7 +69,6 @@ export default function AdminMenuPage() {
 
             const reader = new FileReader();
             reader.onloadend = () => {
-                // Dosyayı okuyup String (Base64) formatına çevirir ve URL inputuna yazar
                 setFormData({ ...formData, imageUrl: reader.result });
             };
             reader.readAsDataURL(file);
@@ -85,7 +82,7 @@ export default function AdminMenuPage() {
             ...formData, 
             price: parseFloat(formData.price), 
             categoryId: parseInt(formData.categoryId), 
-            imageUrls: [formData.imageUrl], // Backend liste istiyor
+            imageUrls: [formData.imageUrl], 
             allergic: 0 
         };
         
@@ -212,6 +209,7 @@ export default function AdminMenuPage() {
                     <div key={product.id} className="col-md-6 col-lg-4 col-xl-3">
                         <div className="card h-100 border-0 shadow-sm product-admin-card">
                             <div className="position-relative">
+                                {/*  Ürün Kartı Resmi */}
                                 <img 
                                     src={getImageUrl(product.imageUrls?.[0])} 
                                     className="card-img-top" 
@@ -284,7 +282,13 @@ export default function AdminMenuPage() {
                                             <label className="form-label fw-bold small">Ürün Görseli</label>
                                             <div className="card bg-light border-dashed text-center p-3 mb-3" style={{border: '2px dashed #ccc'}}>
                                                 {formData.imageUrl ? (
-                                                    <img src={formData.imageUrl} alt="Preview" className="img-fluid rounded mb-2" style={{maxHeight: '150px'}} />
+                                                    // Modal İçindeki Önizleme Resmi
+                                                    <img 
+                                                        src={getImageUrl(formData.imageUrl)} 
+                                                        alt="Preview" 
+                                                        className="img-fluid rounded mb-2" 
+                                                        style={{maxHeight: '150px'}} 
+                                                    />
                                                 ) : (
                                                     <div className="py-4 text-muted">
                                                         <i className="fas fa-image fa-2x mb-2"></i>
@@ -292,7 +296,6 @@ export default function AdminMenuPage() {
                                                     </div>
                                                 )}
                                                 
-                                                {/* DOSYA SEÇ BUTONU */}
                                                 <input 
                                                     type="file" 
                                                     className="form-control form-control-sm mt-2" 

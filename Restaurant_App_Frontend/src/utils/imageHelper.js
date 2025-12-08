@@ -1,17 +1,27 @@
-const DEFAULT_IMAGES = {
-    product: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=500&auto=format&fit=crop",
-    restaurant: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2670&auto=format&fit=crop",
-    user: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2670&auto=format&fit=crop"
-};
+import defaultImage from '../assets/images/default-food.jpg'; // Varsayılan resim yolu
 
-export const getImageUrl = (url, type = 'product') => {
-    if (!url || url.trim() === "" || url?.includes("via.placeholder")) {
-        return DEFAULT_IMAGES[type] || DEFAULT_IMAGES.product;
+export const getImageUrl = (url) => {
+    // 1. URL hiç yoksa veya boşsa -> Default
+    if (!url || url === "" || url === "string") {
+        return defaultImage;
     }
 
-    if (url.includes('cloudinary')) {
-        return url.replace('/upload/', '/upload/w_500,h_500,c_fill,q_auto,f_auto/');
+    // 2. URL zaten tam bir web adresi ise (http/https) 
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
     }
 
-    return url;
+    // 3. URL bir Base64 string ise (data:image/...) 
+    if (url.startsWith('data:image')) {
+        return url;
+    }
+
+    // 4. URL yerel bir dosya yolu ise (backend'den gelen /uploads/...)
+    // Backend adresini başına ekle (localhost:7254)
+    const BASE_URL = "https://localhost:7254"; 
+    
+    // Eğer başında / yoksa ekle
+    const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+    
+    return `${BASE_URL}${cleanUrl}`;
 };

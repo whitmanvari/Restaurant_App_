@@ -3,6 +3,8 @@ using Restaurant_App.DataAccess.Abstract;
 using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace Restaurant_App.DataAccess.Concrete
 {
@@ -10,6 +12,21 @@ namespace Restaurant_App.DataAccess.Concrete
     {
         public ProductDal(RestaurantDbContext context) : base(context)
         {
+        }
+        // GETALL METODUNU EZİYORUZ (OVERRIDE)
+        public override async Task<List<Product>> GetAll(Expression<Func<Product, bool>>? filter = null)
+        {
+            var query = _context.Products
+                .Include(p => p.Images)    
+                .Include(p => p.Category)  
+                .AsQueryable();
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<int> GetCountByCategory(string category)

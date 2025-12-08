@@ -7,7 +7,7 @@ import api from '../../api/axiosInstance';
 // Bileşenler
 import TableFormModal from '../../components/Admin/Table/TableFormModal';
 import TableStatusCard from '../../components/Admin/Table/TableStatusCard';
-import TableDetailModal from '../../components/TableDetailModal';
+import TableDetailModal from '../../components/Admin/Table/TableDetailModal';
 import ReservationEditModal from '../../components/ReservationEditModal';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
