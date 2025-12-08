@@ -96,7 +96,11 @@ namespace Restaurant_App.WebAPI.Controllers
                         message = $"Merhaba {order.FirstName}, siparişiniz şu an <b>HAZIRLANIYOR</b>. En kısa sürede yola çıkacak!";
                         break;
                     case OrderState.Completed:
+<<<<<<< HEAD
                         message = $"Merhaba {order.FirstName}, siparişiniz <b>TESLİM EDİLDİ</b>. Nice diğer siparişlere, afiyet olsun!";
+=======
+                        message = $"Merhaba {order.FirstName}, siparişiniz <b>TESLİM EDİLDİ</b> veya tamamlandı. Afiyet olsun!";
+>>>>>>> 3fe995b6d39b1db2c7c95ece8acd385ff039cedd
                         break;
                     case OrderState.Canceled:
                         message = $"Merhaba {order.FirstName}, üzgünüz siparişiniz <b>İPTAL EDİLDİ</b>. Detaylar için restoranla iletişime geçebilirsiniz.";

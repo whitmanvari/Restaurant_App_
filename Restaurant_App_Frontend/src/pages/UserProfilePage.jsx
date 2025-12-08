@@ -11,6 +11,7 @@ export default function UserProfilePage({ isAdminView = false }) {
     const navigate = useNavigate();
 
     // Eğer adminView ise varsayılan olarak 'settings' (Ayarlar) sekmesini aç
+    // Değilse 'orders' (Siparişlerim) sekmesini aç
     const [activeTab, setActiveTab] = useState(isAdminView ? 'settings' : 'orders');
 
     const handleLogout = () => {

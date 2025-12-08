@@ -56,19 +56,20 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
-            {/* Admin anasayfası artık direkt Masa Yönetimine gidiyor */}
-            <Route index element={<Navigate to="tables" replace />} />
-            <Route path="tables" element={<AdminTablesPage />} />
+          <Route index element={<AdminDashboard />} />
+          <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="reservations" element={<AdminReservationPage />} />
+          <Route path="analytics" element={<AdminAnalyticsPage />} />
 
-            <Route path="orders" element={<AdminOrdersPage />} />
-            <Route path="reservations" element={<AdminReservationPage />} />
-            <Route path="analytics" element={<AdminAnalyticsPage />} />
-            <Route path="menu" element={<AdminMenuPage />} />
-            <Route path="categories" element={<AdminCategoriesPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
-            <Route path="comments" element={<AdminCommentsPage />} />
-            
-            <Route path="settings" element={<UserProfilePage isAdminView={true} />} />
+          {/* Yönetim */}
+          <Route path="menu" element={<AdminMenuPage />} />
+          <Route path="categories" element={<AdminCategoriesPage />} />
+          <Route path="comments" element={<AdminCommentsPage />} />
+          <Route path="table-config" element={<AdminTableConfigPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+
+          <Route path="tables" element={<AdminDashboard />} />
+          <Route path="settings" element={<Navigate to="/profile" replace />} />
         </Route>
 
         <Route path="/success" element={<SuccessPage />} />
@@ -76,7 +77,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/confirm-email" element={<EmailConfirmationPage />} />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path="/order-success" element={< OrderSuccessModal/>} />
       </Routes>
     </div>
   );
