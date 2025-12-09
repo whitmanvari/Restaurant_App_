@@ -360,4 +360,4 @@ MigrationBackup/
 .ionide/
 
 # Fody - auto-generated XML schema
-FodyWeavers.xsd
+FodyWeavers.xsdRestaurant_App.WebAPI/Restaurant_App.WebAPI/appsettings.json
