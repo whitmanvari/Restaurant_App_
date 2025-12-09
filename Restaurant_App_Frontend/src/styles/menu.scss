@@ -15,8 +15,14 @@
     
     .form-label { color: var(--text-main); }
 
-    .input-group-text, .form-control {
-        background-color: var(--input-bg);
+    .input-group-text {
+        background-color: var(--bg-input);
+        border-color: var(--border-color);
+        i { color: var(--text-muted); }
+    }
+    
+    .form-control {
+        background-color: var(--bg-input);
         border-color: var(--border-color);
         color: var(--text-main);
     }
@@ -43,7 +49,7 @@
     
     &:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        box-shadow: var(--shadow-lg);
     }
 
     .card-title { color: var(--text-main); }
@@ -65,8 +71,8 @@
     }
 
     .page-item.active .page-link {
-        background-color: var(--text-main); // Dark modda açık, light modda koyu
-        color: var(--bg-body);
+        background-color: var(--text-main); 
+        color: var(--bg-card);
         border-color: var(--text-main);
     }
     
@@ -75,9 +81,4 @@
         background-color: var(--bg-body);
         opacity: 0.6;
     }
-}
-
-// Dark Mode özel ayarları (Gerekirse override etmek için)
-[data-bs-theme="dark"] {
-    .filter-sidebar { box-shadow: none; }
 }

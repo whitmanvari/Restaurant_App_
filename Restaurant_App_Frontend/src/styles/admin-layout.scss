@@ -1,21 +1,18 @@
-// Admin Paneli 
 .admin-layout {
     display: flex;
     min-height: 100vh;
-    background-color: #f4f6f9; // Hafif gri
+    background-color: var(--bg-body);
 
-    // 1. SIDEBAR (SOL MENÜ)
+    // --- SIDEBAR ---
     .admin-sidebar {
         width: 260px;
-        background-color: #1e1e2d; // Koyu Lacivert/Siyah
+        background-color: #1a1a1a; // Sidebar hep koyu (Admin standardı)
         color: #fff;
         display: flex;
         flex-direction: column;
         position: fixed;
         height: 100vh;
-        left: 0;
-        top: 0;
-        overflow-y: auto;
+        left: 0; top: 0;
         z-index: 1050;
         box-shadow: 4px 0 10px rgba(0,0,0,0.1);
 
@@ -23,13 +20,7 @@
             padding: 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            
-            h3 {
-                font-family: 'Playfair Display', serif;
-                margin: 0;
-                color: #c5a059; //Altın Rengi
-                font-weight: bold;
-            }
+            h3 { font-family: 'Playfair Display', serif; margin: 0; color: var(--accent-color); font-weight: bold; }
             small { color: #aaa; font-size: 0.8rem; }
         }
 
@@ -37,44 +28,36 @@
             padding: 20px 0;
             list-style: none;
             margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
 
-            li {
-                margin-bottom: 5px;
-
-                a {
-                    display: flex;
-                    align-items: center;
-                    padding: 12px 25px;
-                    color: #a2a3b7;
-                    text-decoration: none;
-                    font-weight: 500;
-                    transition: all 0.3s;
-                    font-size: 0.95rem;
-                    border-left: 3px solid transparent;
-
-                    i {
-                        width: 25px;
-                        font-size: 1.1rem;
-                        margin-right: 10px;
-                    }
-
-                    &:hover, &.active {
-                        background-color: rgba(255,255,255,0.05);
-                        color: #fff;
-                        border-left-color: #c5a059;
-                        
-                        i { color: #c5a059; }
-                    }
-                }
-            }
-            
             .menu-label {
                 padding: 10px 25px;
                 font-size: 0.75rem;
                 text-transform: uppercase;
-                color: #555;
+                color: rgba(255,255,255,0.4);
                 font-weight: bold;
                 margin-top: 10px;
+            }
+
+            li a {
+                display: flex; align-items: center;
+                padding: 12px 25px;
+                color: rgba(255,255,255,0.7);
+                text-decoration: none;
+                font-weight: 500;
+                transition: all 0.3s;
+                font-size: 0.95rem;
+                border-left: 3px solid transparent;
+
+                i { width: 25px; font-size: 1.1rem; margin-right: 10px; text-align: center; }
+
+                &:hover, &.active {
+                    background-color: rgba(255,255,255,0.05);
+                    color: #fff;
+                    border-left-color: var(--accent-color);
+                    i { color: var(--accent-color); }
+                }
             }
         }
 
@@ -82,28 +65,26 @@
             margin-top: auto;
             padding: 20px;
             border-top: 1px solid rgba(255,255,255,0.1);
+            background-color: #111;
             
             .user-info {
-                display: flex;
-                align-items: center;
-                gap: 10px;
+                display: flex; align-items: center; gap: 10px;
                 img { width: 40px; height: 40px; border-radius: 50%; }
                 div {
                     h6 { margin: 0; font-size: 0.9rem; color: #fff; }
-                    small { color: #c5a059; font-size: 0.75rem; }
+                    small { color: var(--accent-color); font-size: 0.75rem; }
                 }
             }
         }
     }
 
-    // 2. CONTENT (SAĞ İÇERİK)
+    // --- CONTENT ---
     .admin-content {
         flex: 1;
-        margin-left: 260px; // Sidebar genişliği kadar it
+        margin-left: 260px;
         padding: 30px;
         width: calc(100% - 260px);
-        
-        // İçerik başlıkları için stil
-        h1, h2, h3 { color: #333; font-family: 'Playfair Display', serif; }
+        background-color: var(--bg-body);
+        color: var(--text-main);
     }
 }

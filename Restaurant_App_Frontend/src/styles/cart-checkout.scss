@@ -1,0 +1,118 @@
+/* --- SEPET SAYFASI --- */
+.cart-page-wrapper {
+    // Tablo satırları
+    .table {
+        td, th {
+            vertical-align: middle;
+            background-color: var(--bg-card); // Satır arkaplanı
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+        thead th {
+            background-color: var(--bg-section-alt); // Başlık koyu
+            font-weight: 600;
+        }
+    }
+
+    // Miktar Butonları
+    .btn-group {
+        border-color: var(--border-color);
+        .btn-light {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            border-color: var(--border-color);
+            &:hover { background-color: var(--accent-color); color: #fff; }
+        }
+        .btn-white {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border-color: var(--border-color);
+        }
+    }
+}
+
+/* --- CHECKOUT (ÖDEME) SAYFASI --- */
+.checkout-page-wrapper {
+    
+    // Tab Menüsü (Eve Teslim / Restoranda)
+    .nav-tabs {
+        border-bottom-color: var(--border-color);
+        
+        .nav-link {
+            color: var(--text-muted);
+            background-color: var(--bg-body);
+            border-color: var(--border-color);
+            
+            &:hover {
+                color: var(--accent-color);
+            }
+
+            &.active {
+                background-color: var(--bg-card);
+                color: var(--text-main);
+                border-bottom-color: var(--bg-card); // Alt çizgiyi gizle
+                font-weight: bold;
+            }
+        }
+    }
+
+    // Ödeme Yöntemi Kutuları (Kart / Nakit)
+    .payment-method-box {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+            border-color: var(--accent-color);
+        }
+
+        &.active {
+            border-color: var(--accent-color);
+            background-color: rgba(197, 160, 89, 0.1); // Hafif sarı
+        }
+    }
+
+    // Kredi Kartı Formu
+    .credit-card-form {
+        background-color: var(--bg-section-alt); // Hafif farklı ton
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        padding: 20px;
+        border-radius: 8px;
+
+        input {
+            background-color: var(--bg-card);
+        }
+    }
+
+    // Masa Seçim Kartları
+    .table-select-card {
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        
+        &.unavailable {
+            opacity: 0.5;
+            background-color: var(--bg-body);
+        }
+
+        &.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(197, 160, 89, 0.1);
+        }
+    }
+}
+
+// Dark Mode Özel Düzeltmeler
+[data-bs-theme="dark"] {
+    .bg-light { 
+        background-color: var(--bg-card) !important; 
+    }
+    
+    // Navbar içindeki text
+    .nav-tabs .nav-link {
+        &.active { color: #fff; }
+    }
+}

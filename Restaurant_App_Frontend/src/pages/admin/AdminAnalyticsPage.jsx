@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    PieChart, Pie, Cell, AreaChart, Area
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, AreaChart, Area, Legend
 } from 'recharts';
 import { productService } from '../../services/productService';
 import { orderService } from '../../services/orderService';
@@ -35,23 +35,37 @@ const AdminAnalyticsPage = () => {
                 orderService.getAllTableOrders()
             ]);
 
+            // Sadece iptal edilmemişleri al
             const validOnline = onlineOrders.filter(o => o.orderState !== 2);
             const validTable = tableOrders.filter(o => o.status !== 'Canceled');
             const allOrders = [...validOnline, ...validTable];
 
+            // 1. Finansal Özet
             const totalRevenue = allOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
             const totalOrderCount = allOrders.length;
             const avgOrder = totalOrderCount > 0 ? totalRevenue / totalOrderCount : 0;
 
+            // ÜRÜN SAYMA MANTIĞI
             const productSalesCount = {}; 
+
+            // A. Online Siparişleri Say
             validOnline.forEach(order => {
-                order.items?.forEach(item => {
+                // DTO'da "Items" -> JSON'da "items"
+                // Garanti olsun diye her ihtimali kontrol ediyoruz
+                const itemList = order.items || order.Items || []; 
+                
+                itemList.forEach(item => {
                     const name = item.productName || "Bilinmiyor";
                     productSalesCount[name] = (productSalesCount[name] || 0) + item.quantity;
                 });
             });
+
+            // B. Masa Siparişleri Say
             validTable.forEach(order => {
-                order.orderItemsInRestaurant?.forEach(item => {
+                // DTO'da "OrderItems" -> JSON'da "orderItems"
+                const itemList = order.orderItems || order.OrderItems || [];
+
+                itemList.forEach(item => {
                     const name = item.productName || "Bilinmiyor";
                     productSalesCount[name] = (productSalesCount[name] || 0) + item.quantity;
                 });
@@ -59,22 +73,30 @@ const AdminAnalyticsPage = () => {
 
             const topSellingChartData = Object.keys(productSalesCount)
                 .map(key => ({ name: key, sales: productSalesCount[key] }))
-                .sort((a, b) => b.sales - a.sales)
-                .slice(0, 5);
+                .sort((a, b) => b.sales - a.sales) // Çoktan aza sırala
+                .slice(0, 5); // İlk 5'i al
 
+            // 3. Kategori Dağılımı
             const categoryChartData = categories.map(cat => {
                 const count = products.filter(p => p.categoryId === cat.id).length;
                 return { name: cat.name, value: count };
             }).filter(c => c.value > 0);
 
+            // 4. Gelir Trendi
             const revenueByDate = {};
             allOrders.forEach(order => {
-                const date = new Date(order.orderDate).toLocaleDateString('tr-TR');
-                revenueByDate[date] = (revenueByDate[date] || 0) + order.totalAmount;
+                // Tarih formatı hatasını önlemek için try-catch veya kontrol
+                try {
+                    const d = new Date(order.orderDate);
+                    if(!isNaN(d.getTime())) {
+                        const dateStr = d.toLocaleDateString('tr-TR'); // "07.12.2025"
+                        revenueByDate[dateStr] = (revenueByDate[dateStr] || 0) + order.totalAmount;
+                    }
+                } catch (e) {}
             });
 
             const revenueTrendData = Object.keys(revenueByDate).map(date => ({
-                date: date.substring(0, 5),
+                date: date.substring(0, 5), // Gün/Ay
                 total: revenueByDate[date]
             }));
 
@@ -87,6 +109,7 @@ const AdminAnalyticsPage = () => {
                 revenueTrend: revenueTrendData
             });
             setLoading(false);
+
         } catch (error) {
             console.error("Analiz hatası:", error);
             toast.error("Analiz verileri alınamadı.");
@@ -96,7 +119,6 @@ const AdminAnalyticsPage = () => {
 
     if (loading) return <div className="text-center mt-5 pt-5"><div className="spinner-border text-warning"></div></div>;
 
-    // Ortak Kart Stili (Tema uyumlu)
     const cardStyle = { backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' };
 
     return (
@@ -135,8 +157,8 @@ const AdminAnalyticsPage = () => {
                     <div className="card border-0 shadow-sm p-4 h-100" style={cardStyle}>
                         <h5 className="mb-4">En Çok Satan Ürünler</h5>
                         {stats.topSelling.length > 0 ? (
-                            <div style={{ width: '100%', height: 300 }}>
-                                <ResponsiveContainer>
+                            <div style={{ width: '100%', height: '300px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={stats.topSelling} layout="vertical">
                                         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                         <XAxis type="number" hide />
@@ -147,7 +169,10 @@ const AdminAnalyticsPage = () => {
                                 </ResponsiveContainer>
                             </div>
                         ) : (
-                            <p className="text-muted text-center py-5">Henüz yeterli satış verisi yok.</p>
+                            <div className="text-center py-5 text-muted">
+                                <i className="fas fa-chart-bar fa-2x mb-3 opacity-50"></i>
+                                <p>Henüz satış verisi oluşmadı.</p>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -156,8 +181,8 @@ const AdminAnalyticsPage = () => {
                 <div className="col-lg-6">
                     <div className="card border-0 shadow-sm p-4 h-100" style={cardStyle}>
                         <h5 className="mb-4">Menü Dağılımı</h5>
-                        <div style={{ width: '100%', height: 300 }}>
-                            <ResponsiveContainer>
+                        <div style={{ width: '100%', height: '300px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={stats.categoryData}
@@ -185,8 +210,8 @@ const AdminAnalyticsPage = () => {
                     <div className="card border-0 shadow-sm p-4" style={cardStyle}>
                         <h5 className="mb-4">Günlük Gelir Trendi</h5>
                         {stats.revenueTrend.length > 0 ? (
-                            <div style={{ width: '100%', height: 300 }}>
-                                <ResponsiveContainer>
+                            <div style={{ width: '100%', height: '300px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats.revenueTrend}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                         <XAxis dataKey="date" tick={{fill: 'var(--text-main)'}} />

@@ -138,7 +138,7 @@ export default function AdminMenuPage() {
                     <div className="card border-0 shadow-sm h-100">
                         <div className="card-body">
                             <h5 className="card-title mb-4 fw-bold text-secondary">Kategori Dağılımı</h5>
-                            <div style={{ width: '100%', height: 250 }}>
+                            <div style={{ width: '100%', height: '250px' }}>
                                 <ResponsiveContainer>
                                     <BarChart data={chartData}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />

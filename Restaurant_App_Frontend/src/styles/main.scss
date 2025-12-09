@@ -1,42 +1,83 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
-@import "bootstrap/scss/bootstrap";
+@import "bootstrap/scss/bootstrap"; 
 
+/* --- GEÇİŞLER --- */
 * {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
 }
 
+/* --- TEMA DEĞİŞKENLERİ --- */
 :root {
-    // --- LIGHT MODE (Varsayılan) ---
-    --bg-body: #fdfbf7; 
+    // --- LIGHT MODE ---
+    --bg-body: #fdfbf7;
     --bg-card: #ffffff;
-    --bg-section-alt: #f2efe9; // Menü alanı gibi alternatif açık renk
-    --text-main: #2c2c2c;
-    --text-muted: #666666;
-    --accent-color: #c5a059;
-    --border-color: #e5e5e5;
+    --bg-section-alt: #f2efe9;
+    --bg-input: #ffffff;
     
-    // Navbar Scrolled Variables (Light)
-    --navbar-scrolled-bg: rgba(255, 255, 255, 0.95);
-    --navbar-scrolled-text: #2c2c2c;
-    --navbar-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --text-main: #2c2c2c;
+    --text-muted: #6c757d;
+    
+    --border-color: #e5e5e5;
+    --accent-color: #c5a059;
+    
+    --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+    --shadow-lg: 0 1rem 3rem rgba(0,0,0,.175);
+
+    --navbar-bg: rgba(255, 255, 255, 0.95);
+    --navbar-text: #2c2c2c;
+    --btn-close-filter: none; 
 }
 
 [data-bs-theme="dark"] {
     // --- DARK MODE ---
-    --bg-body: #121212; 
+    --bg-body: #121212;
     --bg-card: #1e1e1e;
-    --bg-section-alt: #181818; // Menü alanı için koyu renk
+    --bg-section-alt: #181818;
+    --bg-input: #2d2d2d;
+    
     --text-main: #e0e0e0;
     --text-muted: #a0a0a0;
-    --accent-color: #d4b77e;
+    
     --border-color: #333333;
+    --accent-color: #d4b77e;
+    
+    --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.5);
+    --shadow-lg: 0 1rem 3rem rgba(0,0,0,.7);
 
-    // Navbar Scrolled Variables (Dark)
-    --navbar-scrolled-bg: rgba(18, 18, 18, 0.95); // Siyahımsı
-    --navbar-scrolled-text: #ffffff;
-    --navbar-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --navbar-bg: rgba(30, 30, 30, 0.95);
+    --navbar-text: #ffffff;
+    --btn-close-filter: invert(1) grayscale(100%) brightness(200%);
+
+    /* --- BOOTSTRAP OVERRIDES --- */
+    // Dark modda "bg-light" veya "bg-white" olan her yer bizim kart rengimiz olsun
+    .bg-light, .bg-white {
+        background-color: var(--bg-card) !important;
+        color: var(--text-main) !important;
+    }
+
+    // Tabloların içindeki light alanlar
+    .table-light {
+        background-color: var(--bg-section-alt) !important;
+        color: var(--text-main) !important;
+        th, td {
+            background-color: var(--bg-section-alt) !important;
+            color: var(--text-main) !important;
+        }
+    }
+
+    // Yazı renklerini zorla düzelt
+    .text-dark { color: var(--text-main) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+    
+    // Alert kutuları (Sepet boş vb.)
+    .alert-light {
+        background-color: var(--bg-section-alt);
+        border-color: var(--border-color);
+        color: var(--text-main);
+    }
 }
 
+/* --- GENEL AYARLAR --- */
 body {
     background-color: var(--bg-body) !important;
     color: var(--text-main) !important;
@@ -48,6 +89,40 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-main);
 }
 
+a { 
+    text-decoration: none; 
+    color: var(--text-main);
+    &:hover { color: var(--accent-color); }
+}
+
+/* --- BİLEŞENLER --- */
+.card {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.form-control, .form-select {
+    background-color: var(--bg-input);
+    border-color: var(--border-color);
+    color: var(--text-main);
+    &:focus {
+        background-color: var(--bg-input);
+        color: var(--text-main);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.25rem rgba(197, 160, 89, 0.25);
+    }
+    &::placeholder { color: var(--text-muted); opacity: 0.7; }
+}
+
+.modal-content {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    .modal-header, .modal-footer { border-color: var(--border-color); }
+    .btn-close { filter: var(--btn-close-filter); }
+}
+
 // SCSS Modüllerini Çağır
 @import "navbar";
 @import "auth";
@@ -56,4 +131,5 @@ h1, h2, h3, h4, h5, h6 {
 @import "product-card";
 @import "analytics";
 @import "menu";
-@import 'admin-layout';
+@import "admin-layout";
+@import "cart-checkout"; 

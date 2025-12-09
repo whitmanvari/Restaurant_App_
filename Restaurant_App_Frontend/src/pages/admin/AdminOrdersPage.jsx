@@ -304,7 +304,7 @@ export default function AdminOrdersPage() {
 
             {/* GRAFİK */}
             <div className="card border-0 shadow-sm">
-                <div className="card-body" style={{ height: 350 }}>
+                <div className="card-body" style={{ height: '350px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={getChartData()}>
                             <CartesianGrid strokeDasharray="3 3" />

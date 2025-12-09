@@ -1,97 +1,62 @@
-
 .menu-card {
     position: relative;
     overflow: hidden;
     border-radius: 0; 
     cursor: pointer;
-    height: 350px; // Sabit yükseklik
-    background-color: #000; // Resim yüklenmezse siyah görünsün
+    height: 350px;
+    background-color: #000;
 
-    // Resim
     .card-img-bg {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+        width: 100%; height: 100%; object-fit: cover;
         transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), filter 0.4s;
-        filter: brightness(0.9); // Normalde biraz koyu olsun
+        filter: brightness(0.9);
     }
 
-    // İçerik Katmanı 
     .card-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6); // Koyu transparan perde
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 20px;
-        opacity: 0;
-        transition: opacity 0.4s ease;
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        text-align: center; padding: 20px; opacity: 0; transition: opacity 0.4s ease;
         
         h5 {
-            color: #fff;
-            font-size: 1.8rem;
-            font-weight: 700;
-            transform: translateY(20px);
-            transition: transform 0.4s ease;
+            color: #fff; font-size: 1.8rem; font-weight: 700;
+            transform: translateY(20px); transition: transform 0.4s ease;
         }
-
         p {
-            color: #ccc;
-            font-size: 0.9rem;
-            transform: translateY(20px);
-            transition: transform 0.5s ease;
+            color: #ccc; font-size: 0.9rem;
+            transform: translateY(20px); transition: transform 0.5s ease;
         }
-
         .price-tag {
-            margin-top: 15px;
-            color: var(--accent-color);
-            font-size: 1.5rem;
-            font-weight: bold;
-            transform: scale(0);
-            transition: transform 0.4s ease 0.1s;
+            margin-top: 15px; color: var(--accent-color); font-size: 1.5rem; font-weight: bold;
+            transform: scale(0); transition: transform 0.4s ease 0.1s;
         }
         
+        // --- BUTON GÖRÜNÜRLÜĞÜ ---
         .btn-inspect {
-            margin-top: 20px;
-            border: 1px solid #fff;
-            color: #fff;
-            padding: 8px 20px;
-            background: transparent;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 0.8rem;
-            transform: translateY(20px);
-            transition: all 0.3s;
+            margin-top: 20px; 
+            border: 2px solid #fff; 
+            color: #fff; // Yazı beyaz
+            padding: 8px 25px;
+            background: rgba(255,255,255,0.1); // Hafif beyaz zemin
+            text-transform: uppercase; letter-spacing: 2px;
+            font-size: 0.8rem; font-weight: bold;
+            transform: translateY(20px); transition: all 0.3s;
+            cursor: pointer;
             
-            &:hover {
-                background: #fff;
-                color: #000;
+            &:hover { 
+                background: #fff; 
+                color: #000; 
+                transform: translateY(20px) scale(1.05);
             }
         }
     }
 
     &:hover {
-        .card-img-bg {
-            transform: scale(1.1); // Resim büyüsün
-            filter: brightness(0.4) blur(2px); // Resim kararsın ve bulanıklaşsın
-        }
-
+        .card-img-bg { transform: scale(1.1); filter: brightness(0.4) blur(2px); }
         .card-overlay {
-            opacity: 1; // Yazılar görünsün
-
-            h5, p, .btn-inspect {
-                transform: translateY(0); // Aşağıdan yukarı kaysın
-            }
-            
-            .price-tag {
-                transform: scale(1);
-            }
+            opacity: 1;
+            h5, p, .btn-inspect { transform: translateY(0); }
+            .price-tag { transform: scale(1); }
         }
     }
 }
