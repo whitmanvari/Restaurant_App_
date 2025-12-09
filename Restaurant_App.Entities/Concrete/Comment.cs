@@ -8,7 +8,8 @@ namespace Restaurant_App.Entities.Concrete
     {
         public string? Text { get; set; }
         public Rating? Rating { get; set; }
-        public int RatingId { get; set; } 
+        public int RatingId { get; set; }
+        public int RatingValue { get; set; }
         public string UserId { get; set; } = string.Empty;
     }
 }

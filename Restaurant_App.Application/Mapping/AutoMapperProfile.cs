@@ -23,7 +23,12 @@ namespace Restaurant_App.Application.Mapping
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
                 .ForMember(dest => dest.Allergic, opt => opt.MapFrom(src => (int)src.Allergic))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => (decimal)src.Price))
-                .ForMember(dest => dest.Ingredients, opt => opt.MapFrom(src => src.Ingredients));
+                .ForMember(dest => dest.Ingredients, opt => opt.MapFrom(src => src.Ingredients))
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src =>
+                    src.Comments != null && src.Comments.Any()
+                        ? src.Comments.Average(c => c.RatingValue) 
+                        : 0
+                ));
 
             CreateMap<ProductDTO, Product>()
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>

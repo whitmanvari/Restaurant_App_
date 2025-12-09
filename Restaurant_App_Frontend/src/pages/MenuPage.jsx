@@ -180,11 +180,17 @@ function MenuPage() {
                                                 </div>
                                                 <div className="card-body text-center p-4">
                                                     <h5 className="card-title mb-2" style={{ fontFamily: 'Playfair Display', color: 'var(--text-main)' }}>{product.name}</h5>
+                                                    
+                                                    {/* YILDIZLAR VE DEBUG LOG */}
+                                                    {/* Burası konsola ürünün puanını yazacak, F12'den kontrol et */}
+                                                    {console.log(`Ürün: ${product.name}, Puan: ${product.averageRating}`)}
+                                                    
                                                     <div className="text-warning small mb-2">
                                                         {[...Array(5)].map((_, i) => (
                                                             <i key={i} className={`fas fa-star ${i < Math.round(product.averageRating || 0) ? '' : 'text-muted opacity-25'}`}></i>
                                                         ))}
                                                     </div>
+
                                                     <p className="card-text text-muted small">
                                                         {product.description.length > 50 ? product.description.substring(0, 50) + '...' : product.description}
                                                     </p>

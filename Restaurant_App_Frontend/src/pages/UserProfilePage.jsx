@@ -4,14 +4,14 @@ import { logout } from '../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import UserOrdersList from '../components/Profile/UserOrdersList';
 import UserProfileForm from '../components/Profile/UserProfileForm';
+import UserReservationsList from '../components/Profile/UserReservationsList'; 
 
 export default function UserProfilePage({ isAdminView = false }) {
     const { user } = useSelector(state => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    // Eğer adminView ise varsayılan olarak 'settings' (Ayarlar) sekmesini aç
-    // Değilse 'orders' (Siparişlerim) sekmesini aç
+    // Varsayılan sekme
     const [activeTab, setActiveTab] = useState(isAdminView ? 'settings' : 'orders');
 
     const handleLogout = () => {
@@ -35,14 +35,23 @@ export default function UserProfilePage({ isAdminView = false }) {
                         <p className="text-muted mb-4">{user?.email}</p>
                         
                         <div className="list-group list-group-flush text-start mb-3">
-                            {/* Eğer Admin Modundaysak "Siparişlerim" butonunu gizle */}
                             {!isAdminView && (
-                                <button 
-                                    className={`list-group-item list-group-item-action border-0 rounded mb-2 ${activeTab === 'orders' ? 'active bg-dark text-white' : ''}`}
-                                    onClick={() => setActiveTab('orders')}
-                                >
-                                    <i className="fas fa-receipt me-2"></i> Siparişlerim
-                                </button>
+                                <>
+                                    <button 
+                                        className={`list-group-item list-group-item-action border-0 rounded mb-2 ${activeTab === 'orders' ? 'active bg-dark text-white' : ''}`}
+                                        onClick={() => setActiveTab('orders')}
+                                    >
+                                        <i className="fas fa-receipt me-2"></i> Siparişlerim
+                                    </button>
+
+                                    {/* --- REZERVASYON BUTONU --- */}
+                                    <button 
+                                        className={`list-group-item list-group-item-action border-0 rounded mb-2 ${activeTab === 'reservations' ? 'active bg-dark text-white' : ''}`}
+                                        onClick={() => setActiveTab('reservations')}
+                                    >
+                                        <i className="fas fa-calendar-check me-2"></i> Rezervasyonlarım
+                                    </button>
+                                </>
                             )}
                             
                             <button 
@@ -53,7 +62,6 @@ export default function UserProfilePage({ isAdminView = false }) {
                             </button>
                         </div>
 
-                        {/* Admin Modunda Çıkış Yap butonu gereksiz olabilir (Navbar'da var), ama user için gerekli */}
                         {!isAdminView && (
                             <button className="btn btn-outline-danger w-100" onClick={handleLogout}>
                                 <i className="fas fa-sign-out-alt me-2"></i> Çıkış Yap
@@ -62,10 +70,12 @@ export default function UserProfilePage({ isAdminView = false }) {
                     </div>
                 </div>
 
-                {/* SAĞ: İçerik Alanı (Modüler Bileşenler) */}
+                {/* SAĞ: İçerik Alanı */}
                 <div className="col-lg-8">
-                    {/* Tablar arasında geçiş */}
                     {activeTab === 'orders' && !isAdminView && <UserOrdersList />}
+                    
+                    {activeTab === 'reservations' && !isAdminView && <UserReservationsList />}
+                    
                     {activeTab === 'settings' && <UserProfileForm />}
                 </div>
             </div>

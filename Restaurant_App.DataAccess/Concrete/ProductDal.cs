@@ -18,7 +18,8 @@ namespace Restaurant_App.DataAccess.Concrete
         {
             var query = _context.Products
                 .Include(p => p.Images)    
-                .Include(p => p.Category)  
+                .Include(p => p.Category)
+                .Include(p => p.Comments)
                 .AsQueryable();
 
             if (filter != null)

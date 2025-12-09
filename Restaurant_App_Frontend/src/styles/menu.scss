@@ -12,6 +12,7 @@
 .filter-sidebar {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
     
     .form-label { color: var(--text-main); }
 
@@ -25,12 +26,15 @@
         background-color: var(--bg-input);
         border-color: var(--border-color);
         color: var(--text-main);
+        
+        &::placeholder { color: var(--text-muted); }
     }
 
     .list-group-item {
         background-color: transparent;
         border-bottom: 1px solid var(--border-color);
         color: var(--text-main);
+        transition: color 0.2s;
         
         &:hover { color: var(--accent-color); }
         
@@ -45,7 +49,7 @@
 .product-hover-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s;
     
     &:hover {
         transform: translateY(-5px);
@@ -54,6 +58,20 @@
 
     .card-title { color: var(--text-main); }
     .card-text { color: var(--text-muted); }
+
+    // Bootstrap'in btn-outline-dark sınıfını eziyoruz
+    .btn-outline-dark {
+        color: var(--text-main);       // Dark modda Beyaz, Light modda Siyah
+        border-color: var(--text-main); // Kenarlık da aynı şekilde
+        background-color: transparent;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: var(--text-main); // Arkaplan tersine dönsün
+            color: var(--bg-card);              // Yazı kart rengine (zıt renk) dönsün
+            border-color: var(--text-main);
+        }
+    }
 }
 
 // --- PAGINATION ---
@@ -62,6 +80,7 @@
         background-color: var(--bg-card);
         color: var(--text-main);
         border: 1px solid var(--border-color);
+        transition: all 0.2s;
         
         &:hover {
             background-color: var(--accent-color);
@@ -72,7 +91,7 @@
 
     .page-item.active .page-link {
         background-color: var(--text-main); 
-        color: var(--bg-card);
+        color: var(--bg-card); // Zıt renk (Okunabilirlik için)
         border-color: var(--text-main);
     }
     
@@ -81,4 +100,12 @@
         background-color: var(--bg-body);
         opacity: 0.6;
     }
+}
+
+// Dark Mode özel ince ayarlar (Gerekirse)
+[data-bs-theme="dark"] {
+    .filter-sidebar { box-shadow: none; }
+    
+    // Search input ikonu daha belirgin olsun
+    .filter-sidebar .input-group-text i { color: #aaa; }
 }
