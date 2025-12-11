@@ -41,6 +41,13 @@ namespace Restaurant_App.DataAccess.Concrete
                 ? await _context.Set<T>().ToListAsync()
                 : await _context.Set<T>().Where(filter).ToListAsync();
         }
+        // Asenkron GetList, productDalda eziyorum 
+        public virtual async Task<List<T>> GetListAsync(Expression<Func<T, bool>>? filter = null)
+        {
+            return filter == null
+                ? await _context.Set<T>().ToListAsync()
+                : await _context.Set<T>().Where(filter).ToListAsync();
+        }
 
         public async Task<T> GetById(int id)
         {

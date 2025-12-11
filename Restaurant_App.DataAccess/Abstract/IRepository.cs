@@ -10,5 +10,6 @@ namespace Restaurant_App.DataAccess.Abstract
         Task Create(T entity);
         Task Update(T entity);
         Task Delete(T entity);
+        Task<List<T>> GetListAsync(Expression<Func<T, bool>>? filter = null);
     }
 }

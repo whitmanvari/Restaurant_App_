@@ -11,20 +11,17 @@ export default function UserReservationsList() {
 
     const fetchReservations = async () => {
         try {
-            // Servisteki yeni fonksiyonu çağırıyoruz
             const data = await reservationService.getMyReservations();
-            
-            // Tarihe göre sırala (En yeni tarih en üstte)
+            // Tarihe göre sırala (En yeni en üstte)
             const sorted = data.sort((a, b) => new Date(b.reservationDate) - new Date(a.reservationDate));
             setReservations(sorted);
             setLoading(false);
         } catch (error) {
-            console.error("Rezervasyonlar alınamadı", error);
+            console.error("Rezervasyon hatası", error);
             setLoading(false);
         }
     };
 
-    // Durum rengini ve metnini ayarlayan yardımcı fonksiyon
     const getStatusBadge = (status) => {
         switch (status) {
             case 0: return <span className="badge bg-warning text-dark">Onay Bekliyor</span>;
@@ -73,7 +70,6 @@ export default function UserReservationsList() {
                                         </td>
                                         <td>{res.numberOfGuests} Kişilik</td>
                                         <td>
-                                            {/* Admin masa atamış mı kontrol et */}
                                             {res.tableId ? (
                                                 <span className="badge bg-light text-dark border border-secondary">
                                                     Masa {res.tableId}

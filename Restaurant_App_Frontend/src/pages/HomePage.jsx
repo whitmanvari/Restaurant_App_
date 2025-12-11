@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { productService } from '../services/productService';
-import { getImageUrl } from '../utils/imageHelper';
+import { getImageUrl } from '../utils/imageHelper'; 
 import '../styles/home.scss';
 
 const HomePage = () => {
@@ -10,10 +10,8 @@ const HomePage = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [featuredProducts, setFeaturedProducts] = useState([]);
     
-    // Scroll için Referans
     const aboutRef = useRef(null);
 
-    // Unsplash Linkleri
     const slides = [
         {
             image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop",
@@ -22,7 +20,7 @@ const HomePage = () => {
             description: "Geleneksel lezzetleri modern dokunuşlarla yeniden keşfedin."
         },
         {
-            image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670&auto=format&fit=crop", // Daha şık bir masa görseli
+            image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670&auto=format&fit=crop", 
             title: "EŞSİZ DENEYİM",
             subtitle: "ŞEFİN ÖZEL MENÜSÜ", 
             description: "Mevsimin en taze ürünleriyle hazırlanan imza tabaklar."
@@ -38,7 +36,6 @@ const HomePage = () => {
     useEffect(() => {
         loadFeaturedProducts();
         
-        // Otomatik Slider (6 Saniye)
         const interval = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % slides.length);
         }, 6000); 
@@ -48,6 +45,7 @@ const HomePage = () => {
 
     const loadFeaturedProducts = async () => {
         try {
+            // Şefin İmzası (En Popüler 3 Ürün)
             const products = await productService.getMostPopular(3);
             setFeaturedProducts(products);
         } catch (error) {
@@ -152,25 +150,32 @@ const HomePage = () => {
                         {featuredProducts.map(product => (
                             <div key={product.id} className="menu-item-card">
                                 <div className="card-img">
-                                    <img src={getImageUrl(product.imageUrls?.[0])} alt={product.name} />
+                                    {/* --- getImageUrl KULLANIMI --- */}
+                                    <img 
+                                        src={getImageUrl(product.imageUrls?.[0])} 
+                                        alt={product.name} 
+                                    />
                                     <div className="price-badge">{product.price} ₺</div>
                                 </div>
                                 <div className="card-body">
                                     <h4>{product.name}</h4>
+                                    
+                                    {/* Yıldızlar */}
                                     <div className="rating">
                                         {[...Array(5)].map((_, i) => (
-                                            <i key={i} className={`fas fa-star ${i < Math.round(product.averageRating || 5) ? '' : 'text-muted opacity-25'}`}></i>
+                                            <i key={i} className={`fas fa-star ${i < Math.round(product.averageRating || 0) ? '' : 'text-muted opacity-25'}`}></i>
                                         ))}
                                     </div>
+                                    
                                     <p>{product.description.substring(0, 60)}...</p>
-                                    <Link to="/menu" className="btn-link">Detaylı İncele</Link>
+                                    <Link to={`/product/${product.id}`} className="btn-link">Detaylı İncele</Link>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     <div className="text-center">
-                        <Link to="/menu" className="btn btn-dark">Tüm Menüyü Görüntüle</Link>
+                        <Link to="/menu" className="btn btn-dark px-5 py-3 text-uppercase ls-1">Tüm Menüyü Görüntüle</Link>
                     </div>
                 </div>
             </section>
