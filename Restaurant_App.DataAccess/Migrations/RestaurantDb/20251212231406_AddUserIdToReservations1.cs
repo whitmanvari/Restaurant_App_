@@ -5,7 +5,7 @@
 namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
 {
     /// <inheritdoc />
-    public partial class AddUserIdToReservations : Migration
+    public partial class AddUserIdToReservations1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
