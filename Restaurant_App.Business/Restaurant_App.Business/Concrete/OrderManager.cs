@@ -1,6 +1,8 @@
 ﻿using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
+using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
+using Restaurant_App.Entities.Enums;
 using System.Linq.Expressions;
 
 namespace Restaurant_App.Business.Concrete
@@ -8,12 +10,36 @@ namespace Restaurant_App.Business.Concrete
     public class OrderManager : IOrderService, IService<Order>
     {
         private readonly IOrderDal _orderDal;
-        public OrderManager(IOrderDal orderDal)
+        private readonly IProductDal _productDal;
+        public OrderManager(IOrderDal orderDal, IProductDal productDal)
         {
              _orderDal = orderDal;
+            _productDal = productDal;
         }
         public async Task Create(Order order)
         {
+            // --- GÜVENLİK ---
+            decimal calculatedTotal = 0;
+
+            foreach (var item in order.OrderItems)
+            {
+                // 1. Ürünün GERÇEK fiyatını veritabanından çek, fronttan gelirse açık (Insecure direct object reference IDOR veya Price Manipulation güvenlik açığı)
+                var product = await _productDal.GetById(item.ProductId);
+                if (product == null) throw new Exception($"Ürün bulunamadı: {item.ProductId}");
+
+                // 2. Frontend'den gelen fiyatı EZ ve veritabanı fiyatını kullan
+                item.Price = product.Price;
+
+                // 3. Toplamı kendimiz hesaplayalım
+                calculatedTotal += item.Quantity * item.Price;
+            }
+
+            // 4. Siparişin toplam tutarını da hesaplanan tutar ile güncelle
+            order.TotalAmount = calculatedTotal;
+
+            order.OrderDate = DateTime.Now;
+            order.OrderState = OrderState.Waiting;
+
             await _orderDal.Create(order);
         }
 

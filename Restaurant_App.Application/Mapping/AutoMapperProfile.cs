@@ -25,8 +25,9 @@ namespace Restaurant_App.Application.Mapping
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => (decimal)src.Price))
                 .ForMember(dest => dest.Ingredients, opt => opt.MapFrom(src => src.Ingredients))
                 .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src =>
-                    src.Comments != null && src.Comments.Any()
-                        ? src.Comments.Average(c => c.RatingValue) 
+                    // Mantık: Ratings listesi doluysa ortalamasını al, yoksa 0 ver.
+                    src.Ratings != null && src.Ratings.Any()
+                        ? src.Ratings.Average(r => (double)r.Value)
                         : 0
                 ));
 
@@ -73,7 +74,15 @@ namespace Restaurant_App.Application.Mapping
             // Reservation
             CreateMap<Reservation, ReservationDTO>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status))
-                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status.ToString()));
+                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src =>
+                    !string.IsNullOrEmpty(src.CustomerName) ? src.CustomerName :
+                    (src.User != null ? src.User.FullName : "Misafir")
+                ))
+                .ForMember(dest => dest.CustomerPhone, opt => opt.MapFrom(src =>
+                    !string.IsNullOrEmpty(src.CustomerPhone) && src.CustomerPhone != "5555" ? src.CustomerPhone :
+                    (src.User != null ? src.User.PhoneNumber : "Belirtilmedi")
+                ));
 
             CreateMap<ReservationDTO, Reservation>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (ReservationStatus)src.Status));
@@ -97,17 +106,19 @@ namespace Restaurant_App.Application.Mapping
             // OrderInRestaurant
             CreateMap<OrderInRestaurant, OrderInRestaurantDTO>()
                 .ForMember(dest => dest.TableNumber, opt => opt.MapFrom(src => src.Table != null ? src.Table.TableNumber : string.Empty))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItemsInRestaurant));
 
             CreateMap<OrderInRestaurantDTO, OrderInRestaurant>()
                 .ForMember(dest => dest.Table, opt => opt.Ignore())
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<OrderStatusInRestaurant>(src.Status, true)));
-
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<OrderStatusInRestaurant>(src.Status, true)))
+                .ForMember(dest => dest.OrderItemsInRestaurant, opt => opt.MapFrom(src => src.OrderItems));
+           
             // OrderItem
             CreateMap<OrderItem, OrderItemDTO>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : string.Empty));
             CreateMap<OrderItemDTO, OrderItem>()
-                .ForMember(dest => dest.Product, opt => opt.Ignore());
+                .ForMember(dest => dest.Product, opt => opt.Ignore()); // Product'ı tekrar oluşturma, sadece ID yeterli
 
             // OrderItemInRestaurant
             CreateMap<OrderItemInRestaurant, OrderItemInRestaurantDTO>()

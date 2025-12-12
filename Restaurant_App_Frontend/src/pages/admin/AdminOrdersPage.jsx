@@ -15,7 +15,7 @@ export default function AdminOrdersPage() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('table'); // 'table' veya 'online'
 
-    // --- EKLENEN FİLTRE STATE'LERİ ---
+    // --- FİLTRE STATE'LERİ ---
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     

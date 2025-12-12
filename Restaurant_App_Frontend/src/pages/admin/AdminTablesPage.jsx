@@ -3,8 +3,6 @@ import { toast } from 'react-toastify';
 import { tableService } from '../../services/tableService';
 import { reservationService } from '../../services/reservationService';
 import api from '../../api/axiosInstance';
-
-// Bileşenler
 import TableFormModal from '../../components/Admin/Table/TableFormModal';
 import TableStatusCard from '../../components/Admin/Table/TableStatusCard';
 import TableDetailModal from '../../components/Admin/Table/TableDetailModal';
@@ -29,7 +27,7 @@ export default function AdminTablesPage() {
     const [selectedReservation, setSelectedReservation] = useState(null); 
 
     // Chart Renkleri
-    const COLORS = { occupied: '#dc3545', empty: '#198754', reserved: '#0dcaf0', closed: '#6c757d' };
+    const COLORS = { occupied: '#dc3545', empty: '#198754', reserved: '#0dcaf0', future: '#6f42c1', closed: '#6c757d' };
 
     useEffect(() => {
         fetchData();
@@ -45,11 +43,16 @@ export default function AdminTablesPage() {
                 api.get('/OrderInRestaurant/all/details')
             ]);
 
+            // Masaları A1, A2, A10 gibi doğal sırala
             const sortedTables = tableRes.sort((a, b) => a.tableNumber.localeCompare(b.tableNumber, undefined, { numeric: true }));
             
             setTables(sortedTables);
             setReservations(resData);
-            setActiveOrders(orderRes.data.filter(o => o.status !== 'Completed' && o.status !== 'Canceled'));
+            
+            // Sadece aktif siparişleri al
+            const activeOnes = orderRes.data.filter(o => o.status !== 'Completed' && o.status !== 'Canceled');
+            setActiveOrders(activeOnes);
+            
             setLoading(false);
         } catch (error) {
             console.error(error);
@@ -59,9 +62,11 @@ export default function AdminTablesPage() {
 
     // --- MASA DURUMU BELİRLEME ---
     const getTableStatusObj = (table) => {
+        // 0. Masa Kapalı mı?
         if (!table.isAvailable) 
             return { status: 'closed', text: 'KAPALI', color: 'secondary', icon: 'fa-ban', subText: 'Servis Dışı' };
 
+        // 1. Canlı Sipariş Var mı? (ÖNCELİK 1 - Müşteri oturuyorsa rezervasyonun önemi yoktur)
         const activeOrder = activeOrders.find(o => o.tableId === table.id);
         if (activeOrder) {
             if (activeOrder.status === 'Pending') 
@@ -70,33 +75,68 @@ export default function AdminTablesPage() {
             return { status: 'occupied', text: 'DOLU', color: 'danger', subText: `${activeOrder.totalAmount} ₺`, icon: 'fa-utensils', data: activeOrder };
         }
 
+        // 2. Rezervasyon Var mı? (ÖNCELİK 2 - Hem Bugün Hem Gelecek)
         const now = new Date();
-        const activeRes = reservations.find(r => {
-            if (r.tableId !== table.id || (r.status !== 1 && r.status !== 0)) return false;
+        
+        // Bu masaya ait, İptal/Red edilmemiş TÜM gelecek rezervasyonları bul
+        const upcomingReservations = reservations.filter(r => {
+            if (r.tableId !== table.id) return false;
+            if (r.status === 2 || r.status === 3) return false; // Red/İptal hariç
+
             const resDate = new Date(r.reservationDate);
-            if (resDate.toDateString() !== now.toDateString()) return false;
-            const diffMinutes = (resDate - now) / (1000 * 60);
-            return diffMinutes > -90 && diffMinutes < 90;
+            // Geçmiş rezervasyonları (Dünden kalanları) gösterme
+            // Ama bugünün geçmiş saatleri kalsın (müşteri gelmemiş olabilir)
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            return resDate > yesterday;
         });
 
-        if (activeRes) {
-            const timeStr = new Date(activeRes.reservationDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            return { 
-                status: 'reserved', 
-                text: activeRes.status === 0 ? 'TALEP' : 'REZERVE', 
-                color: 'info', 
-                subText: timeStr, 
-                icon: 'fa-clock',
-                data: activeRes 
-            };
+        // Tarihe göre sırala (En yakın tarih en üstte)
+        upcomingReservations.sort((a, b) => new Date(a.reservationDate) - new Date(b.reservationDate));
+
+        // En yakın rezervasyonu al
+        const nearestRes = upcomingReservations[0];
+
+        if (nearestRes) {
+            const resDate = new Date(nearestRes.reservationDate);
+            const isToday = resDate.toDateString() === now.toDateString();
+            const timeStr = resDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const dateStr = resDate.toLocaleDateString('tr-TR', {day: 'numeric', month: 'short'}); // 12 Ara
+            
+            const isPending = nearestRes.status === 0;
+
+            if (isToday) {
+                // --- DURUM A: BUGÜN REZERVASYON VAR ---
+                return { 
+                    status: 'reserved', 
+                    text: isPending ? 'TALEP' : 'REZERVE', 
+                    color: isPending ? 'info' : 'primary', // Mavi / Lacivert
+                    subText: `Bugün ${timeStr}`, 
+                    icon: isPending ? 'fa-question' : 'fa-clock',
+                    data: nearestRes 
+                };
+            } else {
+                // --- DURUM B: İLERİ TARİHLİ REZERVASYON ---
+                return { 
+                    status: 'future', 
+                    text: isPending ? 'GEL. TALEP' : 'İLERİ TARİH', 
+                    color: 'purple', 
+                    customColor: '#6f42c1', // Mor renk
+                    subText: `${dateStr} - ${timeStr}`, 
+                    icon: 'fa-calendar-alt',
+                    data: nearestRes 
+                };
+            }
         }
 
+        // 3. Hiçbiri yoksa BOŞ
         return { status: 'empty', text: 'MÜSAİT', color: 'success', subText: `${table.capacity} Kişilik`, icon: 'fa-chair' };
     };
 
     // --- CHART DATA ---
     const getChartData = () => {
-        const counts = { occupied: 0, empty: 0, reserved: 0, closed: 0 };
+        const counts = { occupied: 0, empty: 0, reserved: 0, future: 0, closed: 0 };
         tables.forEach(t => {
             const s = getTableStatusObj(t).status;
             counts[s] = (counts[s] || 0) + 1;
@@ -105,6 +145,7 @@ export default function AdminTablesPage() {
             { name: 'Dolu', value: counts.occupied, color: COLORS.occupied },
             { name: 'Müsait', value: counts.empty, color: COLORS.empty },
             { name: 'Rezerve', value: counts.reserved, color: COLORS.reserved },
+            { name: 'Gelecek', value: counts.future, color: COLORS.future },
             { name: 'Kapalı', value: counts.closed, color: COLORS.closed }
         ].filter(d => d.value > 0);
     };
@@ -133,7 +174,7 @@ export default function AdminTablesPage() {
 
     const handleCardClick = (table, statusObj) => {
         if (statusObj.status === 'occupied') setSelectedTableData({ table, order: statusObj.data });
-        else if (statusObj.status === 'reserved') setSelectedReservation(statusObj.data);
+        else if (statusObj.status === 'reserved' || statusObj.status === 'future') setSelectedReservation(statusObj.data);
     };
 
     const filteredTables = tables.filter(t => {
@@ -147,21 +188,17 @@ export default function AdminTablesPage() {
 
     return (
         <div className="container-fluid p-4">
-            
-            {/* ÜST BAŞLIK (BUTONLAR KALDIRILDI) */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 style={{ fontFamily: 'Playfair Display' }}>Masa Yönetimi</h2>
-                    <p className="text-muted">Salon durumunu izleyin ve düzenleyin.</p>
+                    <p className="text-muted">Salon durumu ve hızlı işlemler.</p>
                 </div>
-                {/* SADECE YENİ MASA BUTONU KALDI */}
                 <button className="btn btn-dark" onClick={() => { setEditingTable(null); setShowFormModal(true); }}>
                     <i className="fas fa-plus me-2"></i> Yeni Masa Ekle
                 </button>
             </div>
 
             <div className="row g-4 mb-4">
-                {/* SOL: FİLTRELER */}
                 <div className="col-lg-8">
                     <div className="card border-0 shadow-sm p-3 bg-light h-100">
                         <div className="d-flex flex-wrap gap-3 align-items-center h-100">
@@ -171,14 +208,17 @@ export default function AdminTablesPage() {
                             </div>
                             
                             <div className="btn-group shadow-sm">
-                                {['all', 'empty', 'occupied', 'reserved'].map(type => (
+                                {['all', 'empty', 'occupied', 'reserved', 'future'].map(type => (
                                     <button 
                                         key={type}
                                         className={`btn btn-sm px-3 ${filterStatus === type ? 'btn-white text-dark fw-bold border' : 'btn-light text-muted'}`}
                                         onClick={() => setFilterStatus(type)}
                                         style={{textTransform: 'capitalize'}}
                                     >
-                                        {type === 'all' ? 'Tümü' : type === 'occupied' ? 'Dolu' : type === 'empty' ? 'Boş' : 'Rezerve'}
+                                        {type === 'all' ? 'Tümü' : 
+                                         type === 'occupied' ? 'Dolu' : 
+                                         type === 'empty' ? 'Boş' : 
+                                         type === 'reserved' ? 'Bugün Rez.' : 'Gelecek Rez.'}
                                     </button>
                                 ))}
                             </div>
@@ -189,11 +229,10 @@ export default function AdminTablesPage() {
                     </div>
                 </div>
 
-                {/* SAĞ: MİNİ CHART */}
                 <div className="col-lg-4">
                     <div className="card border-0 shadow-sm h-100 d-flex flex-row align-items-center px-3" style={{maxHeight:'100px'}}>
                         <div style={{ width: '80px', height: '80px' }}>
-                            <ResponsiveContainer>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie data={getChartData()} dataKey="value" innerRadius={25} outerRadius={35} paddingAngle={2} isAnimationActive={false}>
                                         {getChartData().map((entry, index) => <Cell key={index} fill={entry.color} />)}
@@ -214,23 +253,40 @@ export default function AdminTablesPage() {
                     </div>
                 </div>
             </div>
-
-            {/* MASA LİSTESİ */}
-            <div className="row g-3">
-                {filteredTables.map(table => (
-                    <TableStatusCard 
-                        key={table.id}
-                        table={table}
-                        statusObj={getTableStatusObj(table)}
-                        onClick={handleCardClick}
-                        onEdit={(t) => { setEditingTable(t); setShowFormModal(true); }}
-                        onDelete={handleDelete}
-                    />
-                ))}
-                {filteredTables.length === 0 && <div className="text-center py-5 text-muted w-100">Kriterlere uygun masa bulunamadı.</div>}
+           {/* --- MASA LİSTESİ --- */}
+           <div className="row g-3"> {/* g-3: Kartlar arası boşluk */}
+                {filteredTables.map(table => {
+                    const statusObj = getTableStatusObj(table);
+                    
+                    // Mor renk (Gelecek Rezervasyon) için 
+                    const cardStyle = statusObj.status === 'future' 
+                        ? { borderTop: `5px solid ${statusObj.customColor}` } 
+                        : {};
+                    
+                    return (
+                        <div key={table.id} className="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+                            <TableStatusCard 
+                                table={table}
+                                statusObj={statusObj}
+                                style={cardStyle} // Stili prop olarak gönderdik
+                                onClick={handleCardClick}
+                                onEdit={(t) => { setEditingTable(t); setShowFormModal(true); }}
+                                onDelete={handleDelete}
+                            />
+                        </div>
+                    );
+                })}
+                
+                {filteredTables.length === 0 && (
+                    <div className="col-12 text-center py-5">
+                        <div className="text-muted opacity-50">
+                            <i className="fas fa-search fa-3x mb-3"></i>
+                            <p>Kriterlere uygun masa bulunamadı.</p>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* MODALLAR */}
             <TableFormModal 
                 show={showFormModal} 
                 onClose={() => setShowFormModal(false)} 

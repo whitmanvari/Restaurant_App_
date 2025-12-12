@@ -8,7 +8,7 @@ import { addProductToCart } from '../store/slices/cartSlice';
 import { getImageUrl } from '../utils/imageHelper';
 import { Allergens } from '../constants/allergens';
 import { toast } from 'react-toastify';
-import '../styles/home.scss'; // Genel tasarım dili için
+import '../styles/home.scss'; 
 
 export default function ProductDetailPage() {
     const { id } = useParams();
@@ -36,7 +36,7 @@ export default function ProductDetailPage() {
     const loadData = async () => {
         try {
             const [prodData, commData, ratingData] = await Promise.all([
-                productService.getById(id), // Serviste bu metodun olduğundan emin ol
+                productService.getById(id), 
                 commentService.getByProduct(id),
                 ratingService.getAverage(id)
             ]);
@@ -154,7 +154,7 @@ export default function ProductDetailPage() {
                     
                     <p className="text-muted lead mb-4" style={{lineHeight:'1.8'}}>{product.description}</p>
 
-                    {/* YENİ: İÇİNDEKİLER */}
+                    {/* İÇİNDEKİLER */}
                     {product.ingredients && (
                         <div className="mb-4 p-3 bg-light rounded border-start border-4 border-warning">
                             <h6 className="fw-bold mb-2 text-dark"><i className="fas fa-mortar-pestle me-2"></i>İçindekiler</h6>

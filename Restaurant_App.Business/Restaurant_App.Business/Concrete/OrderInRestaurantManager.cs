@@ -1,5 +1,6 @@
 ﻿using Restaurant_App.Business.Abstract;
 using Restaurant_App.DataAccess.Abstract;
+using Restaurant_App.DataAccess.Concrete.EfCore;
 using Restaurant_App.Entities.Concrete;
 using Restaurant_App.Entities.Enums;
 using System.Linq.Expressions;
@@ -9,9 +10,11 @@ namespace Restaurant_App.Business.Concrete
     public class OrderInRestaurantManager: IOrderInRestaurantService, IService<OrderInRestaurant>
     {
         private readonly IOrderInRestaurantDal _orderInRestaurantDal;
-        public OrderInRestaurantManager(IOrderInRestaurantDal orderInRestaurantDal)
+        private readonly IProductDal _productDal;
+        public OrderInRestaurantManager(IOrderInRestaurantDal orderInRestaurantDal, IProductDal productDal)
         {
             _orderInRestaurantDal = orderInRestaurantDal;
+            _productDal = productDal;
         }
 
         public async Task AddOrderItem(int orderInRestaurantId, OrderItemInRestaurant orderItem)
@@ -50,6 +53,26 @@ namespace Restaurant_App.Business.Concrete
 
         public async Task Create(OrderInRestaurant entity)
         {
+            // --- GÜVENLİK ---
+            decimal realTotal = 0;
+
+            foreach (var item in entity.OrderItemsInRestaurant)
+            {
+                // Veritabanından ürünü bul
+                var product = await _productDal.GetById(item.ProductId);
+                if (product == null) throw new Exception("Ürün bulunamadı.");
+
+                // Fiyatı veritabanından al (Frontend'den geleni yoksay)
+                item.Price = product.Price;
+
+                // Ara toplamı hesapla
+                realTotal += item.Quantity * item.Price;
+            }
+
+            // Ana toplamı güncelle
+            entity.TotalAmount = (double)realTotal;
+
+            entity.OrderDate = DateTime.Now;
             await _orderInRestaurantDal.Create(entity);
         }
 

@@ -129,8 +129,7 @@ export default function CheckoutPage() {
                     phone: contactPhone,
                     orderNote: note,
                     paymentId: transactionId,
-                    items: items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price })),
-                    totalAmount: totalAmount
+                    items: items.map(i => ({ productId: i.productId, quantity: i.quantity }))
                 };
 
                 await orderService.createOrder(orderPayload);

@@ -69,14 +69,20 @@ namespace Restaurant_App.WebAPI.Controllers
             return Ok(dto);
         }
 
-        [HttpPost]
+        [HttpPost] 
         public async Task<IActionResult> Create([FromBody] ReservationDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var entity = _mapper.Map<Reservation>(dto);
-            entity.CreatedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Oluşturanı ekle
+
+            // Kullanıcı ID'sini al
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // Hem loglama (CreatedBy) hem de ilişki (UserId) alanını doldur
+            entity.CreatedBy = userId;
+            entity.UserId = userId; 
 
             await _reservationService.Create(entity);
 
@@ -120,13 +126,12 @@ namespace Restaurant_App.WebAPI.Controllers
         }
 
         [HttpGet("my-reservations")]
-        [Authorize]
         public async Task<IActionResult> GetMyReservations()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var all = await _reservationService.GetAll(r => r.CreatedBy == userId);
-            var dto = _mapper.Map<List<ReservationDTO>>(all);
-            return Ok(dto);
+            // UserId'ye göre filtrele (CreatedBy yerine UserId kullanmak daha güvenli)
+            var all = await _reservationService.GetAll(r => r.UserId == userId);
+            return Ok(_mapper.Map<List<ReservationDTO>>(all));
         }
 
         //Admin dışında kimse rezervasyon onaylayamayacak.

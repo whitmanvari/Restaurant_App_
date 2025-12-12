@@ -46,6 +46,7 @@ namespace Restaurant_App.DataAccess.Concrete
         {
             return await _context.OrdersInRestaurant
                 .Include(o => o.OrderItemsInRestaurant)
+                    .ThenInclude(oi => oi.Product) 
                 .Where(o => o.Status == status)
                 .ToListAsync();
         }
@@ -53,6 +54,7 @@ namespace Restaurant_App.DataAccess.Concrete
         {
             return await _context.OrdersInRestaurant
                 .Include(o => o.OrderItemsInRestaurant)
+                    .ThenInclude(oi => oi.Product) 
                 .Where(o => o.TableId == tableId)
                 .ToListAsync();
         }
@@ -60,6 +62,7 @@ namespace Restaurant_App.DataAccess.Concrete
         {
             return await _context.OrdersInRestaurant
                 .Include(o => o.OrderItemsInRestaurant)
+                    .ThenInclude(oi => oi.Product) //admin adisyon için bunu kullanıyor, productın adı da adisyonda olsun diye yaptık
                 .Include(o => o.Table)
                 .ToListAsync();
         }
@@ -67,6 +70,7 @@ namespace Restaurant_App.DataAccess.Concrete
         {
             var order = await _context.OrdersInRestaurant
                 .Include(o => o.OrderItemsInRestaurant)
+                    .ThenInclude(oi => oi.Product) 
                 .Include(o => o.Table)
                 .FirstOrDefaultAsync(o => o.Id == orderInRestaurantId);
             return order;

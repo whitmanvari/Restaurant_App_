@@ -1,5 +1,6 @@
 ﻿using Restaurant_App.Entities.Abstract;
 using Restaurant_App.Entities.Enums;
+using Restaurant_App.Entities.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Restaurant_App.Entities.Concrete
@@ -8,7 +9,10 @@ namespace Restaurant_App.Entities.Concrete
     public class Reservation: BaseEntity
     {
         public string CustomerName { get; set; }
-        public string? CreatedBy { get; set; }
+        public string? UserId { get; set; }
+        [ForeignKey("UserId")]
+        public ApplicationUser? User { get; set; }
+        public string? CreatedBy { get; set; } // Bunu loglama için tuttuk
         public string CustomerPhone { get; set; }
         public DateTime ReservationDate { get; set; }
         public int NumberOfGuests { get; set; }
