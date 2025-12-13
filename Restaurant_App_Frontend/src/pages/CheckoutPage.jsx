@@ -129,9 +129,14 @@ export default function CheckoutPage() {
                     phone: contactPhone,
                     orderNote: note,
                     paymentId: transactionId,
-                    items: items.map(i => ({ productId: i.productId, quantity: i.quantity }))
+                    items: items.map(i => ({ 
+                        productId: i.productId, 
+                        quantity: i.quantity, 
+                        price: i.price 
+                    })),
+                    
+                    totalAmount: totalAmount
                 };
-
                 await orderService.createOrder(orderPayload);
                 setSuccessMessage("Paket siparişiniz başarıyla alındı.");
 

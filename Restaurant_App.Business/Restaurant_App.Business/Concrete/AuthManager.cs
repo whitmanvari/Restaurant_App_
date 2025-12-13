@@ -91,15 +91,19 @@ namespace Restaurant_App.Business.Concrete
         }
         public async Task<bool> UpdateUserProfile(string userId, UserUpdateDTO model)
         {
+            // Kullanıcıyı bul
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return false;
 
             user.FullName = model.FullName;
             user.PhoneNumber = model.PhoneNumber;
-            user.Address = model.Address;
-            user.City = model.City;
 
+            user.City = model.City;
+            user.Address = model.Address;
+
+            // Veritabanını güncelle
             var result = await _userManager.UpdateAsync(user);
+
             return result.Succeeded;
         }
 

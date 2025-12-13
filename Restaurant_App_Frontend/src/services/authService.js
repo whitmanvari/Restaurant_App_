@@ -42,7 +42,15 @@ const register = async(registerData) => {
         return Promise.reject(error.message || "Sunucu hatası.");
     }
 }
-
+const getProfile = async () => {
+    try {
+        // axiosInstance'ın (api) token'ı otomatik ekleyecek
+        const response = await api.get('Auth/get-profile');
+        return response.data; // Backend'den gelen UserDTO
+    } catch (error) {
+        return Promise.reject(error.response?.data || 'Profil bilgileri alınamadı.');
+    }
+};
 // PROFİL GÜNCELLEME 
 const updateProfile = async (userData) => {
     try {
@@ -61,5 +69,6 @@ export const authService = {
     login,
     register,
     logout,
-    updateProfile
+    updateProfile,
+    getProfile
 }

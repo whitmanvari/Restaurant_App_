@@ -31,6 +31,7 @@ export default function UserProfileForm() {
                 });
             } catch (error) {
                 console.error("Profil çekilemedi, Redux verisi kullanılıyor:", error);
+                // Hata olursa Redux'taki temel veriyle doldur (fallback)
                 if (user) {
                     setFormData(prev => ({
                         ...prev,

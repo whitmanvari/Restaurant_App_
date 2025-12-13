@@ -49,6 +49,23 @@ namespace Restaurant_App.Application.Mapping
                     user.UserName = dto.Email;
                     user.FullName = dto.FullName;
                 });
+            CreateMap<ApplicationUser, UserDetailDTO>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))       
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
+
+            CreateMap<UserUpdateDTO, ApplicationUser>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))        // Şehri Eşle
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));   // Adresi Eşle
+
+            // Tam tersi (Güncelleme yaparken lazım)
+            CreateMap<UserDetailDTO, ApplicationUser>()
+                 .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))       
+                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address)); 
 
             // Cart-> DTO
             CreateMap<Cart, CartDTO>()

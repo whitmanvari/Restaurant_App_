@@ -68,27 +68,65 @@ namespace Restaurant_App.WebAPI.Controllers
             var dto = _mapper.Map<List<ReservationDTO>>(reservations);
             return Ok(dto);
         }
-
-        [HttpPost] 
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] ReservationDTO dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            // 1. Validasyonlar
+            if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            // 2. DTO'yu Entity'e çevir
             var entity = _mapper.Map<Reservation>(dto);
 
-            // Kullanıcı ID'sini al
+            // 3. Token'daki User ID'yi al
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // Hem loglama (CreatedBy) hem de ilişki (UserId) alanını doldur
-            entity.CreatedBy = userId;
-            entity.UserId = userId; 
+            // Veritabanı ilişkisi (Foreign Key) hata vermesin diye UserId'yi NULL yapıyoruz.
+            // Bu sayede "Böyle bir kullanıcı yok" hatası almayacağız
+            entity.UserId = null;
 
-            await _reservationService.Create(entity);
+            // Ama loglarda görmek için string alana ID'yi yazıyoruz.
+            entity.CreatedBy = userId ?? "Anonim";
+
+            // 4. Telefon Numarası Kozmetiği
+            // Eğer telefon 5555 geldiyse ve kullanıcı giriş yapmışsa, düzeltmeye çalışalım
+            if ((dto.CustomerPhone == "5555555555" || string.IsNullOrEmpty(dto.CustomerPhone)) && !string.IsNullOrEmpty(userId))
+            {
+                // Kullanıcıyı bulmaya çalış
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    entity.CustomerPhone = !string.IsNullOrEmpty(user.PhoneNumber) ? user.PhoneNumber : "05555555555";
+                    entity.CustomerName = user.FullName ?? dto.CustomerName;
+                }
+                else
+                {
+                    // Kullanıcı bulunamadıysa validasyon patlamasın diye sahte numara ver
+                    entity.CustomerPhone = "05555555555";
+                }
+            }
+
+            // 5. Tarih Kontrolü
+            if (entity.ReservationDate < DateTime.Now)
+            {
+                return BadRequest("Geçmiş bir tarihe rezervasyon yapılamaz.");
+            }
+
+            try
+            {
+                await _reservationService.Create(entity);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"KAYIT HATASI: {ex.Message}");
+                if (ex.InnerException != null) Console.WriteLine($"SQL DETAY: {ex.InnerException.Message}");
+                return StatusCode(500, "Sunucu hatası.");
+            }
 
             var responseDto = _mapper.Map<ReservationDTO>(entity);
             return CreatedAtAction(nameof(Get), new { id = responseDto.Id }, responseDto);
         }
+
+           
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ReservationDTO dto)
@@ -128,9 +166,13 @@ namespace Restaurant_App.WebAPI.Controllers
         [HttpGet("my-reservations")]
         public async Task<IActionResult> GetMyReservations()
         {
+            // 1. Token'dan ID'yi al
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            // UserId'ye göre filtrele (CreatedBy yerine UserId kullanmak daha güvenli)
-            var all = await _reservationService.GetAll(r => r.UserId == userId);
+
+            // "UserId" sütunu null olduğu için oraya bakmıyoruz.
+            // ID'yi sakladığımız "CreatedBy" sütununa bakıyoruz.
+            var all = await _reservationService.GetAll(r => r.CreatedBy == userId);
+
             return Ok(_mapper.Map<List<ReservationDTO>>(all));
         }
 

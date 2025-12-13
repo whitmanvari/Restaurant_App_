@@ -9,11 +9,11 @@ using Restaurant_App.DataAccess.Concrete.EfCore;
 
 #nullable disable
 
-namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
+namespace Restaurant_App.DataAccess.Migrations
 {
     [DbContext(typeof(RestaurantDbContext))]
-    [Migration("20251207002234_AddTotalAmountToOrder")]
-    partial class AddTotalAmountToOrder
+    [Migration("20251213000640_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -134,6 +134,9 @@ namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
                         .HasColumnType("int");
 
                     b.Property<int>("RatingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RatingValue")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -503,9 +506,14 @@ namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TableId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reservations");
                 });
@@ -539,6 +547,68 @@ namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
                     b.HasKey("Id");
 
                     b.ToTable("Tables");
+                });
+
+            modelBuilder.Entity("Restaurant_App.Entities.Identity.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("City")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApplicationUser");
                 });
 
             modelBuilder.Entity("Restaurant_App.Entities.Concrete.CartItem", b =>
@@ -663,7 +733,13 @@ namespace Restaurant_App.DataAccess.Migrations.RestaurantDb
                         .WithMany("Reservations")
                         .HasForeignKey("TableId");
 
+                    b.HasOne("Restaurant_App.Entities.Identity.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Table");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Restaurant_App.Entities.Concrete.Cart", b =>

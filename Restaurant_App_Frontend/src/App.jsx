@@ -19,8 +19,8 @@ import AdminReservationPage from './pages/admin/AdminReservationPage';
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminCommentsPage from './pages/admin/AdminCommentsPage';
-// YENİ: Tek Merkezli Masa Yönetimi
 import AdminTablesPage from './pages/admin/AdminTablesPage'; 
+import AdminProfilePage from './pages/admin/AdminProfilePage'; 
 
 // Layouts
 import MainLayout from './components/Layouts/MainLayout';
@@ -72,8 +72,8 @@ function App() {
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="comments" element={<AdminCommentsPage />} />
             
-            {/* Ayarlar (User Profile'ın Admin Görünümü) */}
-            <Route path="settings" element={<UserProfilePage isAdminView={true} />} />
+            <Route path="settings" element={<AdminProfilePage />} />
+
         </Route>
 
         {/* --- STATUS ROUTES --- */}

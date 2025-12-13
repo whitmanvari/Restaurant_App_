@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Restaurant_App.DataAccess.Migrations
+namespace Restaurant_App.DataAccess.Migrations.ApplicationIdentityDb
 {
     /// <inheritdoc />
-    public partial class InitialIdentity : Migration
+    public partial class IdentityCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -9,11 +9,11 @@ using Restaurant_App.DataAccess.Concrete.Identity;
 
 #nullable disable
 
-namespace Restaurant_App.DataAccess.Migrations
+namespace Restaurant_App.DataAccess.Migrations.ApplicationIdentityDb
 {
     [DbContext(typeof(ApplicationIdentityDbContext))]
-    [Migration("20251126115301_InitialIdentity1")]
-    partial class InitialIdentity1
+    [Migration("20251213001008_IdentityCreate")]
+    partial class IdentityCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

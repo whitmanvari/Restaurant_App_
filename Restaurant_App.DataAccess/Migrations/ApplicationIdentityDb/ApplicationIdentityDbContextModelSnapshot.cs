@@ -8,7 +8,7 @@ using Restaurant_App.DataAccess.Concrete.Identity;
 
 #nullable disable
 
-namespace Restaurant_App.DataAccess.Migrations
+namespace Restaurant_App.DataAccess.Migrations.ApplicationIdentityDb
 {
     [DbContext(typeof(ApplicationIdentityDbContext))]
     partial class ApplicationIdentityDbContextModelSnapshot : ModelSnapshot
