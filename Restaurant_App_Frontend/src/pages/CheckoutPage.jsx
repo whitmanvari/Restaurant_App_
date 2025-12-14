@@ -55,7 +55,7 @@ export default function CheckoutPage() {
     }, [items, isAuthenticated, navigate, orderCompleted]); 
 
     const fillTestCard = () => {
-        setCardInfo({ holder: 'IYZICO TEST USER', number: '4609713665715202', expiry: '12/30', cvc: '123' });
+        setCardInfo({ holder: 'IYZICO TEST USER', number: '5400360000000003', expiry: '12/30', cvc: '123' });
         toast.info("Geçerli test kartı dolduruldu.");
     };
 
